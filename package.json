@@ -309,12 +309,12 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Banzamel/mineralui.git"
+        "url": "git+https://github.com/Banzamel/mineralui-react.git"
     },
     "author": "Rafal Polak",
     "homepage": "https://mineralui.io",
     "bugs": {
-        "url": "https://github.com/Banzamel/mineralui/issues"
+        "url": "https://github.com/Banzamel/mineralui-react/issues"
     },
     "dependencies": {
         "highlight.js": "^11.11.1"
