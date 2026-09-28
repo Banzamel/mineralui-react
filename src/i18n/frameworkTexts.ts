@@ -424,3 +424,34 @@ export function useMMiniCalendarTexts(locale?: string, overrides?: Partial<MMini
         }
     }, [t, locale, overrides])
 }
+
+export interface MWeekGridTexts {
+    /** Legend scale text. Placeholders: `{min}`, `{max}`, `{unit}` (with a leading space when set). */
+    scale: string
+    /** Default density-band labels, lowest to highest. */
+    bands: [string, string, string, string]
+    /** Accessible name of an interactive cell. Placeholders: `{day}`, `{slot}`, `{value}`. */
+    cellLabel: string
+}
+
+/**
+ * MWeekGrid texts. Resolution per key: MI18nProvider key `mineralui.weekGrid.<key>`
+ * (bands: `mineralui.weekGrid.bands.none|few|some|many`) → built-in English default.
+ */
+export function useMWeekGridTexts(): MWeekGridTexts {
+    const t = useTranslate()
+
+    return useMemo(
+        () => ({
+            scale: t('mineralui.weekGrid.scale', 'Scale: {min} — {max}{unit}'),
+            bands: [
+                t('mineralui.weekGrid.bands.none', 'None'),
+                t('mineralui.weekGrid.bands.few', 'Few'),
+                t('mineralui.weekGrid.bands.some', 'Some'),
+                t('mineralui.weekGrid.bands.many', 'Many'),
+            ],
+            cellLabel: t('mineralui.weekGrid.cellLabel', '{day} {slot}: {value}'),
+        }),
+        [t]
+    )
+}

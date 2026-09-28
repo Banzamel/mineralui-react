@@ -58,15 +58,20 @@ export interface MWeekGridProps extends Omit<HTMLAttributes<HTMLDivElement>, 'ch
     /** Tooltip content per cell. Returning `null` disables the tooltip for
      *  that cell. Default: `Day SLOT — value`. */
     renderTooltip?: (cell: MWeekGridCellContext) => ReactNode
-    /** Click handler — fires on the cell `<div>`. */
+    /** Click handler — fires on the cell `<div>`. Cells become focusable
+     *  buttons (Enter / Space activate them) named `Day SLOT: value`
+     *  (i18n key `mineralui.weekGrid.cellLabel`). */
     onCellClick?: (cell: MWeekGridCellContext) => void
     /** Show the density legend (None / Few / Some / Many) below the grid.
-     *  Default `true`. */
+     *  Only bands the data can reach are listed — an integer grid with
+     *  `max = 1` shows bands 0 and 3. Default `true`. */
     showLegend?: boolean
-    /** Override the four density-band labels. */
+    /** Override the four density-band labels. Default: i18n keys
+     *  `mineralui.weekGrid.bands.none|few|some|many`, English fallback. */
     bandLabels?: [string, string, string, string]
     /** Unit appended to the legend's scale text — e.g. `'teachers'` renders
-     *  `Scale: 0 — 65 teachers`. */
+     *  `Scale: 0 — 65 teachers`. The scale text itself comes from the i18n key
+     *  `mineralui.weekGrid.scale` (`{min}`, `{max}`, `{unit}`). */
     legendUnit?: string
     /** Width of the row-label column in pixels. Default `48`. */
     rowLabelWidth?: number

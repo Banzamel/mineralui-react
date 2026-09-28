@@ -28,7 +28,7 @@ export const MDatePickerIllustration = forwardRef<SVGSVGElement, MIllustrationPr
                     width="24"
                     height="20"
                     rx="6"
-                    fill="var(--mineral-surface-subtle)"
+                    fill="var(--mineral-surface-contrast)"
                     stroke="var(--mineral-border)"
                 />
                 <rect
@@ -37,7 +37,7 @@ export const MDatePickerIllustration = forwardRef<SVGSVGElement, MIllustrationPr
                     width="24"
                     height="20"
                     rx="6"
-                    fill="var(--mineral-surface-subtle)"
+                    fill="var(--mineral-surface-contrast)"
                     stroke="var(--mineral-border)"
                 />
                 <rect x="118" y="104" width="24" height="20" rx="6" fill="var(--illustration-accent)" opacity="0.75" />
