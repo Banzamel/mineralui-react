@@ -35,6 +35,7 @@ export function MSelect({
     maxHeight = 300,
     noOptionsText = 'No options',
     renderOption,
+    searchPlaceholder = 'Search...',
     renderValue,
     className,
     style,
@@ -225,7 +226,7 @@ export function MSelect({
                             <input
                                 type="text"
                                 className="search-input"
-                                placeholder="Search..."
+                                placeholder={searchPlaceholder}
                                 value={search}
                                 onChange={(e) => {
                                     setSearch(e.target.value)

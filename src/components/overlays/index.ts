@@ -11,4 +11,10 @@ export type {MTooltipProps, MTooltipPlacement} from './MTooltip'
 export {MPopconfirm} from './MPopconfirm'
 export type {MPopconfirmProps} from './MPopconfirm'
 export {MDropdownMenu, MDropdownItem, MDropdownGroup, MDropdownDivider} from './MDropdownMenu'
-export type {MDropdownMenuProps, MDropdownItemProps, MDropdownGroupProps, MDropdownDividerProps} from './MDropdownMenu'
+export type {
+    MDropdownMenuProps,
+    MDropdownItemProps,
+    MDropdownGroupProps,
+    MDropdownDividerProps,
+    MDropdownItemRole,
+} from './MDropdownMenu'

@@ -57,7 +57,10 @@ export function MPopover({
         if (!anchorRef.current || !popoverRef.current) return
 
         const anchor = anchorRef.current.getBoundingClientRect()
-        const popover = popoverRef.current.getBoundingClientRect()
+        // Layout size, not getBoundingClientRect: the open animation scales the popover, and
+        // measuring mid-animation under-reports its height by ~5 % (enough to overflow the
+        // viewport after a flip / shift).
+        const popover = {width: popoverRef.current.offsetWidth, height: popoverRef.current.offsetHeight}
         const viewport = {
             width: window.innerWidth,
             height: window.innerHeight,
@@ -95,6 +98,11 @@ export function MPopover({
             } else {
                 top = anchor.top + window.scrollY
             }
+
+            // Shift along the anchor edge so a side popover near the bottom of the viewport
+            // slides up instead of running off-screen (the top clamp below wins when it is
+            // taller than the viewport).
+            top = Math.min(top, window.scrollY + viewport.height - popover.height - 8)
         } else {
             // Vertical placement: position above or below the anchor
             const spaceBelow = viewport.height - anchor.bottom - offset
@@ -142,6 +150,13 @@ export function MPopover({
         // Wait one frame so the rendered popover can be measured accurately.
         requestAnimationFrame(updatePosition)
 
+        // Content that grows after opening (images, expanded lists) must re-run the
+        // flip / shift, or the popover drifts past the viewport edge.
+        const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => updatePosition())
+        if (resizeObserver && popoverRef.current) {
+            resizeObserver.observe(popoverRef.current)
+        }
+
         // `scroll` does not bubble, so a window listener only ever sees the
         // document scrolling. Anchors living inside a scrollable ancestor — an
         // app shell with a scrolling main region, MStickyPanel, an overflowing
@@ -152,6 +167,7 @@ export function MPopover({
         document.addEventListener('scroll', updatePosition, {capture: true, passive: true})
         window.addEventListener('resize', updatePosition, {passive: true})
         return () => {
+            resizeObserver?.disconnect()
             document.removeEventListener('scroll', updatePosition, {capture: true})
             window.removeEventListener('resize', updatePosition)
         }

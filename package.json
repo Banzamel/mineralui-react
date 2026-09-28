@@ -1,6 +1,6 @@
 {
     "name": "@banzamel/mineralui",
-    "version": "2.3.1",
+    "version": "2.4.0",
     "description": "Modern React UI component framework with mineral dark aesthetic",
     "type": "module",
     "main": "dist/index.cjs",
@@ -22,6 +22,9 @@
             ],
             "data": [
                 "dist/data.d.ts"
+            ],
+            "calendar": [
+                "dist/calendar.d.ts"
             ],
             "display": [
                 "dist/display.d.ts"
@@ -123,6 +126,16 @@
             "require": {
                 "types": "./dist/data.d.ts",
                 "default": "./dist/data.cjs"
+            }
+        },
+        "./calendar": {
+            "import": {
+                "types": "./dist/calendar.d.ts",
+                "default": "./dist/calendar.js"
+            },
+            "require": {
+                "types": "./dist/calendar.d.ts",
+                "default": "./dist/calendar.cjs"
             }
         },
         "./display": {

@@ -3,6 +3,7 @@ import type * as React from 'react'
 import {MPopover} from '../../primitives'
 import {useKeyboardNav} from '../../../utils/useKeyboardNav'
 import {cn} from '../../../utils/cn'
+import {MCheckIcon} from '../../../icons'
 import type {
     MDropdownMenuProps,
     MDropdownItemProps,
@@ -213,6 +214,9 @@ export function MDropdownMenu({
 export function MDropdownItem({
     icon,
     label,
+    description,
+    role = 'menuitem',
+    checked,
     href,
     to,
     onClick,
@@ -227,14 +231,37 @@ export function MDropdownItem({
 }: MDropdownItemProps & {_active?: boolean; _onHover?: () => void; _onClick?: () => void}) {
     const isHighlighted = _active ?? active
 
+    const checkable = role === 'menuitemradio' || role === 'menuitemcheckbox'
+    const leading =
+        icon ??
+        (role === 'menuitemcheckbox' ? (
+            <span className="dropdown menu check" aria-hidden="true">
+                {checked ? <MCheckIcon size={14} /> : null}
+            </span>
+        ) : null)
+
     const content = (
         <>
-            {icon && <span className="dropdown menu icon">{icon}</span>}
-            <span className="dropdown menu label">{label}</span>
+            {leading && <span className="dropdown menu icon">{leading}</span>}
+            {description ? (
+                <span className="dropdown menu label with-description">
+                    <span className="dropdown menu label-text">{label}</span>
+                    <span className="dropdown menu description">{description}</span>
+                </span>
+            ) : (
+                <span className="dropdown menu label">{label}</span>
+            )}
         </>
     )
 
-    const cls = cn('dropdown menu item', isHighlighted && 'active', disabled && 'disabled', color, className)
+    const cls = cn(
+        'dropdown menu item',
+        isHighlighted && 'active',
+        disabled && 'disabled',
+        checkable && checked && 'checked',
+        color,
+        className
+    )
 
     const handleClick = (e: React.MouseEvent) => {
         if (disabled) {
@@ -251,7 +278,8 @@ export function MDropdownItem({
     return (
         <Tag
             className={cls}
-            role="menuitem"
+            role={role}
+            aria-checked={checkable ? Boolean(checked) : undefined}
             tabIndex={-1}
             onClick={handleClick}
             onMouseEnter={_onHover}

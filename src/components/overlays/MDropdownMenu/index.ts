@@ -4,4 +4,5 @@ export type {
     MDropdownItemProps,
     MDropdownGroupProps,
     MDropdownDividerProps,
+    MDropdownItemRole,
 } from './MDropdownMenu.types'

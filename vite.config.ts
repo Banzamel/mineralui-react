@@ -177,6 +177,7 @@ const entryMap = {
     illustrations: resolve(__dirname, 'src/illustrations/index.ts'),
     cards: resolve(__dirname, 'src/cards.ts'),
     data: resolve(__dirname, 'src/data.ts'),
+    calendar: resolve(__dirname, 'src/calendar.ts'),
     display: resolve(__dirname, 'src/display.ts'),
     dropdowns: resolve(__dirname, 'src/dropdowns.ts'),
     feedback: resolve(__dirname, 'src/feedback.ts'),

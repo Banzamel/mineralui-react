@@ -13,8 +13,6 @@ import {stripNonDigits, formatDateInput} from '../../../utils/formatters'
 import {colorRgbVar} from '../../../utils/colorRgbVar'
 import {
     formatDate,
-    daysInMonth,
-    firstDayOfMonth,
     isSameDay,
     isDateInRange,
     getDayNames,
@@ -31,6 +29,7 @@ import {
     MChevronLeftIcon as ChevronLeftGlyphIcon,
     MChevronRightIcon as ChevronRightGlyphIcon,
 } from '../../../icons'
+import {getMonthMatrix} from '../../../utils/calendarDates'
 import './MDatePicker.css'
 
 const DATE_UNAVAILABLE_ERROR = 'Date is unavailable'
@@ -711,39 +710,14 @@ export function MDatePicker({
         [currentTimeForPanel, handleTimeSelection]
     )
 
-    const calendarDays = useMemo(() => {
-        const year = viewDate.getFullYear()
-        const month = viewDate.getMonth()
-        const totalDays = daysInMonth(year, month)
-        let startDay = firstDayOfMonth(year, month)
-
-        if (firstDayOfWeek === 1) {
-            startDay = startDay === 0 ? 6 : startDay - 1
-        }
-
-        const days: Array<{date: Date; currentMonth: boolean}> = []
-        const prevMonth = month === 0 ? 11 : month - 1
-        const prevYear = month === 0 ? year - 1 : year
-        const prevDays = daysInMonth(prevYear, prevMonth)
-
-        for (let index = startDay - 1; index >= 0; index -= 1) {
-            days.push({date: new Date(prevYear, prevMonth, prevDays - index), currentMonth: false})
-        }
-
-        for (let day = 1; day <= totalDays; day += 1) {
-            days.push({date: new Date(year, month, day), currentMonth: true})
-        }
-
-        const remaining = 42 - days.length
-        const nextMonth = month === 11 ? 0 : month + 1
-        const nextYear = month === 11 ? year + 1 : year
-
-        for (let day = 1; day <= remaining; day += 1) {
-            days.push({date: new Date(nextYear, nextMonth, day), currentMonth: false})
-        }
-
-        return days
-    }, [firstDayOfWeek, viewDate])
+    const calendarDays = useMemo(
+        () =>
+            getMonthMatrix(viewDate, firstDayOfWeek).map((date) => ({
+                date,
+                currentMonth: date.getMonth() === viewDate.getMonth(),
+            })),
+        [firstDayOfWeek, viewDate]
+    )
 
     const today = stripTime(new Date())
     const selectedDate = selectedValue ? stripTime(selectedValue) : currentDateForPanel

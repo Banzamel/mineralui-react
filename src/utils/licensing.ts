@@ -1,7 +1,7 @@
 export type MineralPlan = 'free' | 'pro'
 
 export interface MineralComponentLicense {
-    group: 'cards' | 'charts' | 'data' | 'display' | 'media' | 'icons' | 'layout' | 'feedback'
+    group: 'cards' | 'charts' | 'calendar' | 'data' | 'display' | 'media' | 'icons' | 'layout' | 'feedback'
     plan: MineralPlan
 }
 

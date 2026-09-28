@@ -101,6 +101,42 @@
     flex: 1;
 }
 
+.dropdown.menu.label.with-description {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.dropdown.menu.label-text {
+    font-weight: 600;
+}
+
+.dropdown.menu.description {
+    font-size: var(--mineral-font-size-xs);
+    font-weight: 400;
+    color: var(--mineral-text-secondary);
+}
+
+.dropdown.menu.item:has(.dropdown.menu.description) {
+    align-items: flex-start;
+}
+
+/* Checkable items (menuitemradio / menuitemcheckbox) */
+.dropdown.menu.item[role='menuitemradio'].checked {
+    color: var(--mineral-primary);
+    font-weight: 600;
+}
+
+.dropdown.menu.check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    color: var(--mineral-primary);
+}
+
 /* Group */
 .dropdown.menu.group-label {
     padding: var(--mineral-spacing-sm) var(--mineral-spacing-md) var(--mineral-spacing-xs);

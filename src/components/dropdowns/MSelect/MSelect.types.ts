@@ -34,6 +34,8 @@ export interface MSelectProps {
     clearable?: boolean
     maxHeight?: number
     noOptionsText?: string
+    /** Placeholder of the search field (`searchable`). Default 'Search...'. */
+    searchPlaceholder?: string
     renderOption?: (option: MSelectOption, isActive: boolean, isSelected: boolean) => ReactNode
     renderValue?: (selected: MSelectOption | MSelectOption[]) => ReactNode
     className?: string

@@ -19,9 +19,17 @@ export interface MDropdownMenuProps {
     children: ReactNode
 }
 
+export type MDropdownItemRole = 'menuitem' | 'menuitemradio' | 'menuitemcheckbox'
+
 export interface MDropdownItemProps {
     icon?: ReactNode
     label: ReactNode
+    /** Second, muted line under the label. */
+    description?: ReactNode
+    /** ARIA role of the item. `menuitemradio` / `menuitemcheckbox` expose `checked` as `aria-checked`. */
+    role?: MDropdownItemRole
+    /** Checked state for `menuitemradio` / `menuitemcheckbox` items. */
+    checked?: boolean
     href?: string
     to?: string
     onClick?: () => void
