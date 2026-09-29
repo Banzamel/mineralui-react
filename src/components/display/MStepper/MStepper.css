@@ -70,7 +70,7 @@
     height: var(--stepper-indicator-size);
     border-radius: var(--mineral-radius-full);
     border: 2px solid var(--mineral-border);
-    background-color: var(--mineral-bg);
+    background-color: var(--mineral-surface-contrast);
     color: var(--mineral-text-secondary);
     font-weight: 600;
     font-size: var(--stepper-font-size);

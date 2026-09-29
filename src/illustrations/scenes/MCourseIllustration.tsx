@@ -20,7 +20,7 @@ export const MCourseIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                     width="132"
                     height="74"
                     rx="4"
-                    fill="var(--mineral-bg, #13151a)"
+                    fill="var(--mineral-surface-contrast, #13151a)"
                     stroke="var(--mineral-border, #3a3f47)"
                     strokeWidth="2"
                 />

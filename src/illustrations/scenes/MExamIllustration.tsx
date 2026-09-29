@@ -65,7 +65,7 @@ export const MExamIllustration = forwardRef<SVGSVGElement, MIllustrationProps>(
                     <rect x="58" y="-3" width="8" height="6" rx="1" fill="none" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />
                     {/* Tip */}
                     <polygon points="-6,-3 0,0 -6,3" fill="var(--mineral-text, #f5f5fa)" />
-                    <polygon points="-2,-1 0,0 -2,1" fill="var(--mineral-bg, #13151a)" />
+                    <polygon points="-2,-1 0,0 -2,1" fill="var(--mineral-surface-contrast, #13151a)" />
                 </g>
 
                 {/* Clock (top-right corner) */}

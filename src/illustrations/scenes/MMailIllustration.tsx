@@ -22,7 +22,7 @@ export const MMailIllustration = forwardRef<SVGSVGElement, MIllustrationProps>(f
             />
 
             {/* Inner paper peeking out */}
-            <rect x="42" y="52" width="116" height="70" rx="3" fill="var(--mineral-bg, #13151a)" />
+            <rect x="42" y="52" width="116" height="70" rx="3" fill="var(--mineral-surface-contrast, #13151a)" />
             <rect
                 x="54"
                 y="64"

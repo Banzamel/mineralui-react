@@ -66,10 +66,10 @@ export const MAccountantIllustration = forwardRef<SVGSVGElement, MIllustrationPr
                 <g transform="translate(140 120)">
                     <rect x="0" y="0" width="34" height="48" rx="3" fill="var(--mineral-surface, #1a1d23)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="2" />
                     {/* Display */}
-                    <rect x="3" y="3" width="28" height="10" rx="1.5" fill="var(--mineral-bg, #13151a)" />
+                    <rect x="3" y="3" width="28" height="10" rx="1.5" fill="var(--mineral-surface-contrast, #13151a)" />
                     <rect x="20" y="6" width="9" height="4" rx="0.5" fill="var(--illustration-accent)" opacity="0.85" />
                     {/* Buttons grid 3x4 */}
-                    <g fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="0.5">
+                    <g fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="0.5">
                         <rect x="3" y="16" width="8" height="6" rx="1" />
                         <rect x="13" y="16" width="8" height="6" rx="1" />
                         <rect x="23" y="16" width="8" height="6" rx="1" fill="var(--illustration-accent)" opacity="0.6" />

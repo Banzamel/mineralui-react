@@ -30,7 +30,7 @@ export const MAnalyticsIllustration = forwardRef<SVGSVGElement, MIllustrationPro
                 <path d="M44 76 A40 40 0 0 1 76 56 L76 96 Z" fill="var(--mineral-border, #3a3f47)" opacity="0.5" />
 
                 {/* Pie center hole (donut style) */}
-                <circle cx="76" cy="96" r="18" fill="var(--mineral-bg, #13151a)" />
+                <circle cx="76" cy="96" r="18" fill="var(--mineral-surface-contrast, #13151a)" />
 
                 {/* Percentage in center */}
                 <text

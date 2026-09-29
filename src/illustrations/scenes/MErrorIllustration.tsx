@@ -27,7 +27,7 @@ export const MErrorIllustration = forwardRef<SVGSVGElement, MIllustrationProps>(
                 <circle cx="62" cy="42" r="3" fill="var(--mineral-success, #22c55e)" opacity="0.8" />
 
                 {/* Screen bg */}
-                <rect x="34" y="54" width="132" height="108" rx="2" fill="var(--mineral-bg, #13151a)" />
+                <rect x="34" y="54" width="132" height="108" rx="2" fill="var(--mineral-surface-contrast, #13151a)" />
 
                 {/* Warning triangle */}
                 <path

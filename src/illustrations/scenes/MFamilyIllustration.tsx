@@ -48,7 +48,7 @@ export const MFamilyIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                     width="22"
                     height="20"
                     rx="2"
-                    fill="var(--mineral-bg, #13151a)"
+                    fill="var(--mineral-surface-contrast, #13151a)"
                     stroke="var(--mineral-border, #3a3f47)"
                     strokeWidth="1.5"
                 />
@@ -62,7 +62,7 @@ export const MFamilyIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                     width="22"
                     height="20"
                     rx="2"
-                    fill="var(--mineral-bg, #13151a)"
+                    fill="var(--mineral-surface-contrast, #13151a)"
                     stroke="var(--mineral-border, #3a3f47)"
                     strokeWidth="1.5"
                 />
@@ -76,7 +76,7 @@ export const MFamilyIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                     width="40"
                     height="60"
                     rx="2"
-                    fill="var(--mineral-bg, #13151a)"
+                    fill="var(--mineral-surface-contrast, #13151a)"
                     stroke="var(--mineral-border, #3a3f47)"
                     strokeWidth="2"
                 />

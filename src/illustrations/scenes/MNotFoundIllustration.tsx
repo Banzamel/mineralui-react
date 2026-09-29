@@ -25,7 +25,7 @@ export const MNotFoundIllustration = forwardRef<SVGSVGElement, MIllustrationProp
                 {/* Page fold */}
                 <path
                     d="M116 28 L136 28 L136 48 Z"
-                    fill="var(--mineral-bg, #13151a)"
+                    fill="var(--mineral-surface-contrast, #13151a)"
                     stroke="var(--mineral-border, #3a3f47)"
                     strokeWidth="1"
                 />
@@ -63,7 +63,7 @@ export const MNotFoundIllustration = forwardRef<SVGSVGElement, MIllustrationProp
                     cx="132"
                     cy="108"
                     r="26"
-                    fill="var(--mineral-bg, #13151a)"
+                    fill="var(--mineral-surface-contrast, #13151a)"
                     stroke="var(--illustration-accent)"
                     strokeWidth="3"
                     opacity="0.9"

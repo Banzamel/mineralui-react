@@ -14,7 +14,7 @@
 }
 
 .crop.hint strong {
-    color: var(--mineral-text-primary);
+    color: var(--mineral-text);
     font-weight: 600;
 }
 

@@ -80,7 +80,7 @@ export const MTutorIllustration = forwardRef<SVGSVGElement, MIllustrationProps>(
                 <rect x="138" y="148" width="4" height="22" fill="var(--mineral-border, #3a3f47)" />
 
                 {/* Open book on desk */}
-                <rect x="78" y="130" width="44" height="10" rx="1" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />
+                <rect x="78" y="130" width="44" height="10" rx="1" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />
                 <line x1="100" y1="130" x2="100" y2="140" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />
                 <rect x="82" y="133" width="14" height="1.5" rx="0.5" fill="var(--mineral-text-secondary, #6b7280)" opacity="0.7" />
                 <rect x="104" y="133" width="14" height="1.5" rx="0.5" fill="var(--illustration-accent)" opacity="0.7" />

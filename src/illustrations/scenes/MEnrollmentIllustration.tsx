@@ -31,12 +31,12 @@ export const MEnrollmentIllustration = forwardRef<SVGSVGElement, MIllustrationPr
 
                 {/* Field label + input row 1 */}
                 <rect x="46" y="56" width="36" height="3" rx="0.5" fill="var(--mineral-text-secondary, #6b7280)" opacity="0.85" />
-                <rect x="46" y="62" width="96" height="8" rx="2" fill="var(--mineral-bg, #13151a)" opacity="0.06" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />
+                <rect x="46" y="62" width="96" height="8" rx="2" fill="var(--mineral-surface-contrast, #13151a)" opacity="0.06" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />
                 <rect x="50" y="65" width="40" height="2" rx="0.5" fill="var(--mineral-text-secondary, #6b7280)" opacity="0.7" />
 
                 {/* Field label + input row 2 */}
                 <rect x="46" y="76" width="40" height="3" rx="0.5" fill="var(--mineral-text-secondary, #6b7280)" opacity="0.85" />
-                <rect x="46" y="82" width="96" height="8" rx="2" fill="var(--mineral-bg, #13151a)" opacity="0.06" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />
+                <rect x="46" y="82" width="96" height="8" rx="2" fill="var(--mineral-surface-contrast, #13151a)" opacity="0.06" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />
                 <rect x="50" y="85" width="50" height="2" rx="0.5" fill="var(--mineral-text-secondary, #6b7280)" opacity="0.7" />
 
                 {/* Section: choose course (checkboxes) */}
@@ -63,7 +63,7 @@ export const MEnrollmentIllustration = forwardRef<SVGSVGElement, MIllustrationPr
                 {/* Hand + pen (right side, hovering over checkbox 3) */}
                 <g transform="translate(132 124) rotate(-22)">
                     {/* Pen body */}
-                    <rect x="0" y="-3" width="48" height="6" rx="1.5" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1.2" />
+                    <rect x="0" y="-3" width="48" height="6" rx="1.5" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1.2" />
                     <rect x="0" y="-3" width="14" height="6" rx="1.5" fill="var(--illustration-accent)" />
                     {/* Pen tip */}
                     <polygon points="-6,-2 0,0 -6,2" fill="var(--illustration-accent)" />

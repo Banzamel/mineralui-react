@@ -29,7 +29,7 @@ export const MSettingsIllustration = forwardRef<SVGSVGElement, MIllustrationProp
                     stroke="var(--illustration-accent)"
                     strokeWidth="2"
                 />
-                <circle cx="90" cy="88" r="16" fill="var(--mineral-bg, #13151a)" />
+                <circle cx="90" cy="88" r="16" fill="var(--mineral-surface-contrast, #13151a)" />
                 <circle cx="90" cy="88" r="8" fill="var(--illustration-accent)" opacity="0.3" />
 
                 {/* Secondary gear */}
@@ -40,7 +40,7 @@ export const MSettingsIllustration = forwardRef<SVGSVGElement, MIllustrationProp
                     strokeWidth="1.5"
                     opacity="0.8"
                 />
-                <circle cx="140" cy="120" r="10" fill="var(--mineral-bg, #13151a)" />
+                <circle cx="140" cy="120" r="10" fill="var(--mineral-surface-contrast, #13151a)" />
                 <circle cx="140" cy="120" r="5" fill="var(--illustration-accent)" opacity="0.25" />
 
                 {/* Small gear */}
@@ -51,7 +51,7 @@ export const MSettingsIllustration = forwardRef<SVGSVGElement, MIllustrationProp
                     strokeWidth="1.5"
                     opacity="0.6"
                 />
-                <circle cx="52" cy="140" r="7" fill="var(--mineral-bg, #13151a)" />
+                <circle cx="52" cy="140" r="7" fill="var(--mineral-surface-contrast, #13151a)" />
                 <circle cx="52" cy="140" r="3.5" fill="var(--illustration-accent)" opacity="0.2" />
 
                 {/* Toggle switch 1 — on */}

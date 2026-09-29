@@ -52,10 +52,10 @@ export const MWritingIllustration = forwardRef<SVGSVGElement, MIllustrationProps
                     <rect x="6" y="-6" width="60" height="12" rx="3" fill="var(--illustration-accent)" opacity="0.85" />
                     <rect x="6" y="-6" width="60" height="12" rx="3" fill="none" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1.5" />
                     {/* Cap (back end) */}
-                    <rect x="62" y="-7" width="14" height="14" rx="3" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1.5" />
+                    <rect x="62" y="-7" width="14" height="14" rx="3" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1.5" />
                     <circle cx="76" cy="0" r="2" fill="var(--illustration-accent)" />
                     {/* Section + clip */}
-                    <rect x="2" y="-5" width="6" height="10" rx="1" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />
+                    <rect x="2" y="-5" width="6" height="10" rx="1" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />
                     <rect x="14" y="-8" width="20" height="2" rx="0.5" fill="var(--mineral-text, #f5f5fa)" opacity="0.4" />
                     {/* Nib (triangle) */}
                     <polygon points="-8,-3 2,0 -8,3" fill="var(--mineral-text, #f5f5fa)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />

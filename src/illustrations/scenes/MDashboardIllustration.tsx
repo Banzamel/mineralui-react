@@ -25,7 +25,7 @@ export const MDashboardIllustration = forwardRef<SVGSVGElement, MIllustrationPro
                 />
 
                 {/* Screen background */}
-                <rect x="32" y="36" width="136" height="108" rx="4" fill="var(--mineral-bg, #13151a)" />
+                <rect x="32" y="36" width="136" height="108" rx="4" fill="var(--mineral-surface-contrast, #13151a)" />
 
                 {/* Top bar */}
                 <rect x="36" y="40" width="128" height="10" rx="2" fill="var(--mineral-surface, #1a1d23)" />

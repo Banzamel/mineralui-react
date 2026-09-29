@@ -54,7 +54,7 @@ export const MOfficeIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                     stroke="var(--mineral-border, #3a3f47)"
                     strokeWidth="2"
                 />
-                <rect x="68" y="70" width="64" height="44" rx="2" fill="var(--mineral-bg, #13151a)" />
+                <rect x="68" y="70" width="64" height="44" rx="2" fill="var(--mineral-surface-contrast, #13151a)" />
                 {/* Screen content — UI lines */}
                 <rect x="72" y="76" width="20" height="3" rx="1" fill="var(--illustration-accent)" opacity="0.85" />
                 <rect x="72" y="84" width="38" height="2" rx="1" fill="var(--mineral-text-secondary, #6b7280)" opacity="0.6" />

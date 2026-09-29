@@ -97,18 +97,18 @@ export const MConflictIllustration = forwardRef<SVGSVGElement, MIllustrationProp
                 {/* Warning badge — circle with triangle ⚠ over the overlap */}
                 <g transform="translate(122 78)">
                     {/* Outer ring */}
-                    <circle r="16" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-warning, #f59e0b)" strokeWidth="2.5" />
+                    <circle r="16" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-warning, #f59e0b)" strokeWidth="2.5" />
                     {/* Triangle */}
                     <polygon
                         points="0,-9 10,8 -10,8"
                         fill="var(--mineral-warning, #f59e0b)"
-                        stroke="var(--mineral-bg, #13151a)"
+                        stroke="var(--mineral-surface-contrast, #13151a)"
                         strokeWidth="0.8"
                         strokeLinejoin="round"
                     />
                     {/* Exclamation */}
-                    <rect x="-1.2" y="-5" width="2.4" height="7" rx="0.6" fill="var(--mineral-bg, #13151a)" />
-                    <circle cx="0" cy="5" r="1.2" fill="var(--mineral-bg, #13151a)" />
+                    <rect x="-1.2" y="-5" width="2.4" height="7" rx="0.6" fill="var(--mineral-surface-contrast, #13151a)" />
+                    <circle cx="0" cy="5" r="1.2" fill="var(--mineral-surface-contrast, #13151a)" />
                 </g>
             </MIllustration>
         )

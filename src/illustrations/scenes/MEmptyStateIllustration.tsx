@@ -19,7 +19,7 @@ export const MEmptyStateIllustration = forwardRef<SVGSVGElement, MIllustrationPr
                 />
 
                 {/* Box inner shadow */}
-                <rect x="58" y="96" width="84" height="60" rx="2" fill="var(--mineral-bg, #13151a)" opacity="0.5" />
+                <rect x="58" y="96" width="84" height="60" rx="2" fill="var(--mineral-surface-contrast, #13151a)" opacity="0.5" />
 
                 {/* Left flap */}
                 <path

@@ -28,7 +28,7 @@ export const MRefundIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                 />
 
                 {/* Tail end disk (where the refund "comes back" to) */}
-                <circle cx="44" cy="124" r="9" fill="var(--mineral-bg, #13151a)" stroke="var(--illustration-accent)" strokeWidth="3" />
+                <circle cx="44" cy="124" r="9" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--illustration-accent)" strokeWidth="3" />
                 <line x1="40" y1="124" x2="48" y2="124" stroke="var(--illustration-accent)" strokeWidth="2.5" strokeLinecap="round" />
 
                 {/* Coins along the curve (3 coins, decreasing fade) */}
@@ -54,7 +54,7 @@ export const MRefundIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                     <path d="M0 8 L0 6 C0 3 2 0 6 0 L50 0 C54 0 56 3 56 6 L56 8" fill="var(--mineral-surface, #1a1d23)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="2" />
                     <rect x="0" y="6" width="56" height="3" fill="var(--illustration-accent)" opacity="0.55" />
                     {/* Clasp */}
-                    <rect x="38" y="14" width="14" height="10" rx="2" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />
+                    <rect x="38" y="14" width="14" height="10" rx="2" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" />
                     <circle cx="45" cy="19" r="2.5" fill="var(--illustration-accent)" />
                 </g>
             </MIllustration>

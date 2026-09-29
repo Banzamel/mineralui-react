@@ -30,7 +30,7 @@ export const MLibraryIllustration = forwardRef<SVGSVGElement, MIllustrationProps
 
                 {/* Shelf 1 */}
                 <g transform="translate(28 38)">
-                    <rect x="0" y="0" width="144" height="36" fill="var(--mineral-bg, #13151a)" />
+                    <rect x="0" y="0" width="144" height="36" fill="var(--mineral-surface-contrast, #13151a)" />
                     {/* Books */}
                     <rect x="2" y="4" width="10" height="32" fill="var(--illustration-accent)" opacity="0.85" />
                     <rect x="14" y="2" width="8" height="34" fill="var(--mineral-info, #3b82f6)" opacity="0.75" />
@@ -53,7 +53,7 @@ export const MLibraryIllustration = forwardRef<SVGSVGElement, MIllustrationProps
 
                 {/* Shelf 2 */}
                 <g transform="translate(28 82)">
-                    <rect x="0" y="0" width="144" height="36" fill="var(--mineral-bg, #13151a)" />
+                    <rect x="0" y="0" width="144" height="36" fill="var(--mineral-surface-contrast, #13151a)" />
                     <rect x="2" y="6" width="8" height="30" fill="var(--mineral-success, #22c55e)" opacity="0.75" />
                     <rect x="12" y="2" width="14" height="34" fill="var(--mineral-warning, #f59e0b)" opacity="0.75" />
                     <rect x="28" y="4" width="6" height="32" fill="var(--mineral-error, #ef4444)" opacity="0.85" />
@@ -72,7 +72,7 @@ export const MLibraryIllustration = forwardRef<SVGSVGElement, MIllustrationProps
 
                 {/* Shelf 3 */}
                 <g transform="translate(28 126)">
-                    <rect x="0" y="0" width="144" height="34" fill="var(--mineral-bg, #13151a)" />
+                    <rect x="0" y="0" width="144" height="34" fill="var(--mineral-surface-contrast, #13151a)" />
                     <rect x="2" y="2" width="12" height="32" fill="var(--mineral-news, #8b5cf6)" opacity="0.85" />
                     <rect x="16" y="4" width="8" height="30" fill="var(--illustration-accent)" opacity="0.85" />
                     <rect x="26" y="6" width="10" height="28" fill="var(--mineral-warning, #f59e0b)" opacity="0.7" />

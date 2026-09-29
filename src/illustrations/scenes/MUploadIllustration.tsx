@@ -18,7 +18,7 @@ export const MUploadIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                 {/* Cloud inner highlight */}
                 <path
                     d="M60 106 C44 106 34 94 40 82 C44 72 56 68 66 70 C70 56 84 48 98 50 C112 54 120 62 120 74 C134 72 146 82 144 94 C142 104 134 108 126 106 Z"
-                    fill="var(--mineral-bg, #13151a)"
+                    fill="var(--mineral-surface-contrast, #13151a)"
                     opacity="0.3"
                 />
 
@@ -56,7 +56,7 @@ export const MUploadIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                 />
                 <path
                     d="M62 128 L74 128 L74 140 Z"
-                    fill="var(--mineral-bg, #13151a)"
+                    fill="var(--mineral-surface-contrast, #13151a)"
                     stroke="var(--mineral-border, #3a3f47)"
                     strokeWidth="0.5"
                 />

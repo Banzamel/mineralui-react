@@ -60,7 +60,7 @@ export const MCorporateIllustration = forwardRef<SVGSVGElement, MIllustrationPro
                     <rect x="108" y="74" width="16" height="8" rx="1" />
                 </g>
                 {/* Door */}
-                <rect x="92" y="138" width="16" height="30" rx="2" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1.5" />
+                <rect x="92" y="138" width="16" height="30" rx="2" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1.5" />
 
                 {/* Side building (back-right) */}
                 <rect

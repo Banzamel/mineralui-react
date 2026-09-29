@@ -56,7 +56,7 @@ export const MWorkbookIllustration = forwardRef<SVGSVGElement, MIllustrationProp
                     strokeWidth="1.5"
                 />
                 {/* Right page — illustration thumbnail (a sun + hill drawing) */}
-                <rect x="108" y="68" width="56" height="34" rx="2" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" opacity="0.55" />
+                <rect x="108" y="68" width="56" height="34" rx="2" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1" opacity="0.55" />
                 <circle cx="124" cy="80" r="6" fill="var(--mineral-warning, #f59e0b)" opacity="0.9" />
                 <path d="M108 96 Q126 84 136 90 Q150 100 164 92 L164 102 L108 102 Z" fill="var(--mineral-success, #22c55e)" opacity="0.8" />
 

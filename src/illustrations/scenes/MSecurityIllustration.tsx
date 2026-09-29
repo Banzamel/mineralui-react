@@ -21,7 +21,7 @@ export const MSecurityIllustration = forwardRef<SVGSVGElement, MIllustrationProp
                 {/* Shield inner */}
                 <path
                     d="M100 42 L140 60 C140 60 143 106 100 158 C57 106 60 60 60 60 Z"
-                    fill="var(--mineral-bg, #13151a)"
+                    fill="var(--mineral-surface-contrast, #13151a)"
                     opacity="0.6"
                 />
 
@@ -45,8 +45,8 @@ export const MSecurityIllustration = forwardRef<SVGSVGElement, MIllustrationProp
                 />
 
                 {/* Keyhole */}
-                <circle cx="100" cy="108" r="4" fill="var(--mineral-bg, #13151a)" />
-                <rect x="98" y="110" width="4" height="8" rx="1" fill="var(--mineral-bg, #13151a)" />
+                <circle cx="100" cy="108" r="4" fill="var(--mineral-surface-contrast, #13151a)" />
+                <rect x="98" y="110" width="4" height="8" rx="1" fill="var(--mineral-surface-contrast, #13151a)" />
 
                 {/* Decorative dots */}
                 <circle cx="56" cy="40" r="1.5" fill="var(--illustration-accent)" opacity="0.3" />

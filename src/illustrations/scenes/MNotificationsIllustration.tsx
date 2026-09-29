@@ -18,7 +18,7 @@ export const MNotificationsIllustration = forwardRef<SVGSVGElement, MIllustratio
                 {/* Bell inner shadow */}
                 <path
                     d="M100 40 C100 40 76 46 76 80 L76 104 L68 112 L132 112 L124 104 L124 80 C124 46 100 40 100 40 Z"
-                    fill="var(--mineral-bg, #13151a)"
+                    fill="var(--mineral-surface-contrast, #13151a)"
                     opacity="0.4"
                 />
 

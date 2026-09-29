@@ -40,7 +40,7 @@ export const MListeningIllustration = forwardRef<SVGSVGElement, MIllustrationPro
                     strokeWidth="2"
                 />
                 <rect x="38" y="106" width="24" height="34" rx="6" fill="var(--illustration-accent)" opacity="0.5" />
-                <circle cx="50" cy="123" r="6" fill="var(--mineral-bg, #13151a)" />
+                <circle cx="50" cy="123" r="6" fill="var(--mineral-surface-contrast, #13151a)" />
                 <circle cx="50" cy="123" r="2.5" fill="var(--illustration-accent)" />
 
                 {/* Right ear cup */}
@@ -55,7 +55,7 @@ export const MListeningIllustration = forwardRef<SVGSVGElement, MIllustrationPro
                     strokeWidth="2"
                 />
                 <rect x="138" y="106" width="24" height="34" rx="6" fill="var(--illustration-accent)" opacity="0.5" />
-                <circle cx="150" cy="123" r="6" fill="var(--mineral-bg, #13151a)" />
+                <circle cx="150" cy="123" r="6" fill="var(--mineral-surface-contrast, #13151a)" />
                 <circle cx="150" cy="123" r="2.5" fill="var(--illustration-accent)" />
 
                 {/* Sound waveform passing between cups */}

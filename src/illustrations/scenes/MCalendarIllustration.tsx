@@ -76,7 +76,7 @@ export const MCalendarIllustration = forwardRef<SVGSVGElement, MIllustrationProp
                                     width="12"
                                     height="12"
                                     rx="3"
-                                    fill={isHighlighted ? 'var(--illustration-accent)' : 'var(--mineral-bg, #13151a)'}
+                                    fill={isHighlighted ? 'var(--illustration-accent)' : 'var(--mineral-surface-contrast, #13151a)'}
                                     opacity={isHighlighted ? 0.85 : 0.4}
                                 />
                                 {hasEvent && (

@@ -16,7 +16,7 @@ export const MClassroomIllustration = forwardRef<SVGSVGElement, MIllustrationPro
                 {/* Back wall */}
                 <rect x="20" y="22" width="160" height="100" fill="var(--mineral-surface, #1a1d23)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="2" />
                 {/* Floor (perspective trapezoid) */}
-                <polygon points="20,122 180,122 196,170 4,170" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="2" />
+                <polygon points="20,122 180,122 196,170 4,170" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="2" />
                 {/* Floor lines (perspective) */}
                 <line x1="20" y1="138" x2="180" y2="138" stroke="var(--mineral-border, #3a3f47)" strokeWidth="0.6" opacity="0.5" />
                 <line x1="14" y1="154" x2="186" y2="154" stroke="var(--mineral-border, #3a3f47)" strokeWidth="0.6" opacity="0.4" />
@@ -39,13 +39,13 @@ export const MClassroomIllustration = forwardRef<SVGSVGElement, MIllustrationPro
                 <rect x="70" y="68" width="40" height="2" rx="0.5" fill="var(--mineral-text-secondary, #6b7280)" opacity="0.5" />
 
                 {/* Wall clock */}
-                <circle cx="40" cy="50" r="9" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1.5" />
+                <circle cx="40" cy="50" r="9" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1.5" />
                 <circle cx="40" cy="50" r="1" fill="var(--illustration-accent)" />
                 <line x1="40" y1="50" x2="40" y2="44" stroke="var(--mineral-text, #f5f5fa)" strokeWidth="1" strokeLinecap="round" />
                 <line x1="40" y1="50" x2="44" y2="52" stroke="var(--illustration-accent)" strokeWidth="1.2" strokeLinecap="round" />
 
                 {/* Bulletin board (right) */}
-                <rect x="148" y="38" width="22" height="34" rx="1" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1.5" />
+                <rect x="148" y="38" width="22" height="34" rx="1" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="1.5" />
                 <rect x="151" y="42" width="16" height="6" rx="1" fill="var(--illustration-accent)" opacity="0.55" />
                 <rect x="151" y="50" width="12" height="4" rx="1" fill="var(--mineral-info, #3b82f6)" opacity="0.55" />
                 <rect x="151" y="56" width="14" height="4" rx="1" fill="var(--mineral-success, #22c55e)" opacity="0.55" />

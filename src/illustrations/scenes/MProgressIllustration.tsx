@@ -30,23 +30,23 @@ export const MProgressIllustration = forwardRef<SVGSVGElement, MIllustrationProp
                 {/* Milestone markers (5 dots) */}
                 <g>
                     {/* M1 — done */}
-                    <circle cx="40" cy="127" r="9" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-success, #22c55e)" strokeWidth="2" />
+                    <circle cx="40" cy="127" r="9" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-success, #22c55e)" strokeWidth="2" />
                     <path d="M36 127 L39 130 L44 124" fill="none" stroke="var(--mineral-success, #22c55e)" strokeWidth="2" strokeLinecap="round" />
 
                     {/* M2 — done */}
-                    <circle cx="74" cy="127" r="9" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-success, #22c55e)" strokeWidth="2" />
+                    <circle cx="74" cy="127" r="9" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-success, #22c55e)" strokeWidth="2" />
                     <path d="M70 127 L73 130 L78 124" fill="none" stroke="var(--mineral-success, #22c55e)" strokeWidth="2" strokeLinecap="round" />
 
                     {/* M3 — current */}
-                    <circle cx="108" cy="127" r="11" fill="var(--mineral-bg, #13151a)" stroke="var(--illustration-accent)" strokeWidth="2.5" />
+                    <circle cx="108" cy="127" r="11" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--illustration-accent)" strokeWidth="2.5" />
                     <circle cx="108" cy="127" r="4" fill="var(--illustration-accent)" />
 
                     {/* M4 — pending */}
-                    <circle cx="142" cy="127" r="9" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="2" />
+                    <circle cx="142" cy="127" r="9" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="2" />
                     <text x="142" y="131" textAnchor="middle" fontFamily="inherit" fontSize="9" fontWeight="bold" fill="var(--mineral-text-secondary, #6b7280)">4</text>
 
                     {/* M5 — pending (final / star) */}
-                    <circle cx="176" cy="127" r="11" fill="var(--mineral-bg, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="2" />
+                    <circle cx="176" cy="127" r="11" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--mineral-border, #3a3f47)" strokeWidth="2" />
                     <polygon points="176,121 178,126 183,126 179,129 181,134 176,131 171,134 173,129 169,126 174,126" fill="var(--mineral-warning, #f59e0b)" opacity="0.7" />
                 </g>
 

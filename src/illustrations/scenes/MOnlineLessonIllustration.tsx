@@ -32,7 +32,7 @@ export const MOnlineLessonIllustration = forwardRef<SVGSVGElement, MIllustration
                     stroke="var(--mineral-border, #3a3f47)"
                     strokeWidth="2"
                 />
-                <rect x="40" y="74" width="120" height="66" rx="3" fill="var(--mineral-bg, #13151a)" />
+                <rect x="40" y="74" width="120" height="66" rx="3" fill="var(--mineral-surface-contrast, #13151a)" />
 
                 {/* Top status bar in app */}
                 <rect x="44" y="78" width="50" height="3" rx="1" fill="var(--illustration-accent)" opacity="0.85" />
@@ -44,7 +44,7 @@ export const MOnlineLessonIllustration = forwardRef<SVGSVGElement, MIllustration
                 <circle cx="72" cy="100" r="7" fill="var(--illustration-accent)" opacity="0.85" />
                 <path d="M58 124 C58 116 66 110 72 110 C78 110 86 116 86 124" fill="var(--illustration-accent)" opacity="0.85" />
                 {/* Name plate */}
-                <rect x="50" y="119" width="22" height="5" rx="1" fill="var(--mineral-bg, #13151a)" opacity="0.85" />
+                <rect x="50" y="119" width="22" height="5" rx="1" fill="var(--mineral-surface-contrast, #13151a)" opacity="0.85" />
                 <rect x="52" y="120.5" width="14" height="2" rx="0.5" fill="var(--mineral-text, #f5f5fa)" opacity="0.7" />
                 {/* Mic icon */}
                 <rect x="86" y="119" width="6" height="5" rx="1" fill="var(--mineral-success, #22c55e)" opacity="0.85" />
@@ -54,7 +54,7 @@ export const MOnlineLessonIllustration = forwardRef<SVGSVGElement, MIllustration
                 {/* Head + shoulders silhouette */}
                 <circle cx="128" cy="100" r="7" fill="var(--mineral-info, #3b82f6)" opacity="0.85" />
                 <path d="M114 124 C114 116 122 110 128 110 C134 110 142 116 142 124" fill="var(--mineral-info, #3b82f6)" opacity="0.85" />
-                <rect x="106" y="119" width="22" height="5" rx="1" fill="var(--mineral-bg, #13151a)" opacity="0.85" />
+                <rect x="106" y="119" width="22" height="5" rx="1" fill="var(--mineral-surface-contrast, #13151a)" opacity="0.85" />
                 <rect x="108" y="120.5" width="14" height="2" rx="0.5" fill="var(--mineral-text, #f5f5fa)" opacity="0.7" />
                 <rect x="142" y="119" width="6" height="5" rx="1" fill="var(--mineral-success, #22c55e)" opacity="0.85" />
 

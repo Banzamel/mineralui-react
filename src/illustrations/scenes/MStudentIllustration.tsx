@@ -31,8 +31,8 @@ export const MStudentIllustration = forwardRef<SVGSVGElement, MIllustrationProps
                     fill="var(--illustration-accent)"
                     opacity="0.7"
                 />
-                <rect x="68" y="98" width="20" height="4" rx="1" fill="var(--mineral-bg, #13151a)" opacity="0.4" />
-                <rect x="68" y="106" width="14" height="3" rx="1" fill="var(--mineral-bg, #13151a)" opacity="0.3" />
+                <rect x="68" y="98" width="20" height="4" rx="1" fill="var(--mineral-surface-contrast, #13151a)" opacity="0.4" />
+                <rect x="68" y="106" width="14" height="3" rx="1" fill="var(--mineral-surface-contrast, #13151a)" opacity="0.3" />
 
                 {/* Body — torso */}
                 <rect

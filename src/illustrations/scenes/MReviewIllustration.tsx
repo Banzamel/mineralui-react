@@ -35,7 +35,7 @@ export const MReviewIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                 <line x1="80" y1="122" x2="100" y2="122" stroke="var(--mineral-surface, #1a1d23)" strokeWidth="3" />
 
                 {/* Reviewer avatar */}
-                <circle cx="50" cy="58" r="10" fill="var(--mineral-bg, #13151a)" stroke="var(--illustration-accent)" strokeWidth="2" />
+                <circle cx="50" cy="58" r="10" fill="var(--mineral-surface-contrast, #13151a)" stroke="var(--illustration-accent)" strokeWidth="2" />
                 <circle cx="50" cy="56" r="3.5" fill="var(--illustration-accent)" opacity="0.85" />
                 <path d="M42 64 C42 60 46 58 50 58 C54 58 58 60 58 64" fill="var(--illustration-accent)" opacity="0.85" />
 

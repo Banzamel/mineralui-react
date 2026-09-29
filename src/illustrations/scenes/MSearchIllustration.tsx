@@ -29,7 +29,7 @@ export const MSearchIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                 />
                 <rect x="40" y="76" width="52" height="3" rx="1" fill="var(--mineral-border, #3a3f47)" opacity="0.4" />
                 <rect x="40" y="84" width="44" height="3" rx="1" fill="var(--mineral-border, #3a3f47)" opacity="0.3" />
-                <rect x="40" y="96" width="56" height="24" rx="3" fill="var(--mineral-bg, #13151a)" opacity="0.5" />
+                <rect x="40" y="96" width="56" height="24" rx="3" fill="var(--mineral-surface-contrast, #13151a)" opacity="0.5" />
                 <rect x="40" y="128" width="48" height="3" rx="1" fill="var(--mineral-border, #3a3f47)" opacity="0.3" />
 
                 {/* Background card 2 */}
@@ -62,7 +62,7 @@ export const MSearchIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                     fill="var(--mineral-border, #3a3f47)"
                     opacity="0.3"
                 />
-                <rect x="104" y="112" width="48" height="20" rx="3" fill="var(--mineral-bg, #13151a)" opacity="0.5" />
+                <rect x="104" y="112" width="48" height="20" rx="3" fill="var(--mineral-surface-contrast, #13151a)" opacity="0.5" />
                 <rect
                     x="104"
                     y="140"
@@ -91,7 +91,7 @@ export const MSearchIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                     cx="120"
                     cy="52"
                     r="24"
-                    fill="var(--mineral-bg, #13151a)"
+                    fill="var(--mineral-surface-contrast, #13151a)"
                     stroke="var(--illustration-accent)"
                     strokeWidth="3"
                 />

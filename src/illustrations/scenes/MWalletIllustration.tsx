@@ -38,12 +38,12 @@ export const MWalletIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                     width="30"
                     height="24"
                     rx="4"
-                    fill="var(--mineral-bg, #13151a)"
+                    fill="var(--mineral-surface-contrast, #13151a)"
                     stroke="var(--mineral-border, #3a3f47)"
                     strokeWidth="1.5"
                 />
                 <circle cx="145" cy="108" r="6" fill="var(--illustration-accent)" opacity="0.5" />
-                <circle cx="145" cy="108" r="3" fill="var(--mineral-bg, #13151a)" />
+                <circle cx="145" cy="108" r="3" fill="var(--mineral-surface-contrast, #13151a)" />
 
                 {/* Credit card peeking out */}
                 <rect
@@ -128,7 +128,7 @@ export const MWalletIllustration = forwardRef<SVGSVGElement, MIllustrationProps>
                 </text>
 
                 {/* Balance display */}
-                <rect x="42" y="102" width="76" height="12" rx="2" fill="var(--mineral-bg, #13151a)" opacity="0.5" />
+                <rect x="42" y="102" width="76" height="12" rx="2" fill="var(--mineral-surface-contrast, #13151a)" opacity="0.5" />
                 <rect x="46" y="105" width="40" height="5" rx="1" fill="var(--illustration-accent)" opacity="0.4" />
 
                 {/* Glow */}
