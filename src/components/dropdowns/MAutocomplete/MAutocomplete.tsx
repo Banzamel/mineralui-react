@@ -1,8 +1,9 @@
-import {useState, useRef, useCallback, useMemo} from 'react'
+import {useState, useRef, useCallback, useId, useMemo} from 'react'
 import type * as React from 'react'
 import type {MAutocompleteProps} from './MAutocomplete.types'
 import {MPopover} from '../../primitives'
 import {cn} from '../../../utils/cn'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 import {useKeyboardNav} from '../../../utils/useKeyboardNav'
 import {useDebouncedCallback} from '../../../utils/useDebounce'
 import {MSpinner, MTag} from '../../feedback'
@@ -62,6 +63,8 @@ export function MAutocomplete<T = string>({
     className,
     style,
 }: MAutocompleteProps<T>) {
+    const baseId = useId()
+    const texts = useMCommonTexts()
     const [open, setOpen] = useState(false)
     const [inputValue, setInputValue] = useState('')
     const wrapperRef = useRef<HTMLDivElement>(null)
@@ -166,6 +169,12 @@ export function MAutocomplete<T = string>({
         [multiple, onChange]
     )
 
+    // Screen readers follow the highlighted option through aria-activedescendant.
+    const listboxId = `${baseId}-listbox`
+    const optionId = (index: number) => `${baseId}-option-${index}`
+    const activeDescendant =
+        open && !loading && activeIndex >= 0 && activeIndex < filtered.length ? optionId(activeIndex) : undefined
+
     return (
         <div
             className={cn('autocomplete', color && `color-${color}`, fullWidth && 'full-width', className)}
@@ -226,8 +235,12 @@ export function MAutocomplete<T = string>({
                     placeholder={selectedValues.length > 0 ? '' : placeholder}
                     disabled={disabled}
                     id={id}
+                    role="combobox"
+                    aria-autocomplete="list"
                     aria-expanded={open}
                     aria-haspopup="listbox"
+                    aria-controls={open ? listboxId : undefined}
+                    aria-activedescendant={activeDescendant}
                     aria-invalid={hasError || undefined}
                     autoComplete="off"
                 />
@@ -235,7 +248,13 @@ export function MAutocomplete<T = string>({
                 {loading && <MSpinner size="sm" color={color} />}
 
                 {clearable && (selectedValues.length > 0 || inputValue) && !loading && !disabled && (
-                    <button type="button" className="clear-btn clear-btn-base" onClick={handleClear} tabIndex={-1}>
+                    <button
+                        type="button"
+                        className="clear-btn clear-btn-base"
+                        onClick={handleClear}
+                        tabIndex={-1}
+                        aria-label={texts.clearInput}
+                    >
                         <MCloseIcon />
                     </button>
                 )}
@@ -257,13 +276,14 @@ export function MAutocomplete<T = string>({
                     ) : filtered.length === 0 ? (
                         <div className="no-options">{noOptionsText}</div>
                     ) : (
-                        <div className="options-list" role="listbox">
+                        <div id={listboxId} className="options-list" role="listbox">
                             {filtered.map((opt, i) => {
                                 const isActive = i === activeIndex
                                 const isSelected = selectedValues.some((v) => getOptionValue(v) === getOptionValue(opt))
                                 return (
                                     <div
                                         key={getOptionValue(opt)}
+                                        id={optionId(i)}
                                         className={cn('option', isActive && 'active', isSelected && 'selected')}
                                         onClick={() => handleSelect(i)}
                                         onMouseEnter={() => setActiveIndex(i)}

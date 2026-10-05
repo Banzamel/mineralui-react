@@ -4,6 +4,7 @@ import {MButton} from '../MButton'
 import {MArrowUpIcon} from '../../../icons'
 import {cn} from '../../../utils/cn'
 import './MScrollTop.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 export function MScrollTop({
     threshold = 300,
@@ -12,6 +13,7 @@ export function MScrollTop({
     smooth = true,
     className,
 }: MScrollTopProps) {
+    const texts = useMCommonTexts()
     const [visible, setVisible] = useState(false)
 
     useEffect(() => {
@@ -35,7 +37,7 @@ export function MScrollTop({
             size="lg"
             iconOnly
             onClick={scrollToTop}
-            aria-label="Scroll to top"
+            aria-label={texts.scrollToTop}
             className={cn('scroll-top', visible && 'visible', className)}
         >
             <MArrowUpIcon />

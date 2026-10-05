@@ -145,3 +145,11 @@
 .avatar.skeleton.animate {
     animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .avatar.skeleton.animate {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+        animation-iteration-count: 1;
+    }
+}

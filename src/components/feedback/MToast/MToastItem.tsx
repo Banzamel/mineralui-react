@@ -4,9 +4,11 @@ import {cn} from '../../../utils/cn'
 import {MCloseIcon} from '../../../icons'
 import {MButton} from '../../controls'
 import {getStatusIcon} from '../statusIcons'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 // Single toast notification with enter/exit animation.
 export function MToastItem({entry, onDismiss}: {entry: MToastEntry; onDismiss: (id: string) => void}) {
+    const texts = useMCommonTexts()
     const [exiting, setExiting] = useState(false)
     const duration = entry.duration ?? 4000
 
@@ -46,7 +48,7 @@ export function MToastItem({entry, onDismiss}: {entry: MToastEntry; onDismiss: (
                 size="xs"
                 className="toast close"
                 onClick={() => setExiting(true)}
-                aria-label="Close"
+                aria-label={texts.close}
             >
                 <MCloseIcon />
             </MButton>

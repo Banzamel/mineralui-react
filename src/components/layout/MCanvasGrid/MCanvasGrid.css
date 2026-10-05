@@ -159,7 +159,9 @@
     right: 8px;
     z-index: 5;
     opacity: 0;
-    transition: opacity 160ms ease-out, transform 160ms ease-out;
+    transition:
+        opacity 160ms ease-out,
+        transform 160ms ease-out;
     transform: scale(0.85);
 }
 
@@ -223,8 +225,6 @@
     opacity: 1;
 }
 
-
-
 .canvas-grid.mobile {
     display: flex;
     flex-direction: column;
@@ -243,4 +243,12 @@
 
 .canvas-grid.compact {
     --canvas-grid-cells: 12;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .canvas-grid-item-glass {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+        animation-iteration-count: 1;
+    }
 }

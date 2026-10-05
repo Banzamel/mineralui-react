@@ -8,6 +8,7 @@ import {MAvatar} from '../../media'
 import {MRating} from '../../display'
 import {MDropdownItem, MDropdownMenu} from '../../overlays'
 import './ServiceCardsShared.css'
+import {useMCommonTexts, formatMText} from '../../../i18n/frameworkTexts'
 
 export function SharedServiceCard({
     variant,
@@ -41,6 +42,7 @@ export function SharedServiceCard({
     className,
     ...rest
 }: SharedServiceCardProps) {
+    const texts = useMCommonTexts()
     const [galleryIdx, setGalleryIdx] = useState(0)
     const [isGalleryTransitioning, setIsGalleryTransitioning] = useState(false)
     const [internalQty, setInternalQty] = useState(1)
@@ -127,7 +129,7 @@ export function SharedServiceCard({
                                     type="button"
                                     className={cn('cs-dot', i === galleryIdx && 'active')}
                                     onClick={() => changeGallery(i)}
-                                    aria-label={`Image ${i + 1}`}
+                                    aria-label={formatMText(texts.imageNumber, {index: i + 1})}
                                 />
                             ))}
                         </div>
@@ -143,7 +145,7 @@ export function SharedServiceCard({
                                             variant="ghost"
                                             iconOnly
                                             shape="circle"
-                                            aria-label="More options"
+                                            aria-label={texts.moreOptions}
                                             className="cs-overlay-btn"
                                         >
                                             <MEllipsisVerticalIcon />
@@ -290,7 +292,7 @@ export function SharedServiceCard({
                                 iconOnly
                                 size="sm"
                                 onClick={() => changeQty(qty - 1)}
-                                aria-label="Decrease"
+                                aria-label={texts.decrease}
                                 className="cs-qty-btn"
                             >
                                 <MMinusIcon />
@@ -301,7 +303,7 @@ export function SharedServiceCard({
                                 iconOnly
                                 size="sm"
                                 onClick={() => changeQty(qty + 1)}
-                                aria-label="Increase"
+                                aria-label={texts.increase}
                                 className="cs-qty-btn"
                             >
                                 <MPlusIcon />

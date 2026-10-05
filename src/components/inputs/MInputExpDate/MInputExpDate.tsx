@@ -8,6 +8,7 @@ import {MCloseIcon, MChevronDownIcon} from '../../../icons'
 import {MDropdownItem, MDropdownMenu} from '../../overlays'
 import '../MInput/MInput.css'
 import './MInputExpDate.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 const OK: ValidationResult = {valid: true}
 
@@ -142,6 +143,7 @@ export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(fu
     },
     ref
 ) {
+    const texts = useMCommonTexts()
     const inputRef = useRef<HTMLInputElement>(null)
     const rootRef = useRef<HTMLDivElement>(null)
     const {currentValue, setCurrentValue} = useControllableString(value, defaultValue)
@@ -327,7 +329,7 @@ export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(fu
                     onBlur={onBlur}
                 />
 
-                <div className="input-exp-date-segments" aria-label="Expiration date">
+                <div className="input-exp-date-segments" aria-label={texts.expirationDate}>
                     {segmentDisabled ? (
                         <span className={cn('input-exp-date-trigger', !month && 'placeholder', 'static')}>
                             <span>{monthLabel}</span>
@@ -414,7 +416,7 @@ export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(fu
                             handleClear()
                         }}
                         tabIndex={-1}
-                        aria-label="Clear input"
+                        aria-label={texts.clearInput}
                     >
                         <MCloseIcon />
                     </button>

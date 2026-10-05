@@ -10,6 +10,7 @@ import {MMediaLightbox} from '../MMediaLightbox/MMediaLightbox'
 import {getMediaPreviewGroupItems, registerMediaPreviewItem} from '../mediaPreviewRegistry'
 import {usesHoverDim, usesHoverZoom} from '../mediaInteraction'
 import './MImage.css'
+import {useMCommonTexts, formatMText} from '../../../i18n/frameworkTexts'
 
 const RATIO_MAP: Record<string, string> = {
     '1:1': '1 / 1',
@@ -46,6 +47,7 @@ export function MImage({
     onError,
     ...rest
 }: MImageProps) {
+    const texts = useMCommonTexts()
     const [errored, setErrored] = useState(false)
     const [previewOpen, setPreviewOpen] = useState(false)
     const [previewItems, setPreviewItems] = useState<Array<{src: string; alt?: string; caption?: string}>>([])
@@ -101,7 +103,7 @@ export function MImage({
                 animate="pulse"
                 className={cn('image-skeleton', rounded && 'rounded', bordered && 'bordered', className)}
                 style={ratioStyle}
-                aria-label="Loading"
+                aria-label={texts.loading}
                 {...getHiddenProps(hidden)}
             />
         )
@@ -159,7 +161,7 @@ export function MImage({
                     <button
                         type="button"
                         className={cn(wrapperClassName, 'image-button')}
-                        aria-label={`Preview ${alt || 'image'}`}
+                        aria-label={formatMText(texts.previewItem, {name: alt || texts.image})}
                         onClick={openPreview}
                         onPointerDown={effectLayer ? handlePointerDown : undefined}
                         disabled={!resolvedSrc}

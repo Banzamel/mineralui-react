@@ -5,6 +5,7 @@ import {cn} from '../../../utils/cn'
 import {MButton} from '../../controls'
 import {MChevronLeftIcon, MChevronRightIcon} from '../../../icons'
 import './MCarousel.css'
+import {useMCommonTexts, formatMText} from '../../../i18n/frameworkTexts'
 
 // Render a swipeable content slider with arrows, dots and transition modes.
 export function MCarousel({
@@ -19,6 +20,7 @@ export function MCarousel({
     children,
     ...rest
 }: MCarouselProps) {
+    const texts = useMCommonTexts()
     const slides = Children.toArray(children)
     const count = slides.length
     const [active, setActive] = useState(0)
@@ -130,7 +132,7 @@ export function MCarousel({
                         iconOnly
                         shape="circle"
                         onClick={prev}
-                        aria-label="Previous slide"
+                        aria-label={texts.previousSlide}
                         className="carousel-arrow carousel-arrow-prev"
                     >
                         <MChevronLeftIcon />
@@ -141,7 +143,7 @@ export function MCarousel({
                         iconOnly
                         shape="circle"
                         onClick={next}
-                        aria-label="Next slide"
+                        aria-label={texts.nextSlide}
                         className="carousel-arrow carousel-arrow-next"
                     >
                         <MChevronRightIcon />
@@ -156,7 +158,7 @@ export function MCarousel({
                             key={i}
                             className={cn('carousel-dot', i === active && 'active')}
                             onClick={() => goTo(i)}
-                            aria-label={`Slide ${i + 1}`}
+                            aria-label={formatMText(texts.slideNumber, {index: i + 1})}
                             type="button"
                         />
                     ))}

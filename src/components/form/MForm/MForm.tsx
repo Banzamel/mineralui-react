@@ -23,6 +23,8 @@ export function MForm({
     const [touched, setTouched] = useState<Record<string, boolean>>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
     const fieldsRef = useRef<Map<string, MFieldRegistration>>(new Map())
+    // Latest values outside the render cycle, so validation never reads a stale closure.
+    const valuesRef = useRef<Record<string, unknown>>(values)
 
     // Track mounted fields so validation stays aligned with active inputs.
     const registerField = useCallback((reg: MFieldRegistration) => {
@@ -34,37 +36,34 @@ export function MForm({
     }, [])
 
     // Run required and custom validators without mutating visible error state yet.
-    const validateFieldInternal = useCallback(
-        (name: string, val?: unknown): ValidationResult => {
-            const reg = fieldsRef.current.get(name)
-            if (!reg) return {valid: true}
+    const validateFieldInternal = useCallback((name: string, val?: unknown): ValidationResult => {
+        const reg = fieldsRef.current.get(name)
+        if (!reg) return {valid: true}
 
-            const fieldValue = val !== undefined ? val : values[name]
-            const strValue = fieldValue != null ? String(fieldValue) : ''
+        const fieldValue = val !== undefined ? val : valuesRef.current[name]
+        const strValue = fieldValue != null ? String(fieldValue) : ''
 
-            // Required check
-            if (reg.required) {
-                const reqResult = validateRequired(strValue)
-                if (!reqResult.valid) return reqResult
+        // Required check
+        if (reg.required) {
+            const reqResult = validateRequired(strValue)
+            if (!reqResult.valid) return reqResult
+        }
+
+        // Custom validators
+        if (reg.validate) {
+            for (const validator of reg.validate) {
+                const result = validator(strValue)
+                if (!result.valid) return result
             }
+        }
 
-            // Custom validators
-            if (reg.validate) {
-                for (const validator of reg.validate) {
-                    const result = validator(strValue)
-                    if (!result.valid) return result
-                }
-            }
-
-            return {valid: true}
-        },
-        [values]
-    )
+        return {valid: true}
+    }, [])
 
     // Persist the latest validation result for a single field.
     const validateField = useCallback(
-        (name: string): ValidationResult => {
-            const result = validateFieldInternal(name)
+        (name: string, val?: unknown): ValidationResult => {
+            const result = validateFieldInternal(name, val)
             setErrors((prev) => {
                 if (result.valid) {
                     const next = {...prev}
@@ -105,15 +104,13 @@ export function MForm({
     // Update field values and trigger onChange or validation according to mode.
     const setFieldValue = useCallback(
         (name: string, val: unknown) => {
-            setValues((prev) => {
-                const next = {...prev, [name]: val}
-                onChange?.(next)
-                return next
-            })
+            const next = {...valuesRef.current, [name]: val}
+            valuesRef.current = next
+            setValues(next)
+            onChange?.(next)
 
             if (validationMode === 'onChange' && touched[name]) {
-                // Defer validation to next tick so values are updated
-                setTimeout(() => validateField(name), 0)
+                validateField(name, val)
             }
         },
         [onChange, validationMode, touched, validateField]
@@ -135,7 +132,8 @@ export function MForm({
     )
 
     const resetForm = useCallback(() => {
-        setValues({...initialValues})
+        valuesRef.current = {...initialValues}
+        setValues(valuesRef.current)
         setErrors({})
         setTouched({})
         setIsSubmitting(false)
@@ -158,12 +156,12 @@ export function MForm({
             }
 
             try {
-                await onSubmit?.(values, helpers)
+                await onSubmit?.(valuesRef.current, helpers)
             } finally {
                 setIsSubmitting(false)
             }
         },
-        [isSubmitting, validateAll, values, onSubmit, resetForm, setFieldError]
+        [isSubmitting, validateAll, onSubmit, resetForm, setFieldError]
     )
 
     // Memoize the public form context to limit downstream re-renders.

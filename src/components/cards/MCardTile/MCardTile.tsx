@@ -8,6 +8,7 @@ import {MButton} from '../../controls'
 import {MDropdownItem, MDropdownMenu} from '../../overlays'
 import {resolveMCardAction} from '../shared'
 import './MCardTile.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 // Tile card: whole surface acts as a link/button, media can fill the card with text overlay.
 // Media can be an image URL, a video URL, an MIllustration element, or a live camera stream.
@@ -37,6 +38,7 @@ export function MCardTile({
     className,
     ...rest
 }: MCardTileProps) {
+    const texts = useMCommonTexts()
     const videoRef = useRef<HTMLVideoElement>(null)
 
     useEffect(() => {
@@ -184,7 +186,7 @@ export function MCardTile({
                                     variant="ghost"
                                     iconOnly
                                     shape="circle"
-                                    aria-label="More options"
+                                    aria-label={texts.moreOptions}
                                     className="tile-overlay-btn"
                                 >
                                     <MEllipsisVerticalIcon />

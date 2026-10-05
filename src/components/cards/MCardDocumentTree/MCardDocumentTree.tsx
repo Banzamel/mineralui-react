@@ -9,6 +9,7 @@ import {MHeading, MText} from '../../typography'
 import {MEllipsisVerticalIcon} from '../../../icons'
 import {tintCardChildren} from '../shared'
 import type {MTreeNode} from '../../data/MTreeView'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 export function MCardDocumentTree({
     title = 'Documents',
@@ -29,6 +30,7 @@ export function MCardDocumentTree({
     primaryAction,
     ...rest
 }: MCardDocumentTreeProps) {
+    const texts = useMCommonTexts()
     const mapNode = (node: MTreeNode): MTreeNode => {
         return {
             ...node,
@@ -92,7 +94,7 @@ export function MCardDocumentTree({
                                                     color={color}
                                                     iconOnly
                                                     shape={'circle'}
-                                                    aria-label={'Open document actions'}
+                                                    aria-label={texts.documentActions}
                                                 >
                                                     <MEllipsisVerticalIcon />
                                                 </MButton>

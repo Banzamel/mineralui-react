@@ -173,3 +173,11 @@
         background: transparent;
     }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .tabs .tabs-panel {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+        animation-iteration-count: 1;
+    }
+}

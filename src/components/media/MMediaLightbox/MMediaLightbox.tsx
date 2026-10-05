@@ -5,7 +5,9 @@ import {MBadge} from '../../feedback'
 import {MPortal} from '../../primitives'
 import {MCloseIcon, MChevronLeftIcon, MChevronRightIcon} from '../../../icons'
 import {cn} from '../../../utils/cn'
+import {useModalLayer} from '../../../utils/useModalLayer'
 import './MMediaLightbox.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 export interface MMediaLightboxItem {
     src: string
@@ -22,10 +24,14 @@ interface MMediaLightboxProps {
 }
 
 export function MMediaLightbox({open, items, activeIndex, onClose, onActiveIndexChange}: MMediaLightboxProps) {
+    const texts = useMCommonTexts()
     const currentItem = items[activeIndex]
     const frameRef = useRef<HTMLDivElement | null>(null)
+    const backdropRef = useRef<HTMLDivElement | null>(null)
     const canGoPrev = activeIndex > 0
     const canGoNext = activeIndex < items.length - 1
+
+    useModalLayer({active: open && !!currentItem, containerRef: backdropRef, onEscape: onClose})
 
     useEffect(() => {
         if (!open) {
@@ -33,11 +39,6 @@ export function MMediaLightbox({open, items, activeIndex, onClose, onActiveIndex
         }
 
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                onClose()
-                return
-            }
-
             if (event.key === 'ArrowLeft' && canGoPrev) {
                 onActiveIndexChange(activeIndex - 1)
             }
@@ -76,17 +77,21 @@ export function MMediaLightbox({open, items, activeIndex, onClose, onActiveIndex
         }
     }
 
-    const previewLabel = currentItem.alt || currentItem.caption || 'Image preview'
+    const previewLabel = currentItem.alt || currentItem.caption || texts.imagePreview
 
     return (
         <MPortal>
-            <div className={cn('mineral-backdrop', 'media-lightbox-backdrop')} onMouseDown={handleBackdropMouseDown}>
+            <div
+                ref={backdropRef}
+                className={cn('mineral-backdrop', 'media-lightbox-backdrop')}
+                onMouseDown={handleBackdropMouseDown}
+            >
                 <div className="media-lightbox-shell" role="dialog" aria-modal="true" aria-label={previewLabel}>
                     <div className="media-lightbox-stage">
                         <div ref={frameRef} className="media-lightbox-frame">
                             <div className="media-lightbox-topbar">
                                 <MBadge color="dark" size="md" rounded className="media-lightbox-counter">
-                                    {items.length > 1 ? `${activeIndex + 1} / ${items.length}` : 'Preview'}
+                                    {items.length > 1 ? `${activeIndex + 1} / ${items.length}` : texts.preview}
                                 </MBadge>
                                 <MButton
                                     type="button"
@@ -96,7 +101,7 @@ export function MMediaLightbox({open, items, activeIndex, onClose, onActiveIndex
                                     shape="circle"
                                     iconOnly
                                     className="media-lightbox-action"
-                                    aria-label="Close preview"
+                                    aria-label={texts.closePreview}
                                     onClick={onClose}
                                 >
                                     <MCloseIcon />
@@ -111,7 +116,7 @@ export function MMediaLightbox({open, items, activeIndex, onClose, onActiveIndex
                                 shape="circle"
                                 iconOnly
                                 className="media-lightbox-nav media-lightbox-nav-prev"
-                                aria-label="Previous image"
+                                aria-label={texts.previousImage}
                                 disabled={items.length <= 1 || !canGoPrev}
                                 onClick={() => canGoPrev && onActiveIndexChange(activeIndex - 1)}
                             >
@@ -128,7 +133,7 @@ export function MMediaLightbox({open, items, activeIndex, onClose, onActiveIndex
                                 shape="circle"
                                 iconOnly
                                 className="media-lightbox-nav media-lightbox-nav-next"
-                                aria-label="Next image"
+                                aria-label={texts.nextImage}
                                 disabled={items.length <= 1 || !canGoNext}
                                 onClick={() => canGoNext && onActiveIndexChange(activeIndex + 1)}
                             >

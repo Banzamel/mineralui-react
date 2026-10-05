@@ -1,9 +1,10 @@
-import {useEffect, useState, useCallback, useRef} from 'react'
+import {useEffect, useId, useState, useRef} from 'react'
 import type {MouseEvent} from 'react'
 import type {MModalProps} from './MModal.types'
 import {MCard, MCardBody, MCardFooter, MCardHeader} from '../../cards'
 import {MPortal} from '../../primitives'
 import {cn} from '../../../utils/cn'
+import {useModalLayer} from '../../../utils/useModalLayer'
 import './MModal.css'
 
 const EXIT_DURATION = 540
@@ -22,9 +23,12 @@ export function MModal({
     children,
     ...rest
 }: MModalProps) {
+    const titleId = useId()
     const [mounted, setMounted] = useState(false)
     const [closing, setClosing] = useState(false)
     const backdropRef = useRef<HTMLDivElement>(null)
+
+    useModalLayer({active: open && mounted, containerRef: backdropRef, onEscape: closeOnEscape ? onClose : undefined})
 
     // Open → mount immediately
     useEffect(() => {
@@ -45,17 +49,6 @@ export function MModal({
             return () => clearTimeout(timer)
         }
     }, [open, mounted])
-
-    useEffect(() => {
-        if (!open || !closeOnEscape) return
-
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') onClose()
-        }
-
-        document.addEventListener('keydown', handleKeyDown)
-        return () => document.removeEventListener('keydown', handleKeyDown)
-    }, [closeOnEscape, onClose, open])
 
     useEffect(() => {
         if (!mounted) return
@@ -87,13 +80,13 @@ export function MModal({
                         className={cn('modal', size, className)}
                         role={'dialog'}
                         aria-modal={'true'}
-                        aria-labelledby={title ? 'mineral-modal-title' : undefined}
+                        aria-labelledby={title ? titleId : undefined}
                         {...rest}
                     >
                         {(title || description) && (
                             <MCardHeader>
                                 {title && (
-                                    <div id={'mineral-modal-title'} className={'modal-title'}>
+                                    <div id={titleId} className={'modal-title'}>
                                         {title}
                                     </div>
                                 )}

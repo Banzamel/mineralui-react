@@ -75,3 +75,11 @@
 .rating.read-only .rating-star {
     cursor: default;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .rating-star:active:not(:disabled) {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+        animation-iteration-count: 1;
+    }
+}

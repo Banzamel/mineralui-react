@@ -16,6 +16,7 @@ import type {
     MSidebarMode,
 } from './MSidebar.types'
 import './MSidebar.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 const STORAGE_KEY = 'mineralui-sidebar'
 
@@ -55,6 +56,7 @@ export function MSidebar({
     style,
     children,
 }: MSidebarProps) {
+    const texts = useMCommonTexts()
     const resolvedCompactBreakpoint = Math.max(compactBreakpoint, mobileBreakpoint)
     const mobile = useMaxWidth(mobileBreakpoint)
     const compactViewport = useMaxWidth(resolvedCompactBreakpoint)
@@ -153,7 +155,7 @@ export function MSidebar({
                 <button
                     className={cn('sidebar-hamburger', side)}
                     onClick={() => setMobileOpen(true)}
-                    aria-label="Open menu"
+                    aria-label={texts.openMenu}
                 >
                     <span className="sidebar-hamburger-icon" aria-hidden="true">
                         <MMenuIcon />
@@ -223,11 +225,7 @@ export function MSidebarItem({
     // title attribute used in collapsed mode mirrors the same priority but is
     // limited to strings (browsers can't render ReactNodes).
     const tooltipContent = description ?? label
-    const titleAttr = typeof description === 'string'
-        ? description
-        : typeof label === 'string'
-            ? label
-            : undefined
+    const titleAttr = typeof description === 'string' ? description : typeof label === 'string' ? label : undefined
 
     const Tag = component ?? (href || to ? 'a' : 'button')
     const linkProps = component ? (to ? {to} : href ? {href} : {}) : href ? {href} : to ? {href: to} : {}

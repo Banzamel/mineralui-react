@@ -6,7 +6,9 @@ import {MButton} from '../../controls'
 import {MPortal} from '../../primitives'
 import {MCloseIcon} from '../../../icons'
 import {cn} from '../../../utils/cn'
+import {useModalLayer} from '../../../utils/useModalLayer'
 import './MSheet.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 const EXIT_DURATION = 540
 const CLOSE_DRAG_THRESHOLD = 72
@@ -32,6 +34,7 @@ export function MSheet({
     style,
     ...rest
 }: MSheetProps) {
+    const texts = useMCommonTexts()
     const titleId = useId()
     const [mounted, setMounted] = useState(false)
     const [closing, setClosing] = useState(false)
@@ -39,6 +42,9 @@ export function MSheet({
 
     const dragStateRef = useRef<{pointerId: number; startY: number} | null>(null)
     const dragOffsetRef = useRef(0)
+    const backdropRef = useRef<HTMLDivElement>(null)
+
+    useModalLayer({active: open && mounted, containerRef: backdropRef, onEscape: closeOnEscape ? onClose : undefined})
 
     useEffect(() => {
         if (open) {
@@ -70,17 +76,6 @@ export function MSheet({
             document.body.style.overflow = previousOverflow
         }
     }, [mounted])
-
-    useEffect(() => {
-        if (!open || !closeOnEscape) return
-
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') onClose()
-        }
-
-        document.addEventListener('keydown', handleKeyDown)
-        return () => document.removeEventListener('keydown', handleKeyDown)
-    }, [closeOnEscape, onClose, open])
 
     function handleBackdropClick(event: MouseEvent<HTMLDivElement>) {
         if (closeOnBackdrop && event.target === event.currentTarget) {
@@ -138,6 +133,7 @@ export function MSheet({
     return (
         <MPortal>
             <div
+                ref={backdropRef}
                 className={cn('mineral-backdrop', 'sheet-backdrop', closing && 'closing')}
                 onMouseDown={handleBackdropClick}
             >
@@ -161,7 +157,7 @@ export function MSheet({
                             onPointerMove={handleHandlePointerMove}
                             onPointerUp={(event) => finishDrag(event.pointerId)}
                             onPointerCancel={(event) => finishDrag(event.pointerId)}
-                            aria-label="Drag down to close"
+                            aria-label={texts.dragToClose}
                         >
                             <span className="sheet-handle" />
                         </button>
@@ -182,7 +178,7 @@ export function MSheet({
                                     iconOnly
                                     size="sm"
                                     onClick={onClose}
-                                    aria-label="Close"
+                                    aria-label={texts.close}
                                     className="sheet-close"
                                 >
                                     <MCloseIcon />

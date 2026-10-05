@@ -77,3 +77,14 @@
         transform: translateX(0);
     }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .tooltip.bubble.top,
+    .tooltip.bubble.bottom,
+    .tooltip.bubble.left,
+    .tooltip.bubble.right {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+        animation-iteration-count: 1;
+    }
+}

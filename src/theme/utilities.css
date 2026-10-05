@@ -871,6 +871,11 @@
     }
 }
 
+/* Overlays focus their dialog container on open; that focus is not a user target. */
+.mineral-backdrop [role='dialog'][tabindex='-1']:focus {
+    outline: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .mineral-backdrop,
     .mineral-backdrop.closing {

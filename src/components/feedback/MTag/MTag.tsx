@@ -4,6 +4,7 @@ import {cn} from '../../../utils/cn'
 import {MButton} from '../../controls'
 import {MCloseIcon} from '../../../icons'
 import './MTag.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 export function MTag({
     label,
@@ -18,6 +19,7 @@ export function MTag({
     className,
     ...rest
 }: MTagProps) {
+    const texts = useMCommonTexts()
     return (
         <span
             className={cn('m-tag', `color-${color}`, variant, size, rounded && 'rounded', className)}
@@ -37,7 +39,7 @@ export function MTag({
                         e.stopPropagation()
                         onClose?.()
                     }}
-                    aria-label="Remove"
+                    aria-label={texts.remove}
                 >
                     <MCloseIcon />
                 </MButton>

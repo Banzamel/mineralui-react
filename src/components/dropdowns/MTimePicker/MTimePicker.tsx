@@ -6,6 +6,7 @@ import {cn} from '../../../utils/cn'
 import {MClockIcon, MCloseIcon} from '../../../icons'
 import {formatTime, parseTime} from '../../../utils/dateUtils'
 import './MTimePicker.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 type ParsedTimeValue = {hours: number; minutes: number; seconds: number}
 type Meridiem = 'AM' | 'PM'
@@ -110,6 +111,7 @@ export function MTimePicker({
     className,
     style,
 }: MTimePickerProps) {
+    const texts = useMCommonTexts()
     const [open, setOpen] = useState(false)
     const [internalValue, setInternalValue] = useState(defaultValue ?? '')
     const triggerRef = useRef<HTMLDivElement>(null)
@@ -268,7 +270,7 @@ export function MTimePicker({
                         className="time clear clear-btn-base"
                         onClick={handleClear}
                         tabIndex={-1}
-                        aria-label="Clear time"
+                        aria-label={texts.clearTime}
                     >
                         <MCloseIcon />
                     </button>

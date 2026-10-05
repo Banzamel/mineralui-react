@@ -8,6 +8,7 @@ import {MButton, MCheckbox} from '../../controls'
 import {MSpinner} from '../../feedback'
 import {MCloseIcon} from '../../../icons'
 import './MInputGroup.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 // Detect structured addon configs while leaving raw React nodes untouched.
 function isAddonObject(slot: MInputGroupSlot): slot is MInputGroupAddon {
@@ -112,6 +113,7 @@ export const MInputGroup = forwardRef<HTMLInputElement, MInputGroupProps>(functi
     },
     ref
 ) {
+    const texts = useMCommonTexts()
     const [focused, setFocused] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
     const {effectClassName, effectLayer, handlePointerDown} = useInteractionEffect<HTMLDivElement>({
@@ -237,7 +239,7 @@ export const MInputGroup = forwardRef<HTMLInputElement, MInputGroupProps>(functi
                         onMouseDown={(event) => event.preventDefault()}
                         onClick={handleClear}
                         tabIndex={-1}
-                        aria-label="Clear input"
+                        aria-label={texts.clearInput}
                     >
                         <MCloseIcon />
                     </button>

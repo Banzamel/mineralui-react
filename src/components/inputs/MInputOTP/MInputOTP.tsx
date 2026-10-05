@@ -4,6 +4,7 @@ import type {MInputOTPProps} from './MInputOTP.types'
 import {cn} from '../../../utils/cn'
 import {MCloseIcon} from '../../../icons'
 import './MInputOTP.css'
+import {useMCommonTexts, formatMText} from '../../../i18n/frameworkTexts'
 
 export const MInputOTP = forwardRef<HTMLDivElement, MInputOTPProps>(function MInputOTP(
     {
@@ -24,6 +25,7 @@ export const MInputOTP = forwardRef<HTMLDivElement, MInputOTPProps>(function MIn
     },
     ref
 ) {
+    const texts = useMCommonTexts()
     const [internalValue, setInternalValue] = useState('')
     const currentValue = value !== undefined ? value : internalValue
     const inputsRef = useRef<(HTMLInputElement | null)[]>([])
@@ -124,7 +126,7 @@ export const MInputOTP = forwardRef<HTMLDivElement, MInputOTPProps>(function MIn
                             value={currentValue[i] || ''}
                             disabled={disabled}
                             className={cn('otp slot', currentValue[i] && 'filled')}
-                            aria-label={`Digit ${i + 1}`}
+                            aria-label={formatMText(texts.digitNumber, {index: i + 1})}
                             onChange={(e) => {
                                 const char = e.target.value.slice(-1)
                                 handleInput(i, char)
@@ -139,7 +141,7 @@ export const MInputOTP = forwardRef<HTMLDivElement, MInputOTPProps>(function MIn
                         type="button"
                         className="otp clear clear-btn-base"
                         onClick={handleClear}
-                        aria-label="Clear code"
+                        aria-label={texts.clearCode}
                     >
                         <MCloseIcon />
                     </button>

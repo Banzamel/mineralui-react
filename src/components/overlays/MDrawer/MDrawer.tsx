@@ -1,11 +1,13 @@
-import {Children, isValidElement, useEffect, useState, useRef} from 'react'
+import {Children, isValidElement, useEffect, useId, useState, useRef} from 'react'
 import type {MouseEvent, ReactElement, ReactNode} from 'react'
 import type {MDrawerProps, MDrawerSectionProps} from './MDrawer.types'
 import {MPortal} from '../../primitives'
 import {MButton} from '../../controls'
 import {MCloseIcon} from '../../../icons'
 import {cn} from '../../../utils/cn'
+import {useModalLayer} from '../../../utils/useModalLayer'
 import './MDrawer.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 const EXIT_DURATION = 600
 
@@ -50,9 +52,13 @@ export function MDrawer({
     children,
     ...rest
 }: MDrawerProps) {
+    const texts = useMCommonTexts()
     const [mounted, setMounted] = useState(false)
     const [closing, setClosing] = useState(false)
     const backdropRef = useRef<HTMLDivElement>(null)
+    const titleId = useId()
+
+    useModalLayer({active: open && mounted, containerRef: backdropRef, onEscape: closeOnEscape ? onClose : undefined})
 
     useEffect(() => {
         if (open) {
@@ -71,17 +77,6 @@ export function MDrawer({
             return () => clearTimeout(timer)
         }
     }, [open, mounted])
-
-    useEffect(() => {
-        if (!open || !closeOnEscape) return
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose()
-        }
-
-        document.addEventListener('keydown', handleKeyDown)
-        return () => document.removeEventListener('keydown', handleKeyDown)
-    }, [open, closeOnEscape, onClose])
 
     useEffect(() => {
         if (!mounted) return
@@ -152,20 +147,28 @@ export function MDrawer({
                 className={cn('mineral-backdrop', 'drawer-backdrop', !overlay && 'no-overlay', closing && 'closing')}
                 onMouseDown={handleBackdropClick}
             >
-                <div className={cn('drawer', side, size, className)} role="dialog" aria-modal="true" {...rest}>
+                <div
+                    className={cn('drawer', side, size, className)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby={header ? titleId : undefined}
+                    {...rest}
+                >
                     {header && (
                         <div
                             {...headerRest}
                             className={cn('drawer-header', headerBordered && 'bordered', headerClassName)}
                         >
-                            <div className="drawer-title">{header}</div>
+                            <div id={titleId} className="drawer-title">
+                                {header}
+                            </div>
                             <MButton
                                 variant="link"
                                 color="neutral"
                                 iconOnly
                                 size="sm"
                                 onClick={onClose}
-                                aria-label="Close"
+                                aria-label={texts.close}
                                 className="close"
                             >
                                 <MCloseIcon />

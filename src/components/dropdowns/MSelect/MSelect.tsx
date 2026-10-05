@@ -1,4 +1,4 @@
-import {useState, useRef, useCallback, useMemo} from 'react'
+import {useState, useRef, useCallback, useId, useMemo} from 'react'
 import type * as React from 'react'
 import type {MSelectProps, MSelectOption} from './MSelect.types'
 import {MPopover} from '../../primitives'
@@ -8,6 +8,7 @@ import {MCheckbox} from '../../controls'
 import {MSpinner, MTag} from '../../feedback'
 import {MChevronDownIcon, MCloseIcon} from '../../../icons'
 import './MSelect.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 // Render a selectable list with optional search, grouping and multi-select tags.
 export function MSelect({
@@ -40,6 +41,7 @@ export function MSelect({
     className,
     style,
 }: MSelectProps) {
+    const texts = useMCommonTexts()
     const [open, setOpen] = useState(false)
     const [internalValue, setInternalValue] = useState<string | string[]>(defaultValue ?? (multiple ? [] : ''))
     const [search, setSearch] = useState('')
@@ -111,6 +113,14 @@ export function MSelect({
         isOpen: open,
     })
 
+    // Screen readers follow the highlighted option through aria-activedescendant.
+    const baseId = useId()
+    const labelId = `${baseId}-label`
+    const listboxId = `${baseId}-listbox`
+    const optionId = (index: number) => `${baseId}-option-${index}`
+    const activeDescendant =
+        open && activeIndex >= 0 && activeIndex < flatFiltered.length ? optionId(activeIndex) : undefined
+
     // Open the popover and reset keyboard navigation when the trigger is used.
     const handleTriggerClick = useCallback(() => {
         if (disabled) return
@@ -153,6 +163,7 @@ export function MSelect({
         <div className={cn('select', color && `color-${color}`, fullWidth && 'full-width', className)} style={style}>
             {label && (
                 <label
+                    id={labelId}
                     htmlFor={id}
                     className={cn('field-label', open && 'focused', hasError && 'error', required && 'required')}
                 >
@@ -176,6 +187,9 @@ export function MSelect({
                 role="combobox"
                 aria-expanded={open}
                 aria-haspopup="listbox"
+                aria-controls={open ? listboxId : undefined}
+                aria-activedescendant={activeDescendant}
+                aria-labelledby={label ? labelId : undefined}
                 aria-invalid={hasError || undefined}
                 id={id}
             >
@@ -189,7 +203,7 @@ export function MSelect({
                         className="clear-btn clear-btn-base"
                         onClick={handleClear}
                         tabIndex={-1}
-                        aria-label="Clear selection"
+                        aria-label={texts.clearSelection}
                     >
                         <MCloseIcon />
                     </button>
@@ -233,6 +247,9 @@ export function MSelect({
                                     setActiveIndex(0)
                                 }}
                                 onKeyDown={onKeyDown as unknown as React.KeyboardEventHandler}
+                                aria-controls={listboxId}
+                                aria-activedescendant={activeDescendant}
+                                aria-autocomplete="list"
                                 autoFocus
                             />
                         </div>
@@ -241,7 +258,12 @@ export function MSelect({
                     {flatFiltered.length === 0 ? (
                         <div className="no-options">{noOptionsText}</div>
                     ) : (
-                        <div className="options-list" role="listbox">
+                        <div
+                            id={listboxId}
+                            className="options-list"
+                            role="listbox"
+                            aria-multiselectable={multiple || undefined}
+                        >
                             {[...groupedOptions.entries()].map(([group, opts]) => (
                                 <div key={group}>
                                     {group && <div className="group-header">{group}</div>}
@@ -252,6 +274,7 @@ export function MSelect({
                                         return (
                                             <div
                                                 key={opt.value}
+                                                id={optionId(flatIndex)}
                                                 className={cn(
                                                     'option',
                                                     isActive && 'active',

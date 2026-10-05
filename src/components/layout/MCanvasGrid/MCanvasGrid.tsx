@@ -8,6 +8,7 @@ import {MButton} from '../../controls/MButton'
 import {MButtonGroup} from '../../controls/MButtonGroup'
 import {ScaleToFit} from './ScaleToFit'
 import './MCanvasGrid.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 interface DragState {
     itemId: string
@@ -47,6 +48,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
     }: MCanvasGridProps<T>,
     ref: ForwardedRef<HTMLDivElement>
 ) {
+    const texts = useMCommonTexts()
     const innerRef = useRef<HTMLDivElement | null>(null)
     const [size, setSize] = useState({width: 0, height: 0})
     const [drag, setDrag] = useState<DragState | null>(null)
@@ -191,9 +193,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
     }
 
     const guidesOn =
-        guides === 'always' ||
-        (guides === 'on-edit' && interactive) ||
-        (guides === 'on-drag' && drag !== null)
+        guides === 'always' || (guides === 'on-edit' && interactive) || (guides === 'on-drag' && drag !== null)
 
     const heightStyle: CSSProperties | undefined =
         height !== undefined ? {height: typeof height === 'number' ? `${height}px` : height} : undefined
@@ -264,11 +264,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
                 }
 
                 return (
-                    <div
-                        key={item.id}
-                        className={cn('canvas-grid-item', isDragging && 'dragging')}
-                        style={itemStyle}
-                    >
+                    <div key={item.id} className={cn('canvas-grid-item', isDragging && 'dragging')} style={itemStyle}>
                         <div
                             className="canvas-grid-item-header"
                             onPointerDown={(e) => startDragFromHeader(e, item)}
@@ -281,7 +277,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
                                     <MButton
                                         color="primary"
                                         iconOnly
-                                        aria-label="Edit tile"
+                                        aria-label={texts.editTile}
                                         startIcon={<MEditIcon />}
                                         onPointerDown={(e) => e.stopPropagation()}
                                         onClick={(e) => {
@@ -294,7 +290,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
                                     <MButton
                                         color="primary"
                                         iconOnly
-                                        aria-label="Expand tile"
+                                        aria-label={texts.expandTile}
                                         startIcon={<MZoomInIcon />}
                                         onPointerDown={(e) => e.stopPropagation()}
                                         onClick={(e) => {
@@ -307,7 +303,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
                                     <MButton
                                         color="error"
                                         iconOnly
-                                        aria-label="Remove tile"
+                                        aria-label={texts.removeTile}
                                         startIcon={<MTrashIcon />}
                                         onPointerDown={(e) => e.stopPropagation()}
                                         onClick={(e) => {
@@ -333,7 +329,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
                                 size="sm"
                                 color="primary"
                                 iconOnly
-                                aria-label="Expand tile"
+                                aria-label={texts.expandTile}
                                 startIcon={<MZoomInIcon />}
                                 onClick={(e) => {
                                     e.stopPropagation()

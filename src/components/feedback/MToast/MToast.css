@@ -148,3 +148,12 @@ body:has(.footer) .toast.container.bottom-center {
         filter: blur(2px);
     }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .toast.item,
+    .toast.item.exit {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+        animation-iteration-count: 1;
+    }
+}

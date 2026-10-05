@@ -219,3 +219,12 @@
 .checkbox .field-error {
     margin-left: 28px;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .checkbox .box:has(.input:checked),
+    .checkbox .box:has(.input:indeterminate) {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+        animation-iteration-count: 1;
+    }
+}

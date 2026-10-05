@@ -455,3 +455,122 @@ export function useMWeekGridTexts(): MWeekGridTexts {
         [t]
     )
 }
+
+/** Shared accessible names and short labels used across components. */
+export interface MCommonTexts {
+    close: string
+    dismiss: string
+    remove: string
+    /** Placeholder: `{name}`. */
+    removeItem: string
+    clearInput: string
+    clearSelection: string
+    clearTime: string
+    clearFiles: string
+    clearCode: string
+    increment: string
+    decrement: string
+    increase: string
+    decrease: string
+    moreOptions: string
+    scrollToTop: string
+    openMenu: string
+    openCalendar: string
+    loading: string
+    preview: string
+    imagePreview: string
+    closePreview: string
+    /** Placeholder: `{name}`. */
+    previewItem: string
+    image: string
+    /** Placeholder: `{index}`. */
+    imageNumber: string
+    previousImage: string
+    nextImage: string
+    previousSlide: string
+    nextSlide: string
+    /** Placeholder: `{index}`. */
+    slideNumber: string
+    dragToClose: string
+    scrollLeft: string
+    scrollRight: string
+    editTile: string
+    expandTile: string
+    removeTile: string
+    expirationDate: string
+    postalCodeCountry: string
+    /** Placeholder: `{index}`. */
+    digitNumber: string
+    removeImage: string
+    emoji: string
+    attachImage: string
+    send: string
+    eventActions: string
+    documentActions: string
+    dayNavigator: string
+    previousDay: string
+    nextDay: string
+    timeline: string
+}
+
+/**
+ * Common texts. Resolution per key: MI18nProvider key `mineralui.common.<key>`
+ * → built-in English default.
+ */
+export function useMCommonTexts(): MCommonTexts {
+    const t = useTranslate()
+
+    return useMemo(
+        () => ({
+            close: t('mineralui.common.close', 'Close'),
+            dismiss: t('mineralui.common.dismiss', 'Dismiss'),
+            remove: t('mineralui.common.remove', 'Remove'),
+            removeItem: t('mineralui.common.removeItem', 'Remove {name}'),
+            clearInput: t('mineralui.common.clearInput', 'Clear input'),
+            clearSelection: t('mineralui.common.clearSelection', 'Clear selection'),
+            clearTime: t('mineralui.common.clearTime', 'Clear time'),
+            clearFiles: t('mineralui.common.clearFiles', 'Clear files'),
+            clearCode: t('mineralui.common.clearCode', 'Clear code'),
+            increment: t('mineralui.common.increment', 'Increment'),
+            decrement: t('mineralui.common.decrement', 'Decrement'),
+            increase: t('mineralui.common.increase', 'Increase'),
+            decrease: t('mineralui.common.decrease', 'Decrease'),
+            moreOptions: t('mineralui.common.moreOptions', 'More options'),
+            scrollToTop: t('mineralui.common.scrollToTop', 'Scroll to top'),
+            openMenu: t('mineralui.common.openMenu', 'Open menu'),
+            openCalendar: t('mineralui.common.openCalendar', 'Open calendar'),
+            loading: t('mineralui.common.loading', 'Loading'),
+            preview: t('mineralui.common.preview', 'Preview'),
+            imagePreview: t('mineralui.common.imagePreview', 'Image preview'),
+            closePreview: t('mineralui.common.closePreview', 'Close preview'),
+            previewItem: t('mineralui.common.previewItem', 'Preview {name}'),
+            image: t('mineralui.common.image', 'image'),
+            imageNumber: t('mineralui.common.imageNumber', 'Image {index}'),
+            previousImage: t('mineralui.common.previousImage', 'Previous image'),
+            nextImage: t('mineralui.common.nextImage', 'Next image'),
+            previousSlide: t('mineralui.common.previousSlide', 'Previous slide'),
+            nextSlide: t('mineralui.common.nextSlide', 'Next slide'),
+            slideNumber: t('mineralui.common.slideNumber', 'Slide {index}'),
+            dragToClose: t('mineralui.common.dragToClose', 'Drag down to close'),
+            scrollLeft: t('mineralui.common.scrollLeft', 'Scroll topbar left'),
+            scrollRight: t('mineralui.common.scrollRight', 'Scroll topbar right'),
+            editTile: t('mineralui.common.editTile', 'Edit tile'),
+            expandTile: t('mineralui.common.expandTile', 'Expand tile'),
+            removeTile: t('mineralui.common.removeTile', 'Remove tile'),
+            expirationDate: t('mineralui.common.expirationDate', 'Expiration date'),
+            postalCodeCountry: t('mineralui.common.postalCodeCountry', 'Postal code country'),
+            digitNumber: t('mineralui.common.digitNumber', 'Digit {index}'),
+            removeImage: t('mineralui.common.removeImage', 'Remove image'),
+            emoji: t('mineralui.common.emoji', 'Emoji'),
+            attachImage: t('mineralui.common.attachImage', 'Attach image'),
+            send: t('mineralui.common.send', 'Send'),
+            eventActions: t('mineralui.common.eventActions', 'Event actions'),
+            documentActions: t('mineralui.common.documentActions', 'Open document actions'),
+            dayNavigator: t('mineralui.common.dayNavigator', 'Day navigator'),
+            previousDay: t('mineralui.common.previousDay', 'Previous day'),
+            nextDay: t('mineralui.common.nextDay', 'Next day'),
+            timeline: t('mineralui.common.timeline', 'Timeline'),
+        }),
+        [t]
+    )
+}

@@ -270,3 +270,11 @@
 .button.pulsing {
     animation: pulse-soft 2s ease-in-out infinite;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .button.pulsing {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+        animation-iteration-count: 1;
+    }
+}

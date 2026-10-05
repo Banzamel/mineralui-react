@@ -5,6 +5,7 @@ import {MInput} from '../MInput'
 import {cn} from '../../../utils/cn'
 import {MChevronDownIcon, MChevronUpIcon} from '../../../icons'
 import './MInputNumber.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 // Keep numeric values inside optional min and max bounds.
 function clampValue(val: number, min?: number, max?: number): number {
@@ -40,6 +41,7 @@ export const MInputNumber = forwardRef<HTMLInputElement, MInputNumberProps>(func
     },
     ref
 ) {
+    const texts = useMCommonTexts()
     const [internalValue, setInternalValue] = useState(defaultValue?.toString() ?? '')
     const currentValue = value !== undefined ? value.toString() : internalValue
     const intervalRef = useRef<ReturnType<typeof setInterval>>(null)
@@ -146,7 +148,7 @@ export const MInputNumber = forwardRef<HTMLInputElement, MInputNumberProps>(func
                     onPointerLeave={stopHold}
                     onPointerCancel={stopHold}
                     tabIndex={-1}
-                    aria-label="Increment"
+                    aria-label={texts.increment}
                 >
                     <MChevronUpIcon />
                 </button>
@@ -161,7 +163,7 @@ export const MInputNumber = forwardRef<HTMLInputElement, MInputNumberProps>(func
                     onPointerLeave={stopHold}
                     onPointerCancel={stopHold}
                     tabIndex={-1}
-                    aria-label="Decrement"
+                    aria-label={texts.decrement}
                 >
                     <MChevronDownIcon />
                 </button>

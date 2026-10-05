@@ -37,6 +37,11 @@ export function registerPopover(registration: PopoverRegistration): () => void {
     }
 }
 
+/** True while any popover is open — modal layers leave Escape to it. */
+export function hasOpenPopovers(): boolean {
+    return registrations.length > 0
+}
+
 /** The registered popover whose element contains `entry`'s anchor, if any. */
 function parentIdOf(entry: PopoverRegistration): number | null {
     const anchor = entry.getAnchorEl()

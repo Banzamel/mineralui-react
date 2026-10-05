@@ -272,3 +272,11 @@
             0 0 0 10px color-mix(in srgb, var(--sb-focus) 40%, transparent 60%);
     }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .social-button-root.pulsing {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+        animation-iteration-count: 1;
+    }
+}

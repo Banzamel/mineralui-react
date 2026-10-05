@@ -5,7 +5,7 @@ import type {MDateFormat} from '../../inputs'
 import {MInput} from '../../inputs'
 import {MPopover} from '../../primitives'
 import {cn} from '../../../utils/cn'
-import {useMDatePickerTexts} from '../../../i18n/frameworkTexts'
+import {useMDatePickerTexts, useMCommonTexts} from '../../../i18n/frameworkTexts'
 import {useDocumentLocale} from '../../../utils/locale'
 import type {ValidationResult} from '../../../utils/validators'
 import {parseDateString, validateDate} from '../../../utils/validators'
@@ -336,6 +336,7 @@ export function MDatePicker({
     className,
     style,
 }: MDatePickerProps) {
+    const commonTexts = useMCommonTexts()
     const locale = useDocumentLocale(localeOverride)
     const texts = useMDatePickerTexts()
     const {inputFormat, separator} = useMemo(() => normalizeDatePickerFormat(format), [format])
@@ -973,7 +974,7 @@ export function MDatePicker({
                             className="date-picker-toggle"
                             onMouseDown={(event) => event.preventDefault()}
                             onClick={handleTogglePopover}
-                            aria-label="Open calendar"
+                            aria-label={commonTexts.openCalendar}
                             disabled={disabled || readOnly}
                         >
                             <MCalendarIcon />

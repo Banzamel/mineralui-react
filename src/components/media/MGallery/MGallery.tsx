@@ -5,6 +5,7 @@ import {useInteractionEffect} from '../../../utils/useInteractionEffect'
 import {MMediaLightbox} from '../MMediaLightbox/MMediaLightbox'
 import {usesHoverDim, usesHoverZoom} from '../mediaInteraction'
 import './MGallery.css'
+import {useMCommonTexts, formatMText} from '../../../i18n/frameworkTexts'
 
 // Render a responsive image grid gallery.
 export function MGallery({
@@ -65,6 +66,7 @@ function GalleryFigure({
     clickEffect: 'none' | 'ripple'
     onOpen: () => void
 }) {
+    const texts = useMCommonTexts()
     const {effectClassName, effectLayer, handlePointerDown} = useInteractionEffect<HTMLElement>({
         effect: clickEffect,
     })
@@ -83,7 +85,7 @@ function GalleryFigure({
                     )}
                     onClick={onOpen}
                     onPointerDown={handlePointerDown}
-                    aria-label={`Preview ${item.alt || 'image'}`}
+                    aria-label={formatMText(texts.previewItem, {name: item.alt || texts.image})}
                 >
                     <img
                         className="gallery-image"

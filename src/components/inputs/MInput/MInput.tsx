@@ -8,6 +8,7 @@ import {useGhostText} from '../../../utils/useGhostText'
 import {MSpinner} from '../../feedback'
 import {MCloseIcon} from '../../../icons'
 import './MInput.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 // Render the base text input used by all specialized input wrappers.
 export const MInput = forwardRef<HTMLInputElement, MInputProps>(function MInput(
@@ -57,6 +58,7 @@ export const MInput = forwardRef<HTMLInputElement, MInputProps>(function MInput(
     },
     ref
 ) {
+    const texts = useMCommonTexts()
     const [focused, setFocused] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
     const {effectClassName, effectLayer, handlePointerDown} = useInteractionEffect<HTMLDivElement>({
@@ -242,7 +244,7 @@ export const MInput = forwardRef<HTMLInputElement, MInputProps>(function MInput(
                         onMouseDown={(event) => event.preventDefault()}
                         onClick={handleClear}
                         tabIndex={-1}
-                        aria-label="Clear input"
+                        aria-label={texts.clearInput}
                     >
                         <MCloseIcon />
                     </button>

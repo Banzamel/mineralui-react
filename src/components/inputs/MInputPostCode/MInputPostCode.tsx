@@ -6,6 +6,7 @@ import {cn} from '../../../utils/cn'
 import {formatPostCode, getPostCodeRule, postCodeCountries, validatePostCode} from '../../../utils/postalCodes'
 import type {ValidationResult} from '../../../utils/validators'
 import './MInputPostCode.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 // Extend the grouped input with country-aware postal code masking and validation.
 export const MInputPostCode = forwardRef<HTMLInputElement, MInputPostCodeProps>(function MInputPostCode(
@@ -33,6 +34,7 @@ export const MInputPostCode = forwardRef<HTMLInputElement, MInputPostCodeProps>(
     },
     ref
 ) {
+    const texts = useMCommonTexts()
     const [internalCountry, setInternalCountry] = useState(defaultCountry.toUpperCase())
     const [internalValue, setInternalValue] = useState(() =>
         formatPostCode(defaultValue?.toString() ?? '', country ?? defaultCountry)
@@ -148,7 +150,7 @@ export const MInputPostCode = forwardRef<HTMLInputElement, MInputPostCodeProps>(
                             value={currentCountry}
                             onChange={handleCountryChange}
                             disabled={disabled}
-                            aria-label="Postal code country"
+                            aria-label={texts.postalCodeCountry}
                         >
                             {postCodeCountries.map((option) => (
                                 <option key={option.value} value={option.value}>

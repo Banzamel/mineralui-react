@@ -81,3 +81,11 @@
         background-position: 0 0;
     }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .progress-bar-fill.animated {
+        animation-duration: 0.01ms;
+        animation-delay: 0ms;
+        animation-iteration-count: 1;
+    }
+}

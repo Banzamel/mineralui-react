@@ -23,6 +23,7 @@ import {
     MUploadIcon,
 } from '../../../icons'
 import './MInputFile.css'
+import {useMCommonTexts, formatMText} from '../../../i18n/frameworkTexts'
 
 function formatSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`
@@ -94,6 +95,7 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
     },
     ref
 ) {
+    const texts = useMCommonTexts()
     const [dragging, setDragging] = useState(false)
     const [files, setFiles] = useState<File[]>([])
     const [fileError, setFileError] = useState('')
@@ -276,7 +278,7 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
                             type="button"
                             className="file clear clear-btn-base"
                             onClick={clearFiles}
-                            aria-label="Clear files"
+                            aria-label={texts.clearFiles}
                         >
                             <MCloseIcon aria-hidden="true" />
                         </button>
@@ -355,7 +357,7 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
                                     e.stopPropagation()
                                     removeFile(i)
                                 }}
-                                aria-label={`Remove ${file.name}`}
+                                aria-label={formatMText(texts.removeItem, {name: file.name})}
                             >
                                 <MCloseIcon aria-hidden="true" />
                             </button>
