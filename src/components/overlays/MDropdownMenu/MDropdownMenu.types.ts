@@ -41,7 +41,9 @@ export interface MDropdownItemProps {
 }
 
 export interface MDropdownGroupProps {
-    label: string
+    /** Visible group heading; it also names the `role="group"` for assistive technology. */
+    label: ReactNode
+    className?: string
     children: ReactNode
 }
 

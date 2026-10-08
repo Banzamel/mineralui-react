@@ -43,6 +43,8 @@ export const MIcon = forwardRef<SVGSVGElement, MIconProps>(function MIcon(
 ) {
     const iconSize = Object.prototype.hasOwnProperty.call(sizeMap, size) ? sizeMap[size as keyof typeof sizeMap] : size
     const iconColor = colorMap[color]
+    // A titled / labelled icon is exposed as one image with a name; a decorative one is hidden.
+    const labelled = Boolean(title || rest['aria-label'] || rest['aria-labelledby'])
 
     return (
         <svg
@@ -55,7 +57,9 @@ export const MIcon = forwardRef<SVGSVGElement, MIconProps>(function MIcon(
             strokeWidth={strokeWidth}
             strokeLinecap={strokeLinecap}
             strokeLinejoin={strokeLinejoin}
-            aria-hidden={title ? undefined : true}
+            role={labelled ? 'img' : undefined}
+            aria-label={title || undefined}
+            aria-hidden={labelled ? undefined : true}
             focusable="false"
             style={{
                 display: 'inline-block',

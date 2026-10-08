@@ -1,9 +1,28 @@
 import {useState, useEffect, useRef, useCallback} from 'react'
+import type {FocusEvent as ReactFocusEvent, KeyboardEvent as ReactKeyboardEvent} from 'react'
 import {MPortal} from '../MPortal'
 import {cn} from '../../../utils/cn'
-import {isInsideDescendantPopover, nextPopoverId, registerPopover} from './popoverStack'
+import {getFocusable, getTabbable} from '../../../utils/useModalLayer'
+import {isInsideDescendantPopover, isTopPopover, nextPopoverId, registerPopover} from './popoverStack'
 import type {MPopoverProps} from './MPopover.types'
 import './MPopover.css'
+
+// Focus the anchor itself when it is focusable, otherwise the first focusable element inside it.
+function focusAnchor(anchor: HTMLElement | null): boolean {
+    if (!anchor || !anchor.isConnected) return false
+    const target =
+        anchor.tabIndex >= 0 && !anchor.hasAttribute('disabled')
+            ? anchor
+            : (getTabbable(anchor)[0] ?? getFocusable(anchor)[0] ?? null)
+    if (!target) return false
+    target.focus({preventScroll: true})
+    return target.ownerDocument.activeElement === target
+}
+
+function focusIsLost(): boolean {
+    const active = document.activeElement
+    return !active || active === document.body || !active.isConnected
+}
 
 // Position floating content relative to an anchor with viewport-aware flipping.
 export function MPopover({
@@ -17,12 +36,34 @@ export function MPopover({
     children,
     className,
     style,
+    role = 'listbox',
+    'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledBy,
+    'aria-describedby': ariaDescribedBy,
+    id,
+    initialFocus,
+    restoreFocus = true,
+    closeOnTabOut = false,
 }: MPopoverProps) {
     const popoverRef = useRef<HTMLDivElement>(null)
+    // Focus bookkeeping for returning focus to the anchor (APG: focus goes back to the invoker).
+    const focusInsideRef = useRef(false)
+    const pointerCloseRef = useRef(false)
+    const wasOpenRef = useRef(false)
+    const initialFocusDoneRef = useRef(false)
+    const restoreFocusRef = useRef(restoreFocus)
+    useEffect(() => {
+        restoreFocusRef.current = restoreFocus
+    }, [restoreFocus])
     const popoverIdRef = useRef<number>(null)
     if (popoverIdRef.current === null) popoverIdRef.current = nextPopoverId()
     const popoverId = popoverIdRef.current
-    const [position, setPosition] = useState<{top: number; left: number; width?: number} | null>(null)
+    const [position, setPosition] = useState<{
+        top: number
+        left: number
+        width?: number
+        maxHeight?: number
+    } | null>(null)
     const [flipped, setFlipped] = useState(false)
     const [layerZ, setLayerZ] = useState<number | string | null>(null)
 
@@ -60,7 +101,13 @@ export function MPopover({
         // Layout size, not getBoundingClientRect: the open animation scales the popover, and
         // measuring mid-animation under-reports its height by ~5 % (enough to overflow the
         // viewport after a flip / shift).
-        const popover = {width: popoverRef.current.offsetWidth, height: popoverRef.current.offsetHeight}
+        // scrollHeight (plus borders) keeps the NATURAL height measurable once a max-height
+        // below caps the box, so re-measuring never oscillates between capped and uncapped.
+        const element = popoverRef.current
+        const popover = {
+            width: element.offsetWidth,
+            height: Math.max(element.offsetHeight, element.scrollHeight + element.offsetHeight - element.clientHeight),
+        }
         const viewport = {
             width: window.innerWidth,
             height: window.innerHeight,
@@ -74,6 +121,7 @@ export function MPopover({
 
         let top: number
         let left: number
+        let maxHeight: number | undefined
 
         if (isHorizontal) {
             // Horizontal placement: position to the right or left of the anchor
@@ -103,6 +151,12 @@ export function MPopover({
             // slides up instead of running off-screen (the top clamp below wins when it is
             // taller than the viewport).
             top = Math.min(top, window.scrollY + viewport.height - popover.height - 8)
+
+            // Taller than the viewport: cap it and let it scroll instead of running off-screen.
+            if (popover.height > viewport.height - 16) {
+                maxHeight = Math.max(viewport.height - 16, 0)
+                top = window.scrollY + 8
+            }
         } else {
             // Vertical placement: position above or below the anchor
             const spaceBelow = viewport.height - anchor.bottom - offset
@@ -115,8 +169,18 @@ export function MPopover({
 
             const showOnTop = isTop ? !shouldFlip : shouldFlip
 
+            // Fits on neither side: the flip above already picked the side with more room,
+            // so cap the height to that side and scroll, instead of clamping `top` and
+            // covering the anchor (the field the user is typing into).
+            const room = showOnTop ? spaceAbove : spaceBelow
+            let height = popover.height
+            if (popover.height > room) {
+                maxHeight = Math.max(room - 8, 0)
+                height = maxHeight
+            }
+
             if (showOnTop) {
-                top = anchor.top - popover.height - offset + window.scrollY
+                top = anchor.top - height - offset + window.scrollY
             } else {
                 top = anchor.bottom + offset + window.scrollY
             }
@@ -136,6 +200,7 @@ export function MPopover({
             top,
             left,
             width: matchWidth ? anchor.width : undefined,
+            maxHeight,
         })
     }, [anchorRef, placement, offset, matchWidth])
 
@@ -173,15 +238,63 @@ export function MPopover({
         }
     }, [open, updateLayer, updatePosition])
 
-    // Close the popover with the standard Escape key interaction.
+    // Escape closes only the top layer: a nested popover (or a widget inside that already
+    // consumed the key with preventDefault) closes first, its parent on the next press.
     useEffect(() => {
         if (!open) return
         const handleKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose()
+            if (e.key !== 'Escape' || e.defaultPrevented) return
+            if (!isTopPopover(popoverId)) return
+            e.preventDefault()
+            onClose()
         }
         document.addEventListener('keydown', handleKey)
         return () => document.removeEventListener('keydown', handleKey)
-    }, [open, onClose])
+    }, [open, onClose, popoverId])
+
+    // Move focus into the layer once it is positioned (a `visibility: hidden` box cannot take focus).
+    useEffect(() => {
+        if (!open || !position || !initialFocus || initialFocusDoneRef.current) return
+        initialFocusDoneRef.current = true
+        const container = popoverRef.current
+        if (!container) return
+
+        let target: HTMLElement | null = null
+        if (initialFocus === 'first') target = getTabbable(container)[0] ?? null
+        else if (initialFocus !== 'container') target = initialFocus.current
+        if (!target) {
+            if (!container.hasAttribute('tabindex')) container.setAttribute('tabindex', '-1')
+            target = container
+        }
+        target.focus({preventScroll: true})
+    }, [open, position, initialFocus])
+
+    // Return focus to the anchor when the layer closes while it held focus, unless the
+    // user dismissed it by pressing somewhere else (that click owns focus now).
+    useEffect(() => {
+        if (open) {
+            wasOpenRef.current = true
+            pointerCloseRef.current = false
+            initialFocusDoneRef.current = false
+            return
+        }
+        if (!wasOpenRef.current) return
+        wasOpenRef.current = false
+        const hadFocus = focusInsideRef.current
+        focusInsideRef.current = false
+        if (!restoreFocusRef.current || !hadFocus || pointerCloseRef.current || !focusIsLost()) return
+        focusAnchor(anchorRef.current)
+    }, [open, anchorRef])
+
+    // Same when the whole component unmounts while open.
+    useEffect(
+        () => () => {
+            if (!wasOpenRef.current || !focusInsideRef.current || !restoreFocusRef.current) return
+            if (pointerCloseRef.current || !focusIsLost()) return
+            focusAnchor(anchorRef.current)
+        },
+        [anchorRef]
+    )
 
     // Publish this instance while it is open so nested popovers can be related
     // back to it — see popoverStack.ts for why the DOM alone cannot answer this.
@@ -212,11 +325,41 @@ export function MPopover({
                 return
             }
 
+            pointerCloseRef.current = true
             onClose()
         }
         document.addEventListener('mousedown', handleClick)
         return () => document.removeEventListener('mousedown', handleClick)
     }, [open, onClose, anchorRef, popoverId])
+
+    const handleFocus = (e: ReactFocusEvent<HTMLDivElement>) => {
+        if (popoverRef.current?.contains(e.target as Node)) focusInsideRef.current = true
+    }
+
+    const handleBlur = (e: ReactFocusEvent<HTMLDivElement>) => {
+        const next = e.relatedTarget as Node | null
+        if (next && !popoverRef.current?.contains(next)) focusInsideRef.current = false
+    }
+
+    // Optional Tab-out: leaving the layer with Tab closes it and continues from the anchor.
+    const handleKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+        if (!closeOnTabOut || e.key !== 'Tab' || e.defaultPrevented) return
+        const container = popoverRef.current
+        if (!container || !container.contains(e.target as Node)) return
+
+        const focusable = getTabbable(container)
+        const active = document.activeElement
+        const leaving =
+            focusable.length === 0 ||
+            (e.shiftKey ? active === focusable[0] || active === container : active === focusable[focusable.length - 1])
+        if (!leaving) return
+
+        focusInsideRef.current = false
+        // Forward Tab: focus the anchor and let the browser move on from there.
+        // Shift+Tab: land on the anchor itself.
+        if (focusAnchor(anchorRef.current) && e.shiftKey) e.preventDefault()
+        onClose()
+    }
 
     if (!open) return null
 
@@ -230,11 +373,21 @@ export function MPopover({
                     top: position?.top ?? 0,
                     left: position?.left ?? 0,
                     width: position?.width,
+                    ...(position?.maxHeight !== undefined
+                        ? {maxHeight: position.maxHeight, overflowY: 'auto' as const}
+                        : null),
                     zIndex: layerZ ?? undefined,
                     visibility: position ? 'visible' : 'hidden',
                     ...style,
                 }}
-                role="listbox"
+                id={id}
+                role={role ?? undefined}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                aria-label={ariaLabel}
+                aria-labelledby={ariaLabelledBy}
+                aria-describedby={ariaDescribedBy}
             >
                 {children}
             </div>

@@ -67,12 +67,22 @@ export const MTextarea = forwardRef<HTMLTextAreaElement, MTextareaProps>(functio
         if (!el || !autoResize) return
 
         el.style.height = 'auto'
-        const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 20
-        const minH = minRows ? minRows * lineHeight : 0
-        const maxH = maxRows ? maxRows * lineHeight : Infinity
-        const newHeight = Math.min(Math.max(el.scrollHeight, minH), maxH)
-        el.style.height = `${newHeight}px`
-        el.style.overflowY = el.scrollHeight > newHeight ? 'auto' : 'hidden'
+        const computed = getComputedStyle(el)
+        const lineHeight = parseFloat(computed.lineHeight) || 20
+        // Row limits apply to the text area only — padding (and border for
+        // border-box) sit on top so `maxRows` really shows that many lines.
+        const padding = (parseFloat(computed.paddingTop) || 0) + (parseFloat(computed.paddingBottom) || 0)
+        const border =
+            computed.boxSizing === 'border-box'
+                ? (parseFloat(computed.borderTopWidth) || 0) + (parseFloat(computed.borderBottomWidth) || 0)
+                : 0
+        const contentHeight = Math.max(el.scrollHeight - padding, 0)
+        const minContent = minRows ? minRows * lineHeight : 0
+        const maxContent = maxRows ? maxRows * lineHeight : Infinity
+        const nextContent = Math.min(Math.max(contentHeight, minContent), maxContent)
+        const extra = computed.boxSizing === 'border-box' ? padding + border : 0
+        el.style.height = `${nextContent + extra}px`
+        el.style.overflowY = contentHeight - nextContent > 1 ? 'auto' : 'hidden'
     }, [autoResize, minRows, maxRows, resolvedRef])
 
     useEffect(() => {

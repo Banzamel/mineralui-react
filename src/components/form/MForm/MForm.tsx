@@ -4,6 +4,7 @@ import type {MFormProps, MFieldRegistration, MFormContextValue, MFormHelpers} fr
 import {FormContext} from './FormContext'
 import {validateRequired} from '../../../utils/validators'
 import type {ValidationResult} from '../../../utils/validators'
+import {useMValidationMessage} from '../../../i18n/frameworkTexts'
 import './MForm.css'
 
 // Coordinate form values, validation state and submit helpers through context.
@@ -35,30 +36,35 @@ export function MForm({
         fieldsRef.current.delete(name)
     }, [])
 
+    const translateValidation = useMValidationMessage()
+
     // Run required and custom validators without mutating visible error state yet.
-    const validateFieldInternal = useCallback((name: string, val?: unknown): ValidationResult => {
-        const reg = fieldsRef.current.get(name)
-        if (!reg) return {valid: true}
+    const validateFieldInternal = useCallback(
+        (name: string, val?: unknown): ValidationResult => {
+            const reg = fieldsRef.current.get(name)
+            if (!reg) return {valid: true}
 
-        const fieldValue = val !== undefined ? val : valuesRef.current[name]
-        const strValue = fieldValue != null ? String(fieldValue) : ''
+            const fieldValue = val !== undefined ? val : valuesRef.current[name]
+            const strValue = fieldValue != null ? String(fieldValue) : ''
 
-        // Required check
-        if (reg.required) {
-            const reqResult = validateRequired(strValue)
-            if (!reqResult.valid) return reqResult
-        }
-
-        // Custom validators
-        if (reg.validate) {
-            for (const validator of reg.validate) {
-                const result = validator(strValue)
-                if (!result.valid) return result
+            // Required check
+            if (reg.required) {
+                const reqResult = translateValidation(validateRequired(strValue))
+                if (!reqResult.valid) return reqResult
             }
-        }
 
-        return {valid: true}
-    }, [])
+            // Custom validators
+            if (reg.validate) {
+                for (const validator of reg.validate) {
+                    const result = validator(strValue)
+                    if (!result.valid) return result
+                }
+            }
+
+            return {valid: true}
+        },
+        [translateValidation]
+    )
 
     // Persist the latest validation result for a single field.
     const validateField = useCallback(

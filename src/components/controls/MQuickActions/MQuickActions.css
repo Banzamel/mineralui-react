@@ -1,3 +1,20 @@
 .quick-actions.full-width {
     width: 100%;
 }
+
+/* Label with a secondary description line under it. */
+.quick-actions .quick-actions-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    text-align: left;
+}
+
+.quick-actions .quick-actions-description {
+    font-size: var(--mineral-font-size-xs);
+    font-weight: 400;
+    line-height: 1.35;
+    opacity: 0.75;
+    white-space: normal;
+}

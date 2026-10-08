@@ -53,8 +53,9 @@ export const MToggle = forwardRef<HTMLInputElement, MToggleProps>(function MTogg
                         }
                     }}
                     className="input"
+                    // The native checked state is exposed as the switch state; aria-checked on a
+                    // checkbox input is not allowed and was undefined when uncontrolled.
                     role="switch"
-                    aria-checked={checked}
                 />
                 <span className="knob" />
             </span>

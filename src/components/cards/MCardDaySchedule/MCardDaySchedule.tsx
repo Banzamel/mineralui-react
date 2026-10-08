@@ -5,9 +5,10 @@ import {MGrid, MInline, MStack, MTabs} from '../../layout'
 import {MHeading, MText} from '../../typography'
 import {tintCardChildren} from '../shared'
 import './MCardDaySchedule.css'
+import {useMCardTexts} from '../../../i18n/frameworkTexts'
 
 export function MCardDaySchedule({
-    title = 'Today',
+    title: titleProp,
     description,
     color = 'primary',
     workdayStart,
@@ -16,9 +17,13 @@ export function MCardDaySchedule({
     summary,
     tabs = [],
     footer,
-    emptyTimeline = <MText tone={'muted'}>No events scheduled for this day.</MText>,
+    emptyTimeline: emptyTimelineProp,
     ...rest
 }: MCardDayScheduleProps) {
+    const texts = useMCardTexts().daySchedule
+    const title = titleProp === undefined ? texts.title : titleProp
+    const emptyTimeline =
+        emptyTimelineProp === undefined ? <MText tone={'muted'}>{texts.emptyTimeline}</MText> : emptyTimelineProp
     const workdayLabel =
         workdayStart && workdayEnd ? `${workdayStart}-${workdayEnd}` : (workdayStart ?? workdayEnd ?? undefined)
 

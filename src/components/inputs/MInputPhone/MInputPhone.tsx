@@ -2,12 +2,14 @@ import {useState, useCallback, forwardRef} from 'react'
 import type * as React from 'react'
 import type {MInputPhoneProps} from './MInputPhone.types'
 import {MInput} from '../MInput'
+import {useFormatCaret} from '../MInput/useFormatCaret'
 import {cn} from '../../../utils/cn'
 import {validatePhone} from '../../../utils/validators'
 import {formatPhone, stripNonDigits} from '../../../utils/formatters'
 import type {ValidationResult} from '../../../utils/validators'
 import {MPhoneIcon} from '../../../icons'
 import './MInputPhone.css'
+import {useMValidationMessage} from '../../../i18n/frameworkTexts'
 
 const COUNTRY_PREFIXES: Record<string, string> = {
     PL: '+48',
@@ -85,9 +87,11 @@ export const MInputPhone = forwardRef<HTMLInputElement, MInputPhoneProps>(functi
     const [internalCountry, setInternalCountry] = useState((countryCode ?? defaultCountryCode).toUpperCase())
     const [internalValue, setInternalValue] = useState(defaultValue?.toString() ?? '')
     const [validation, setValidation] = useState<ValidationResult>({valid: true})
+    const translateValidation = useMValidationMessage()
     const [touched, setTouched] = useState(false)
 
     const currentCountry = (countryCode ?? internalCountry).toUpperCase()
+    const captureCaret = useFormatCaret()
     const currentValue = value !== undefined ? value.toString() : internalValue
 
     // Keep the emitted raw digits and the displayed formatted value aligned.
@@ -123,11 +127,13 @@ export const MInputPhone = forwardRef<HTMLInputElement, MInputPhoneProps>(functi
             if (looksLikePartialPrefix(raw)) {
                 const preserved = normalizePartialPrefix(raw)
                 if (value === undefined) setInternalValue(preserved)
-                onValueChange?.(stripNonDigits(preserved), preserved)
+                // A half-typed country prefix is not a phone number yet — the raw value stays empty.
+                onValueChange?.('', preserved)
                 onChange?.(e)
                 return
             }
 
+            captureCaret(e)
             const digits = stripNonDigits(raw)
             const formatted = formatOnChange ? formatPhone(digits, {countryCode: currentCountry}) : digits
 
@@ -137,7 +143,7 @@ export const MInputPhone = forwardRef<HTMLInputElement, MInputPhoneProps>(functi
             onValueChange?.(digits, formatted)
             onChange?.(e)
         },
-        [onChange, value, formatOnChange, currentCountry, countryCode, onValueChange, onCountryChange]
+        [captureCaret, onChange, value, formatOnChange, currentCountry, countryCode, onValueChange, onCountryChange]
     )
 
     // Validate the raw number on blur using country-specific length rules.
@@ -145,13 +151,13 @@ export const MInputPhone = forwardRef<HTMLInputElement, MInputPhoneProps>(functi
         (e: React.FocusEvent<HTMLInputElement>) => {
             setTouched(true)
             if (validateOnBlur && currentValue) {
-                const result = validatePhone(stripNonDigits(currentValue), currentCountry)
+                const result = translateValidation(validatePhone(stripNonDigits(currentValue), currentCountry))
                 setValidation(result)
                 onValidationChange?.(result)
             }
             onBlur?.(e)
         },
-        [onBlur, validateOnBlur, currentValue, currentCountry, onValidationChange]
+        [onBlur, validateOnBlur, currentValue, currentCountry, onValidationChange, translateValidation]
     )
 
     // Reset validation state alongside the value when the clear button fires.

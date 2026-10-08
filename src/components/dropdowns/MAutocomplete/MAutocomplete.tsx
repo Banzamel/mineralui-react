@@ -3,7 +3,7 @@ import type * as React from 'react'
 import type {MAutocompleteProps} from './MAutocomplete.types'
 import {MPopover} from '../../primitives'
 import {cn} from '../../../utils/cn'
-import {useMCommonTexts} from '../../../i18n/frameworkTexts'
+import {useMAutocompleteTexts, useMCommonTexts} from '../../../i18n/frameworkTexts'
 import {useKeyboardNav} from '../../../utils/useKeyboardNav'
 import {useDebouncedCallback} from '../../../utils/useDebounce'
 import {MSpinner, MTag} from '../../feedback'
@@ -41,9 +41,9 @@ export function MAutocomplete<T = string>({
     debounceMs = 0,
     onInputChange,
     loading = false,
-    loadingText = 'Loading...',
-    noOptionsText = 'No options',
-    placeholder = 'Type to search...',
+    loadingText: loadingTextProp,
+    noOptionsText: noOptionsTextProp,
+    placeholder: placeholderProp,
     disabled = false,
     name,
     id,
@@ -65,6 +65,10 @@ export function MAutocomplete<T = string>({
 }: MAutocompleteProps<T>) {
     const baseId = useId()
     const texts = useMCommonTexts()
+    const autocompleteTexts = useMAutocompleteTexts()
+    const loadingText = loadingTextProp ?? autocompleteTexts.loading
+    const noOptionsText = noOptionsTextProp ?? autocompleteTexts.noOptions
+    const placeholder = placeholderProp ?? autocompleteTexts.placeholder
     const [open, setOpen] = useState(false)
     const [inputValue, setInputValue] = useState('')
     const wrapperRef = useRef<HTMLDivElement>(null)
@@ -113,6 +117,8 @@ export function MAutocomplete<T = string>({
                 }
                 onChange?.(arr)
                 setInputValue('')
+                // The query was cleared; tell async consumers so they do not keep the old one.
+                if (inputValue) debouncedInputChange('')
                 inputRef.current?.focus()
             } else {
                 onChange?.(opt)
@@ -120,7 +126,7 @@ export function MAutocomplete<T = string>({
                 setOpen(false)
             }
         },
-        [filtered, multiple, selectedValues, getOptionValue, getOptionLabel, onChange]
+        [filtered, multiple, selectedValues, getOptionValue, getOptionLabel, onChange, inputValue, debouncedInputChange]
     )
 
     // Remove a selected tag by index in multiple mode.
@@ -128,7 +134,7 @@ export function MAutocomplete<T = string>({
         (index: number) => {
             const arr = [...selectedValues]
             arr.splice(index, 1)
-            onChange?.(multiple ? arr : (arr[0] ?? ('' as unknown as T)))
+            onChange?.(multiple ? arr : (arr[0] ?? null))
         },
         [selectedValues, onChange, multiple]
     )
@@ -163,14 +169,18 @@ export function MAutocomplete<T = string>({
         (e: React.MouseEvent) => {
             e.stopPropagation()
             setInputValue('')
-            onChange?.(multiple ? ([] as unknown as T) : ('' as unknown as T))
+            if (inputValue) debouncedInputChange('')
+            // An empty selection is `[]` (multiple) or `null` (single) — never `''` cast to T,
+            // which for object options produced a fake "selected" value.
+            onChange?.(multiple ? [] : null)
             inputRef.current?.focus()
         },
-        [multiple, onChange]
+        [multiple, onChange, inputValue, debouncedInputChange]
     )
 
     // Screen readers follow the highlighted option through aria-activedescendant.
     const listboxId = `${baseId}-listbox`
+    const labelId = `${baseId}-label`
     const optionId = (index: number) => `${baseId}-option-${index}`
     const activeDescendant =
         open && !loading && activeIndex >= 0 && activeIndex < filtered.length ? optionId(activeIndex) : undefined
@@ -182,6 +192,7 @@ export function MAutocomplete<T = string>({
         >
             {label && (
                 <label
+                    id={labelId}
                     htmlFor={id}
                     className={cn('field-label', open && 'focused', hasError && 'error', required && 'required')}
                 >
@@ -241,6 +252,7 @@ export function MAutocomplete<T = string>({
                     aria-haspopup="listbox"
                     aria-controls={open ? listboxId : undefined}
                     aria-activedescendant={activeDescendant}
+                    aria-labelledby={label ? labelId : undefined}
                     aria-invalid={hasError || undefined}
                     autoComplete="off"
                 />
@@ -269,6 +281,7 @@ export function MAutocomplete<T = string>({
                 onClose={() => setOpen(false)}
                 matchWidth
                 placement="bottom-start"
+                role={null}
             >
                 <div style={{maxHeight}} className="dropdown">
                     {loading ? (
@@ -276,7 +289,13 @@ export function MAutocomplete<T = string>({
                     ) : filtered.length === 0 ? (
                         <div className="no-options">{noOptionsText}</div>
                     ) : (
-                        <div id={listboxId} className="options-list" role="listbox">
+                        <div
+                            id={listboxId}
+                            className="options-list"
+                            role="listbox"
+                            aria-multiselectable={multiple || undefined}
+                            aria-labelledby={label ? labelId : undefined}
+                        >
                             {filtered.map((opt, i) => {
                                 const isActive = i === activeIndex
                                 const isSelected = selectedValues.some((v) => getOptionValue(v) === getOptionValue(opt))

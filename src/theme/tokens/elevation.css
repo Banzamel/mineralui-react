@@ -3,6 +3,11 @@
     --mineral-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
     --mineral-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.35);
     --mineral-shadow-focus: 0 0 0 3px rgba(var(--mineral-primary-rgb), 0.3);
-    --mineral-focus-ring: 0 0 0 3px rgba(var(--color-rgb), 0.22);
+    /* Focus ring. --color-rgb is contextual, so the .color-* utilities recompute the ring per element;
+       on :root it falls back to the primary colour so the token is never empty. */
+    --mineral-focus-ring-width: 3px;
+    --mineral-focus-ring-opacity: 0.22;
+    --mineral-focus-ring: 0 0 0 var(--mineral-focus-ring-width)
+        rgba(var(--color-rgb, var(--mineral-primary-rgb)), var(--mineral-focus-ring-opacity));
     --mineral-popover-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }

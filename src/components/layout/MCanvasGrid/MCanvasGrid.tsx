@@ -1,5 +1,12 @@
-import {forwardRef, useCallback, useEffect, useRef, useState} from 'react'
-import type {CSSProperties, ForwardedRef, PointerEvent as ReactPointerEvent, ReactElement, Ref} from 'react'
+import {forwardRef, useCallback, useEffect, useId, useRef, useState} from 'react'
+import type {
+    CSSProperties,
+    ForwardedRef,
+    KeyboardEvent as ReactKeyboardEvent,
+    PointerEvent as ReactPointerEvent,
+    ReactElement,
+    Ref,
+} from 'react'
 import type {MCanvasGridItem, MCanvasGridPosition, MCanvasGridProps} from './MCanvasGrid.types'
 import {cn} from '../../../utils/cn'
 import {MShellBreakpoints, useMaxWidth} from '../../../theme'
@@ -8,13 +15,19 @@ import {MButton} from '../../controls/MButton'
 import {MButtonGroup} from '../../controls/MButtonGroup'
 import {ScaleToFit} from './ScaleToFit'
 import './MCanvasGrid.css'
-import {useMCommonTexts} from '../../../i18n/frameworkTexts'
+import {formatMText, useMLayoutTexts} from '../../../i18n/frameworkTexts'
 
 interface DragState {
     itemId: string
     mode: 'drag' | 'resize'
     startClientX: number
     startClientY: number
+    original: MCanvasGridPosition
+}
+
+/** Keyboard move / resize in progress (the handle button is pressed). */
+interface KeyboardMoveState {
+    itemId: string
     original: MCanvasGridPosition
 }
 
@@ -29,6 +42,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
         snap = 4,
         items,
         renderItem,
+        getItemLabel,
         minItemSize,
         maxItemSize: _maxItemSize,
         editable = false,
@@ -48,13 +62,16 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
     }: MCanvasGridProps<T>,
     ref: ForwardedRef<HTMLDivElement>
 ) {
-    const texts = useMCommonTexts()
+    const texts = useMLayoutTexts()
+    const instructionsId = `${useId()}-canvas-grid-instructions`
     const innerRef = useRef<HTMLDivElement | null>(null)
     const [size, setSize] = useState({width: 0, height: 0})
     const [drag, setDrag] = useState<DragState | null>(null)
     const [preview, setPreview] = useState<MCanvasGridPosition | null>(null)
     const [touchOrder, setTouchOrder] = useState<Record<string, number>>({})
     const touchCounterRef = useRef(0)
+    const [keyMove, setKeyMove] = useState<KeyboardMoveState | null>(null)
+    const [announcement, setAnnouncement] = useState('')
 
     function bringToFront(itemId: string) {
         touchCounterRef.current += 1
@@ -83,8 +100,11 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
 
     const totalCols = columns * snap
     const totalRows = rows * snap
-    const effectiveCols = isCompact ? Math.max(1, Math.round(totalCols / 2)) : totalCols
-    const effectiveRows = isCompact ? Math.max(1, Math.round(totalRows / 2)) : totalRows
+    // Tiles always live on the full-resolution track grid: halving positions in the
+    // compact viewport lost precision (tiles overlapped) and made a drag move the tile
+    // by half the cursor distance. Compact mode only coarsens the guide overlay.
+    const effectiveCols = totalCols
+    const effectiveRows = totalRows
     const effectiveCells = isCompact ? Math.max(1, Math.round(columns / 2)) : columns
     const effectiveRowCells = isCompact ? Math.max(1, Math.round(rows / 2)) : rows
 
@@ -121,6 +141,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
         e.preventDefault()
         ;(e.currentTarget as Element).setPointerCapture(e.pointerId)
         bringToFront(item.id)
+        setKeyMove(null)
         setDrag({
             itemId: item.id,
             mode: 'resize',
@@ -138,6 +159,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
         e.preventDefault()
         ;(e.currentTarget as Element).setPointerCapture(e.pointerId)
         bringToFront(item.id)
+        setKeyMove(null)
         setDrag({
             itemId: item.id,
             mode: 'drag',
@@ -185,6 +207,33 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
         setPreview(null)
     }
 
+    // A cancelled gesture (pointercancel, Escape) restores the original position
+    // instead of committing the preview.
+    function cancelDrag(e?: ReactPointerEvent<HTMLDivElement>) {
+        if (!drag) return
+        if (e) {
+            try {
+                ;(e.currentTarget as Element).releasePointerCapture(e.pointerId)
+            } catch {
+                // pointer may have already been released
+            }
+        }
+        setDrag(null)
+        setPreview(null)
+    }
+
+    useEffect(() => {
+        if (!drag) return
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') return
+            event.preventDefault()
+            setDrag(null)
+            setPreview(null)
+        }
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [drag])
+
     function handleHeaderPointerUp(e: ReactPointerEvent<HTMLDivElement>) {
         if (drag) {
             suppressNextClick()
@@ -192,8 +241,94 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
         }
     }
 
+    function labelOf(item: T) {
+        const custom = getItemLabel?.(item)
+        if (custom) return custom
+        return formatMText(texts.canvasGridTile, {number: items.indexOf(item) + 1})
+    }
+
+    function describePosition(template: string, label: string, position: MCanvasGridPosition) {
+        return formatMText(template, {
+            label,
+            column: position.x + 1,
+            row: position.y + 1,
+            width: position.w,
+            height: position.h,
+        })
+    }
+
+    // The handle is a toggle: pressing it picks the tile up, pressing it again drops it there.
+    function toggleKeyboardMove(item: T) {
+        if (!interactive) return
+        const label = labelOf(item)
+        if (keyMove?.itemId === item.id) {
+            const final = preview ?? item.position
+            const original = keyMove.original
+            if (final.x !== original.x || final.y !== original.y) onItemMove?.(item.id, final)
+            if (final.w !== original.w || final.h !== original.h) onItemResize?.(item.id, final)
+            setKeyMove(null)
+            setPreview(null)
+            setAnnouncement(describePosition(texts.canvasGridDropped, label, final))
+            return
+        }
+        // A pointer gesture and a keyboard move never run at the same time.
+        setDrag(null)
+        bringToFront(item.id)
+        setKeyMove({itemId: item.id, original: {...item.position}})
+        setPreview({...item.position})
+        setAnnouncement(describePosition(texts.canvasGridGrabbed, label, item.position))
+    }
+
+    function cancelKeyboardMove(item: T, announce: boolean) {
+        if (keyMove?.itemId !== item.id) return
+        setKeyMove(null)
+        setPreview(null)
+        if (announce) setAnnouncement(formatMText(texts.canvasGridCancelled, {label: labelOf(item)}))
+    }
+
+    function handleHandleKeyDown(event: ReactKeyboardEvent<HTMLElement>, item: T) {
+        if (keyMove?.itemId !== item.id) return
+        if (event.key === 'Escape') {
+            event.preventDefault()
+            event.stopPropagation()
+            cancelKeyboardMove(item, true)
+            return
+        }
+        const deltas: Record<string, [number, number]> = {
+            ArrowLeft: [-1, 0],
+            ArrowRight: [1, 0],
+            ArrowUp: [0, -1],
+            ArrowDown: [0, 1],
+        }
+        const delta = deltas[event.key]
+        if (!delta || event.altKey || event.ctrlKey || event.metaKey) return
+        event.preventDefault()
+        const current = preview ?? item.position
+        let next: MCanvasGridPosition
+        if (event.shiftKey) {
+            if (!onItemResize) return
+            const min = getMin(item)
+            next = {
+                ...current,
+                w: clamp(current.w + delta[0], min.w, effectiveCols - current.x),
+                h: clamp(current.h + delta[1], min.h, effectiveRows - current.y),
+            }
+        } else {
+            if (!onItemMove) return
+            next = {
+                ...current,
+                x: clamp(current.x + delta[0], 0, effectiveCols - current.w),
+                y: clamp(current.y + delta[1], 0, effectiveRows - current.h),
+            }
+        }
+        setPreview(next)
+        setAnnouncement(describePosition(texts.canvasGridPosition, labelOf(item), next))
+    }
+
     const guidesOn =
-        guides === 'always' || (guides === 'on-edit' && interactive) || (guides === 'on-drag' && drag !== null)
+        guides === 'always' ||
+        (guides === 'on-edit' && interactive) ||
+        (guides === 'on-drag' && (drag !== null || keyMove !== null))
 
     const heightStyle: CSSProperties | undefined =
         height !== undefined ? {height: typeof height === 'number' ? `${height}px` : height} : undefined
@@ -247,37 +382,72 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
                 })}
             </div>
 
+            {interactive && (
+                <>
+                    <span id={instructionsId} className="canvas-grid-sr-only">
+                        {texts.canvasGridInstructions}
+                    </span>
+                    <div role="status" aria-live="polite" aria-atomic="true" className="canvas-grid-sr-only">
+                        {announcement}
+                    </div>
+                </>
+            )}
+
             {items.map((item) => {
                 const isDragging = drag?.itemId === item.id
-                const live = isDragging && preview ? preview : item.position
-                // half-precision math for compact viewport
-                const x = isCompact ? Math.round(live.x / 2) : live.x
-                const y = isCompact ? Math.round(live.y / 2) : live.y
-                const w = Math.max(1, isCompact ? Math.round(live.w / 2) : live.w)
-                const h = Math.max(1, isCompact ? Math.round(live.h / 2) : live.h)
+                const isKeyMoving = interactive && keyMove?.itemId === item.id
+                const label = labelOf(item)
+                const live = (isDragging || isKeyMoving) && preview ? preview : item.position
+                const x = live.x
+                const y = live.y
+                const w = Math.max(1, live.w)
+                const h = Math.max(1, live.h)
 
                 const baseZ = 1 + (touchOrder[item.id] ?? 0)
                 const itemStyle: CSSProperties = {
                     gridColumn: `${x + 1} / span ${w}`,
                     gridRow: `${y + 1} / span ${h}`,
-                    zIndex: isDragging ? baseZ + 100 : baseZ,
+                    zIndex: isDragging || isKeyMoving ? baseZ + 100 : baseZ,
                 }
+                const canKeyboardMove = interactive && (onItemMove !== undefined || onItemResize !== undefined)
 
                 return (
-                    <div key={item.id} className={cn('canvas-grid-item', isDragging && 'dragging')} style={itemStyle}>
+                    <div
+                        key={item.id}
+                        className={cn('canvas-grid-item', isDragging && 'dragging', isKeyMoving && 'keyboard-moving')}
+                        style={itemStyle}
+                    >
                         <div
                             className="canvas-grid-item-header"
                             onPointerDown={(e) => startDragFromHeader(e, item)}
                             onPointerMove={handlePointerMove}
                             onPointerUp={handleHeaderPointerUp}
-                            onPointerCancel={handlePointerUp}
+                            onPointerCancel={cancelDrag}
                         >
                             <MButtonGroup variant="ghost" size="xs">
+                                {canKeyboardMove && (
+                                    <MButton
+                                        className="canvas-grid-move-handle"
+                                        color="primary"
+                                        iconOnly
+                                        aria-label={formatMText(texts.canvasGridHandle, {label})}
+                                        aria-describedby={instructionsId}
+                                        aria-pressed={isKeyMoving}
+                                        startIcon={<MMoveIcon />}
+                                        onPointerDown={(e) => e.stopPropagation()}
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            toggleKeyboardMove(item)
+                                        }}
+                                        onKeyDown={(e) => handleHandleKeyDown(e, item)}
+                                        onBlur={() => cancelKeyboardMove(item, true)}
+                                    />
+                                )}
                                 {interactive && onItemEdit && (
                                     <MButton
                                         color="primary"
                                         iconOnly
-                                        aria-label={texts.editTile}
+                                        aria-label={formatMText(texts.canvasGridEdit, {label})}
                                         startIcon={<MEditIcon />}
                                         onPointerDown={(e) => e.stopPropagation()}
                                         onClick={(e) => {
@@ -290,7 +460,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
                                     <MButton
                                         color="primary"
                                         iconOnly
-                                        aria-label={texts.expandTile}
+                                        aria-label={formatMText(texts.canvasGridExpand, {label})}
                                         startIcon={<MZoomInIcon />}
                                         onPointerDown={(e) => e.stopPropagation()}
                                         onClick={(e) => {
@@ -303,7 +473,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
                                     <MButton
                                         color="error"
                                         iconOnly
-                                        aria-label={texts.removeTile}
+                                        aria-label={formatMText(texts.canvasGridRemove, {label})}
                                         startIcon={<MTrashIcon />}
                                         onPointerDown={(e) => e.stopPropagation()}
                                         onClick={(e) => {
@@ -329,7 +499,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
                                 size="sm"
                                 color="primary"
                                 iconOnly
-                                aria-label={texts.expandTile}
+                                aria-label={formatMText(texts.canvasGridExpand, {label})}
                                 startIcon={<MZoomInIcon />}
                                 onClick={(e) => {
                                     e.stopPropagation()
@@ -352,7 +522,7 @@ function MCanvasGridInner<T extends MCanvasGridItem>(
                                     if (drag) suppressNextClick()
                                     handlePointerUp(e)
                                 }}
-                                onPointerCancel={handlePointerUp}
+                                onPointerCancel={cancelDrag}
                             />
                         )}
                     </div>

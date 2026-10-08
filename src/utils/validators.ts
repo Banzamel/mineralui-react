@@ -1,3 +1,5 @@
+import {validationFailure} from './validationMessages'
+
 export interface ValidationResult {
     valid: boolean
     error?: string
@@ -6,35 +8,41 @@ export interface ValidationResult {
 export type ValidatorFn = (value: string) => ValidationResult
 
 const ok: ValidationResult = {valid: true}
-const fail = (error: string): ValidationResult => ({valid: false, error})
+// Failed result with an i18n key (mineralui.validation.<key>); the English template stays the default text.
+const fail = validationFailure
 
 // Ensure the field is not empty after trimming user input.
 export function validateRequired(value: string): ValidationResult {
-    return value.trim().length > 0 ? ok : fail('This field is required')
+    return value.trim().length > 0 ? ok : fail('required', 'This field is required')
 }
 
 // Build a validator that enforces a minimum string length.
 export function validateMinLength(min: number): ValidatorFn {
-    return (value: string) => (value.length >= min ? ok : fail(`Minimum ${min} characters`))
+    return (value: string) => (value.length >= min ? ok : fail('minLength', 'Minimum {min} characters', {min}))
 }
 
 // Build a validator that enforces a maximum string length.
 export function validateMaxLength(max: number): ValidatorFn {
-    return (value: string) => (value.length <= max ? ok : fail(`Maximum ${max} characters`))
+    return (value: string) => (value.length <= max ? ok : fail('maxLength', 'Maximum {max} characters', {max}))
 }
 
 // Build a validator around a custom regular expression.
 export function validatePattern(pattern: RegExp, message?: string): ValidatorFn {
-    return (value: string) => (pattern.test(value) ? ok : fail(message ?? 'Invalid format'))
+    return (value: string) =>
+        pattern.test(value)
+            ? ok
+            : message !== undefined
+              ? {valid: false, error: message}
+              : fail('pattern', 'Invalid format')
 }
 
 // Validate numeric input against optional min and max bounds.
 export function validateRange(min?: number, max?: number): ValidatorFn {
     return (value: string) => {
         const num = parseFloat(value)
-        if (isNaN(num)) return fail('Must be a number')
-        if (min !== undefined && num < min) return fail(`Minimum value is ${min}`)
-        if (max !== undefined && num > max) return fail(`Maximum value is ${max}`)
+        if (isNaN(num)) return fail('number', 'Must be a number')
+        if (min !== undefined && num < min) return fail('minValue', 'Minimum value is {min}', {min})
+        if (max !== undefined && num > max) return fail('maxValue', 'Maximum value is {max}', {max})
         return ok
     }
 }
@@ -47,7 +55,7 @@ const EMAIL_RE =
 // Validate email format while allowing empty optional fields.
 export function validateEmail(value: string): ValidationResult {
     if (!value) return ok
-    return EMAIL_RE.test(value) ? ok : fail('Invalid email address')
+    return EMAIL_RE.test(value) ? ok : fail('email', 'Invalid email address')
 }
 
 // === Phone ===
@@ -66,12 +74,12 @@ const PHONE_LENGTH: Record<string, number> = {
 export function validatePhone(value: string, countryCode?: string): ValidationResult {
     if (!value) return ok
     const digits = value.replace(/\D/g, '')
-    if (digits.length < 7) return fail('Phone number too short')
-    if (digits.length > 15) return fail('Phone number too long')
+    if (digits.length < 7) return fail('phoneTooShort', 'Phone number too short')
+    if (digits.length > 15) return fail('phoneTooLong', 'Phone number too long')
     if (countryCode) {
         const expected = PHONE_LENGTH[countryCode.toUpperCase()]
         if (expected && digits.length !== expected) {
-            return fail(`Phone number should have ${expected} digits`)
+            return fail('phoneDigits', 'Phone number should have {expected} digits', {expected})
         }
     }
     return ok
@@ -180,21 +188,24 @@ export function validateIBAN(value: string): ValidationResult {
     if (!value) return ok
     const iban = value.replace(/\s/g, '').toUpperCase()
 
-    if (iban.length < 2) return fail('IBAN too short')
+    if (iban.length < 2) return fail('ibanTooShort', 'IBAN too short')
 
     const countryCode = iban.slice(0, 2)
     const expectedLength = IBAN_LENGTHS[countryCode]
 
-    if (!expectedLength) return fail('Unknown IBAN country code')
+    if (!expectedLength) return fail('ibanCountry', 'Unknown IBAN country code')
     if (iban.length !== expectedLength) {
-        return fail(`IBAN for ${countryCode} should have ${expectedLength} characters`)
+        return fail('ibanLength', 'IBAN for {country} should have {length} characters', {
+            country: countryCode,
+            length: expectedLength,
+        })
     }
 
     // MOD-97 check: move first 4 chars to end, convert letters to numbers
     const rearranged = iban.slice(4) + iban.slice(0, 4)
     const numStr = rearranged.replace(/[A-Z]/g, (ch) => String(ch.charCodeAt(0) - 55))
 
-    return mod97(numStr) === 1 ? ok : fail('Invalid IBAN checksum')
+    return mod97(numStr) === 1 ? ok : fail('ibanChecksum', 'Invalid IBAN checksum')
 }
 
 // === NIP (Polish Tax ID) ===
@@ -205,15 +216,15 @@ const NIP_WEIGHTS = [6, 5, 7, 2, 3, 4, 5, 6, 7]
 export function validateNIP(value: string): ValidationResult {
     if (!value) return ok
     const digits = value.replace(/\D/g, '')
-    if (digits.length !== 10) return fail('NIP must have 10 digits')
+    if (digits.length !== 10) return fail('nipDigits', 'NIP must have 10 digits')
 
     let sum = 0
     for (let i = 0; i < 9; i++) {
         sum += parseInt(digits[i], 10) * NIP_WEIGHTS[i]
     }
     const checkDigit = sum % 11
-    if (checkDigit === 10) return fail('Invalid NIP')
-    return checkDigit === parseInt(digits[9], 10) ? ok : fail('Invalid NIP checksum')
+    if (checkDigit === 10) return fail('nip', 'Invalid NIP')
+    return checkDigit === parseInt(digits[9], 10) ? ok : fail('nipChecksum', 'Invalid NIP checksum')
 }
 
 // === PESEL ===
@@ -224,14 +235,14 @@ const PESEL_WEIGHTS = [1, 3, 7, 9, 1, 3, 7, 9, 1, 3]
 export function validatePESEL(value: string): ValidationResult {
     if (!value) return ok
     const digits = value.replace(/\D/g, '')
-    if (digits.length !== 11) return fail('PESEL must have 11 digits')
+    if (digits.length !== 11) return fail('peselDigits', 'PESEL must have 11 digits')
 
     let sum = 0
     for (let i = 0; i < 10; i++) {
         sum += parseInt(digits[i], 10) * PESEL_WEIGHTS[i]
     }
     const checkDigit = (10 - (sum % 10)) % 10
-    return checkDigit === parseInt(digits[10], 10) ? ok : fail('Invalid PESEL checksum')
+    return checkDigit === parseInt(digits[10], 10) ? ok : fail('peselChecksum', 'Invalid PESEL checksum')
 }
 
 // === REGON ===
@@ -245,7 +256,7 @@ export function validateREGON(value: string): ValidationResult {
     const digits = value.replace(/\D/g, '')
 
     if (digits.length !== 9 && digits.length !== 14) {
-        return fail('REGON must have 9 or 14 digits')
+        return fail('regonDigits', 'REGON must have 9 or 14 digits')
     }
 
     const weights = digits.length === 9 ? REGON9_WEIGHTS : REGON14_WEIGHTS
@@ -255,7 +266,7 @@ export function validateREGON(value: string): ValidationResult {
     }
     const checkDigit = sum % 11 === 10 ? 0 : sum % 11
     const lastDigit = parseInt(digits[digits.length - 1], 10)
-    return checkDigit === lastDigit ? ok : fail('Invalid REGON checksum')
+    return checkDigit === lastDigit ? ok : fail('regonChecksum', 'Invalid REGON checksum')
 }
 
 // === Compose validators ===
@@ -319,18 +330,18 @@ export function validateDate(value: string, options: DateValidationOptions = {})
     const {format = 'DD/MM/YYYY', minDate, maxDate} = options
 
     const digits = value.replace(/\D/g, '')
-    if (digits.length !== 8) return fail('Incomplete date')
+    if (digits.length !== 8) return fail('dateIncomplete', 'Incomplete date')
 
     const date = parseDateString(value, format)
-    if (!date) return fail('Invalid date')
+    if (!date) return fail('date', 'Invalid date')
 
     if (minDate) {
         const min = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate())
-        if (date < min) return fail('Date is too early')
+        if (date < min) return fail('dateTooEarly', 'Date is too early')
     }
     if (maxDate) {
         const max = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate())
-        if (date > max) return fail('Date is too far in the future')
+        if (date > max) return fail('dateTooLate', 'Date is too far in the future')
     }
 
     return ok
@@ -366,7 +377,9 @@ export function validateUrl(value: string, options: UrlValidationOptions = {}): 
 
     const hasScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(value)
     if (!hasScheme && requireProtocol) {
-        return fail(`URL must start with ${protocols.map((p) => `${p}://`).join(' or ')}`)
+        return fail('urlProtocolRequired', 'URL must start with {protocols}', {
+            protocols: protocols.map((p) => `${p}://`).join(' or '),
+        })
     }
 
     const candidate = hasScheme ? value : `https://${value}`
@@ -375,17 +388,17 @@ export function validateUrl(value: string, options: UrlValidationOptions = {}): 
     try {
         parsed = new URL(candidate)
     } catch {
-        return fail('Invalid URL')
+        return fail('url', 'Invalid URL')
     }
 
     // Reject the parsed URL when it has no host (e.g. `https://`) — those slip
     // past `new URL()` silently in some engines.
-    if (!parsed.hostname) return fail('Invalid URL')
+    if (!parsed.hostname) return fail('url', 'Invalid URL')
 
     if (hasScheme && protocols.length > 0) {
         const scheme = parsed.protocol.replace(/:$/, '')
         if (!protocols.includes(scheme)) {
-            return fail(`Protocol "${scheme}" is not allowed`)
+            return fail('urlProtocol', 'Protocol "{protocol}" is not allowed', {protocol: scheme})
         }
     }
 

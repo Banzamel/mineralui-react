@@ -113,3 +113,26 @@
         opacity: 0.8;
     }
 }
+
+/* Rotation stop / start control (APG carousel), first in the Tab order. */
+.carousel-rotation {
+    position: absolute !important;
+    top: var(--mineral-spacing-sm);
+    right: calc(36px / 2 + var(--mineral-spacing-sm) * 2);
+    z-index: 3;
+    backdrop-filter: blur(8px);
+}
+
+.carousel-dot:focus-visible {
+    outline: 2px solid rgba(var(--mineral-primary-rgb), 1);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .carousel-track,
+    .carousel.fade .carousel-slide,
+    .carousel-arrow,
+    .carousel-dot {
+        transition: none;
+    }
+}

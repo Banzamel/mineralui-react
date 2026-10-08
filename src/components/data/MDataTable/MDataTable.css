@@ -129,7 +129,8 @@
     -webkit-backdrop-filter: blur(1px);
 }
 
-.theme-light .data-table-loading {
+.theme-light .data-table-loading:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .data-table-loading {
     background: rgba(255, 255, 255, 0.6);
 }
 
@@ -241,19 +242,61 @@
     border-top: 1px solid var(--mineral-border);
 }
 
-.theme-light .data-table .scroll {
+.theme-light .data-table:not(:where(.theme-dark, .theme-dark *)) .scroll,
+:where(.theme-dark) .theme-light .data-table .scroll {
     background: rgba(255, 255, 255, 0.98);
 }
 
-.theme-light .data-table .head {
+.theme-light .data-table:not(:where(.theme-dark, .theme-dark *)) .head,
+:where(.theme-dark) .theme-light .data-table .head {
     background: rgba(241, 245, 249, 0.96);
     box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.08);
 }
 
-.theme-light .data-table .th.sortable:hover {
+.theme-light .data-table:not(:where(.theme-dark, .theme-dark *)) .th.sortable:hover,
+:where(.theme-dark) .theme-light .data-table .th.sortable:hover {
     background: rgba(226, 232, 240, 0.88);
 }
 
-.theme-light .data-table .root.striped tbody tr:nth-child(even):not(:hover) {
+.theme-light .data-table:not(:where(.theme-dark, .theme-dark *)) .root.striped tbody tr:nth-child(even):not(:hover),
+:where(.theme-dark) .theme-light .data-table .root.striped tbody tr:nth-child(even):not(:hover) {
     background: color-mix(in srgb, var(--mineral-surface), var(--mineral-text) 4%);
+}
+
+/* Sortable header: the button carries keyboard focus; the cell keeps the click target. */
+.data-table .th-sort-button {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    cursor: pointer;
+    border-radius: var(--mineral-radius-sm);
+}
+
+.data-table .th-sort-button:focus-visible {
+    outline: 2px solid rgba(var(--mineral-primary-rgb), 1);
+    outline-offset: 2px;
+}
+
+/* Selection checkboxes carry a visually hidden name, so drop the label gap. */
+.data-table .check-col .checkbox .label {
+    gap: 0;
+}
+
+.data-table-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
 }

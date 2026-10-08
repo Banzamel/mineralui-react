@@ -30,6 +30,23 @@
     border: 1px solid rgba(var(--mineral-neutral-rgb), 0.12);
 }
 
+.crop.viewport:focus-visible {
+    outline: 2px solid rgba(var(--mineral-primary-rgb), 0.8);
+    outline-offset: 2px;
+}
+
+.crop.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 .crop.viewport:active {
     cursor: grabbing;
 }

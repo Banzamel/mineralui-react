@@ -22,7 +22,8 @@ export interface GhostTextReturn<T = string> {
     reset: () => void
     /** Number of matching options. */
     matchCount: number
-    /** Handle keyboard events — Tab/Enter accept, arrows cycle, Escape resets. */
+    /** Handle keyboard events — Tab/Enter accept, arrows cycle (only while a hint is shown), Escape hides the hint
+     *  until the value changes. */
     onKeyDown: (e: React.KeyboardEvent) => boolean
 }
 
@@ -45,6 +46,8 @@ export function useGhostText<T = string>({
     filter,
 }: GhostTextOptions<T>): GhostTextReturn<T> {
     const [hintIndex, setHintIndex] = useState(0)
+    // Value for which the user dismissed the hint with Escape; typing anything else shows hints again.
+    const [dismissedFor, setDismissedFor] = useState<string | null>(null)
 
     const filtered = useMemo(() => {
         if (value.length < minChars) return []
@@ -55,7 +58,9 @@ export function useGhostText<T = string>({
     const current = filtered.length > 0 ? filtered[hintIndex % filtered.length] : null
     const fullLabel = current ? getLabel(current) : ''
     const hint =
-        fullLabel && fullLabel.toLowerCase().startsWith(value.toLowerCase()) ? fullLabel.slice(value.length) : ''
+        dismissedFor !== value && fullLabel && fullLabel.toLowerCase().startsWith(value.toLowerCase())
+            ? fullLabel.slice(value.length)
+            : ''
 
     const accept = useCallback(() => {
         if (!hint || !current) return {value, option: null}
@@ -70,7 +75,10 @@ export function useGhostText<T = string>({
         if (filtered.length > 1) setHintIndex((i) => (i - 1 + filtered.length) % filtered.length)
     }, [filtered.length])
 
-    const reset = useCallback(() => setHintIndex(0), [])
+    const reset = useCallback(() => {
+        setHintIndex(0)
+        setDismissedFor(null)
+    }, [])
 
     const onKeyDown = useCallback(
         (e: React.KeyboardEvent): boolean => {
@@ -78,19 +86,25 @@ export function useGhostText<T = string>({
                 e.preventDefault()
                 return true // signal: caller should accept
             }
-            if (e.key === 'ArrowDown' && filtered.length > 1) {
+            if (e.key === 'Escape' && hint) {
+                e.preventDefault()
+                setDismissedFor(value)
+                return false
+            }
+            // Arrows only cycle a visible hint; otherwise they keep moving the caret (e.g. in a textarea).
+            if (e.key === 'ArrowDown' && hint && filtered.length > 1) {
                 e.preventDefault()
                 next()
                 return false
             }
-            if (e.key === 'ArrowUp' && filtered.length > 1) {
+            if (e.key === 'ArrowUp' && hint && filtered.length > 1) {
                 e.preventDefault()
                 prev()
                 return false
             }
             return false
         },
-        [hint, filtered.length, next, prev]
+        [hint, value, filtered.length, next, prev]
     )
 
     return {hint, accept, next, prev, reset, matchCount: filtered.length, onKeyDown}

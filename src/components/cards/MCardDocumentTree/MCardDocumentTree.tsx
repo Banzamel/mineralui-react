@@ -9,10 +9,10 @@ import {MHeading, MText} from '../../typography'
 import {MEllipsisVerticalIcon} from '../../../icons'
 import {tintCardChildren} from '../shared'
 import type {MTreeNode} from '../../data/MTreeView'
-import {useMCommonTexts} from '../../../i18n/frameworkTexts'
+import {useMCardTexts, useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 export function MCardDocumentTree({
-    title = 'Documents',
+    title: titleProp,
     description,
     color = 'primary',
     items,
@@ -26,10 +26,14 @@ export function MCardDocumentTree({
     detailsItems = [],
     detailsActions = [],
     renderDetails,
-    emptyDetails = <MText tone={'muted'}>Select a document to inspect its details.</MText>,
+    emptyDetails: emptyDetailsProp,
     primaryAction,
     ...rest
 }: MCardDocumentTreeProps) {
+    const cardTexts = useMCardTexts().cardDocumentTree
+    const title = titleProp === undefined ? cardTexts.title : titleProp
+    const emptyDetails =
+        emptyDetailsProp === undefined ? <MText tone={'muted'}>{cardTexts.emptyDetails}</MText> : emptyDetailsProp
     const texts = useMCommonTexts()
     const mapNode = (node: MTreeNode): MTreeNode => {
         return {

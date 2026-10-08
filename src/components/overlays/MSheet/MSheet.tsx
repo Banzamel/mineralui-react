@@ -7,6 +7,7 @@ import {MPortal} from '../../primitives'
 import {MCloseIcon} from '../../../icons'
 import {cn} from '../../../utils/cn'
 import {useModalLayer} from '../../../utils/useModalLayer'
+import {lockBodyScroll} from '../scrollLock'
 import './MSheet.css'
 import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
@@ -68,13 +69,7 @@ export function MSheet({
 
     useEffect(() => {
         if (!mounted) return
-
-        const previousOverflow = document.body.style.overflow
-        document.body.style.overflow = 'hidden'
-
-        return () => {
-            document.body.style.overflow = previousOverflow
-        }
+        return lockBodyScroll()
     }, [mounted])
 
     function handleBackdropClick(event: MouseEvent<HTMLDivElement>) {
@@ -157,6 +152,12 @@ export function MSheet({
                             onPointerMove={handleHandlePointerMove}
                             onPointerUp={(event) => finishDrag(event.pointerId)}
                             onPointerCancel={(event) => finishDrag(event.pointerId)}
+                            // Enter / Space on the grabber produce a click with `detail === 0`;
+                            // keyboard users get the same "close" the drag gesture offers.
+                            // Pointer clicks (detail >= 1) stay drag-only.
+                            onClick={(event) => {
+                                if (event.detail === 0) onClose()
+                            }}
                             aria-label={texts.dragToClose}
                         >
                             <span className="sheet-handle" />

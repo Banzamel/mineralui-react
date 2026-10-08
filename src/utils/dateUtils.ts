@@ -23,18 +23,20 @@ export function stripTime(date: Date): Date {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
-// Shift a date by a number of whole months.
+// Shift a date by a number of whole months, clamping the day to the target month length
+// (31 Jan + 1 month = 28/29 Feb, not 3 Mar). The time of day is preserved.
 export function addMonths(date: Date, count: number): Date {
     const result = new Date(date)
+    const day = result.getDate()
+    result.setDate(1)
     result.setMonth(result.getMonth() + count)
+    result.setDate(Math.min(day, daysInMonth(result.getFullYear(), result.getMonth())))
     return result
 }
 
-// Shift a date by a number of whole years.
+// Shift a date by a number of whole years, clamping 29 Feb to 28 Feb in non-leap years.
 export function addYears(date: Date, count: number): Date {
-    const result = new Date(date)
-    result.setFullYear(result.getFullYear() + count)
-    return result
+    return addMonths(date, count * 12)
 }
 
 // Pad numeric date parts to two digits.

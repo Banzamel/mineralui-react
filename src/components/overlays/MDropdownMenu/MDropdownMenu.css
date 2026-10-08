@@ -13,6 +13,11 @@
     align-items: center;
 }
 
+.dropdown.menu.trigger[role='button']:focus-visible {
+    box-shadow: var(--mineral-focus-ring);
+    border-radius: var(--mineral-radius-sm);
+}
+
 .dropdown.menu.popover {
     min-width: 180px;
     max-height: 300px;
@@ -47,8 +52,13 @@
     outline: none;
 }
 
+.dropdown.menu.list:focus {
+    outline: none;
+}
+
 .dropdown.menu.item:hover,
-.dropdown.menu.item.active {
+.dropdown.menu.item.active,
+.dropdown.menu.item:focus-visible {
     background: var(--mineral-option-hover-bg);
 }
 

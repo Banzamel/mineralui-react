@@ -26,12 +26,18 @@ const FOCUSABLE = [
     '[tabindex]:not([tabindex="-1"])',
 ].join(',')
 
-function getFocusable(container: HTMLElement): HTMLElement[] {
+/** Focusable, visible descendants of `container` in DOM order (shared with MPopover). */
+export function getFocusable(container: HTMLElement): HTMLElement[] {
     return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
         (element) =>
             !element.closest('[inert]') &&
             (typeof element.checkVisibility === 'function' ? element.checkVisibility() : true)
     )
+}
+
+/** Like `getFocusable`, minus elements taken out of the Tab order (`tabindex="-1"`, e.g. roving items). */
+export function getTabbable(container: HTMLElement): HTMLElement[] {
+    return getFocusable(container).filter((element) => element.tabIndex >= 0)
 }
 
 export interface UseModalLayerOptions {

@@ -83,6 +83,19 @@
     outline-offset: 1px;
 }
 
+.mineral-week-grid__row {
+    display: contents;
+}
+
+.mineral-week-grid__cell--grid:focus {
+    outline: none;
+}
+
+.mineral-week-grid__cell--grid:focus-visible {
+    outline: 2px solid var(--mineral-week-grid-color, var(--mineral-warning));
+    outline-offset: 1px;
+}
+
 .mineral-week-grid__cell--tooltip {
     cursor: help;
 }

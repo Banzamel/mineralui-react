@@ -5,6 +5,7 @@ import {MInput} from '../MInput'
 import {validateUrl} from '../../../utils/validators'
 import type {ValidationResult} from '../../../utils/validators'
 import {MCheckIcon, MLinkIcon} from '../../../icons'
+import {useMValidationMessage} from '../../../i18n/frameworkTexts'
 
 const DEFAULT_PROTOCOLS = ['http', 'https']
 
@@ -34,18 +35,19 @@ export const MInputUrl = forwardRef<HTMLInputElement, MInputUrlProps>(function M
 ) {
     const [internalValue, setInternalValue] = useState(defaultValue?.toString() ?? '')
     const [validation, setValidation] = useState<ValidationResult>({valid: true})
+    const translateValidation = useMValidationMessage()
     const [touched, setTouched] = useState(false)
 
     const currentValue = value !== undefined ? value.toString() : internalValue
 
     const runValidation = useCallback(
         (val: string) => {
-            const result = validateUrl(val, {protocols, requireProtocol})
+            const result = translateValidation(validateUrl(val, {protocols, requireProtocol}))
             setValidation(result)
             onValidationChange?.(result)
             return result
         },
-        [protocols, requireProtocol, onValidationChange]
+        [protocols, requireProtocol, onValidationChange, translateValidation]
     )
 
     const handleChange = useCallback(

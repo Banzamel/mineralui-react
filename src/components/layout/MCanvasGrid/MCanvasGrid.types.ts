@@ -20,6 +20,11 @@ export interface MCanvasGridProps<T extends MCanvasGridItem> {
     snap?: number
     items: T[]
     renderItem: (item: T) => ReactNode
+    /**
+     * Human-readable tile name used in the tile buttons ("Edit Sales"), the keyboard move handle
+     * and the move / resize announcements. Defaults to "Tile {number}".
+     */
+    getItemLabel?: (item: T) => string
     minItemSize?: (item: T) => {w: number; h: number}
     maxItemSize?: (item: T) => {w: number; h: number}
     editable?: boolean

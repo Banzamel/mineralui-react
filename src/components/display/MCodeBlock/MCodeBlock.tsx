@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react'
 import type {MCodeBlockProps} from './MCodeBlock.types'
 import {MCard, MCardBody, MCardHeader} from '../../cards'
 import {MButton} from '../../controls'
@@ -9,6 +9,18 @@ import {MCopyIcon} from '../../../icons'
 import {cn} from '../../../utils/cn'
 import './MCodeBlock.css'
 import type {HLJSApi, LanguageFn} from 'highlight.js'
+import {useMCodeBlockTexts} from '../../../i18n/frameworkTexts'
+
+// Layout effect in the browser (no flash of the full code before typing starts), plain effect on the server.
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
+
+function prefersReducedMotion(): boolean {
+    return (
+        typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    )
+}
 
 const languageMap: Record<string, string> = {
     c: 'c',
@@ -86,8 +98,8 @@ export function MCodeBlock({
     showHeader = true,
     showLanguage = true,
     showCopyButton = true,
-    copyLabel = 'Copy',
-    copiedLabel = 'Copied',
+    copyLabel: copyLabelProp,
+    copiedLabel: copiedLabelProp,
     maxHeight,
     stretch = false,
     animated = false,
@@ -95,9 +107,14 @@ export function MCodeBlock({
     className,
     ...rest
 }: MCodeBlockProps) {
+    const texts = useMCodeBlockTexts()
+    const copyLabel = copyLabelProp ?? texts.copy
+    const copiedLabel = copiedLabelProp ?? texts.copied
     const normalizedLanguage = useMemo(() => resolveLanguage(language.trim().toLowerCase()), [language])
-    const [visibleLength, setVisibleLength] = useState(() => (animated ? 0 : code.length))
-    const renderedCode = animated ? code.slice(0, visibleLength) : code
+    // The server (and the first client render) always gets the full code; typing starts in the browser.
+    const [visibleLength, setVisibleLength] = useState(() => code.length)
+    const [typing, setTyping] = useState(false)
+    const renderedCode = typing ? code.slice(0, visibleLength) : code
     const [highlightedCode, setHighlightedCode] = useState(() => escapeHtml(renderedCode))
     const [copied, setCopied] = useState(false)
     const copyTimeoutRef = useRef<number | null>(null)
@@ -107,17 +124,23 @@ export function MCodeBlock({
     const hasHeader = showHeader && (Boolean(title) || showLanguage || showCopyButton)
     const lineCount = useMemo(() => Math.max(1, renderedCode.split('\n').length), [renderedCode])
 
-    useEffect(() => {
+    useIsomorphicLayoutEffect(() => {
         if (typingTimeoutRef.current !== null) {
             window.clearTimeout(typingTimeoutRef.current)
             typingTimeoutRef.current = null
         }
 
-        setVisibleLength(animated ? 0 : code.length)
+        // Reduced motion shows the finished code straight away.
+        const shouldType = animated && !prefersReducedMotion()
+        setTyping(shouldType)
+        setVisibleLength(shouldType ? 0 : code.length)
+        if (shouldType) {
+            setHighlightedCode('')
+        }
     }, [animated, code])
 
     useEffect(() => {
-        if (!animated || code.length === 0) {
+        if (!typing || code.length === 0) {
             return
         }
 
@@ -137,7 +160,7 @@ export function MCodeBlock({
                 typingTimeoutRef.current = null
             }
         }
-    }, [animated, code.length, visibleLength])
+    }, [typing, code.length, visibleLength])
 
     useEffect(() => {
         let active = true
@@ -183,12 +206,12 @@ export function MCodeBlock({
     }, [])
 
     useEffect(() => {
-        if (!animated || !scrollRef.current) {
+        if (!typing || !scrollRef.current) {
             return
         }
 
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }, [animated, visibleLength])
+    }, [typing, visibleLength])
 
     async function handleCopy() {
         if (!canCopy) {
@@ -248,15 +271,24 @@ export function MCodeBlock({
                                 {copied ? copiedLabel : copyLabel}
                             </MButton>
                         )}
+                        {showCopyButton && (
+                            <span className="code-block-status" role="status">
+                                {copied ? copiedLabel : ''}
+                            </span>
+                        )}
                     </MInline>
                 </MCardHeader>
             )}
 
             <MCardBody className="code-block-body">
+                {/* Scrollable region: focusable so keyboard users can scroll it (WCAG 2.1.1). */}
                 <div
                     ref={scrollRef}
                     className="code-block-scroll"
                     style={maxHeight ? {maxHeight, overflowY: 'auto'} : undefined}
+                    role="region"
+                    tabIndex={0}
+                    aria-label={typeof title === 'string' && title.trim() !== '' ? title : texts.label}
                 >
                     <pre
                         className={cn(

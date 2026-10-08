@@ -198,3 +198,12 @@
         width: 100%;
     }
 }
+
+/* Non-modal drawer: the transparent backdrop must not swallow clicks meant for the page. */
+.drawer-backdrop.no-overlay {
+    pointer-events: none;
+}
+
+.drawer-backdrop.no-overlay .drawer {
+    pointer-events: auto;
+}

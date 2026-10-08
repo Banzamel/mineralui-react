@@ -1,6 +1,18 @@
-import {createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode} from 'react'
+import {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useState,
+    type ReactNode,
+} from 'react'
 
 const STORAGE_KEY = 'mineralui-locale'
+
+// Set <html lang> before paint on the client; no-op during SSR.
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 type Dict = Record<string, unknown>
 
@@ -33,7 +45,12 @@ const I18nContext = createContext<MI18nContextValue | null>(null)
 export interface MI18nProviderProps<T extends Dict = Dict> {
     locales: Record<string, T>
     defaultLocale?: string
+    /** Read and write the persisted locale. Defaults to `true` for the outermost provider and `false`
+     *  for a nested one, so a local scope never overrides the user's global choice. */
     persist?: boolean
+    /** Mirror the active locale to `<html lang>`. Defaults to `true` for the outermost provider and
+     *  `false` for a nested one. */
+    setDocumentLang?: boolean
     children: ReactNode
 }
 
@@ -41,9 +58,13 @@ export interface MI18nProviderProps<T extends Dict = Dict> {
 export function MI18nProvider<T extends Dict = Dict>({
     locales,
     defaultLocale,
-    persist = true,
+    persist: persistProp,
+    setDocumentLang: setDocumentLangProp,
     children,
 }: MI18nProviderProps<T>) {
+    const isNested = useContext(I18nContext) !== null
+    const persist = persistProp ?? !isNested
+    const setDocumentLang = setDocumentLangProp ?? !isNested
     const keys = useMemo(() => Object.keys(locales), [locales])
     const fallback = defaultLocale ?? keys[0] ?? 'en'
 
@@ -75,9 +96,9 @@ export function MI18nProvider<T extends Dict = Dict>({
         setLocale(next)
     }, [keys, locale, setLocale])
 
-    useEffect(() => {
-        document.documentElement.lang = locale
-    }, [locale])
+    useIsomorphicLayoutEffect(() => {
+        if (setDocumentLang) document.documentElement.lang = locale
+    }, [locale, setDocumentLang])
 
     const dict = (locales[locale] ?? locales[fallback] ?? {}) as T
 

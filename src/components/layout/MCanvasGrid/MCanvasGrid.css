@@ -73,7 +73,8 @@
     z-index: 4;
 }
 
-.theme-light .canvas-grid-item-header {
+.theme-light .canvas-grid-item-header:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .canvas-grid-item-header {
     background: rgba(0, 0, 0, 0.04);
 }
 
@@ -243,6 +244,24 @@
 
 .canvas-grid.compact {
     --canvas-grid-cells: 12;
+}
+
+.canvas-grid-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Tile picked up with the keyboard move handle. */
+.canvas-grid-item.keyboard-moving {
+    outline: 2px solid rgb(var(--mineral-primary-rgb));
+    outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {

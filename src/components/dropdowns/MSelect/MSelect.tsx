@@ -4,11 +4,10 @@ import type {MSelectProps, MSelectOption} from './MSelect.types'
 import {MPopover} from '../../primitives'
 import {cn} from '../../../utils/cn'
 import {useKeyboardNav} from '../../../utils/useKeyboardNav'
-import {MCheckbox} from '../../controls'
 import {MSpinner, MTag} from '../../feedback'
-import {MChevronDownIcon, MCloseIcon} from '../../../icons'
+import {MCheckIcon, MChevronDownIcon, MCloseIcon} from '../../../icons'
 import './MSelect.css'
-import {useMCommonTexts} from '../../../i18n/frameworkTexts'
+import {useMCommonTexts, useMSelectTexts} from '../../../i18n/frameworkTexts'
 
 // Render a selectable list with optional search, grouping and multi-select tags.
 export function MSelect({
@@ -18,7 +17,7 @@ export function MSelect({
     onChange,
     multiple = false,
     searchable = false,
-    placeholder = 'Select...',
+    placeholder: placeholderProp,
     disabled = false,
     name,
     id,
@@ -34,18 +33,23 @@ export function MSelect({
     loading = false,
     clearable = false,
     maxHeight = 300,
-    noOptionsText = 'No options',
+    noOptionsText: noOptionsTextProp,
     renderOption,
-    searchPlaceholder = 'Search...',
+    searchPlaceholder: searchPlaceholderProp,
     renderValue,
     className,
     style,
 }: MSelectProps) {
     const texts = useMCommonTexts()
+    const selectTexts = useMSelectTexts()
+    const placeholder = placeholderProp ?? selectTexts.placeholder
+    const noOptionsText = noOptionsTextProp ?? selectTexts.noOptions
+    const searchPlaceholder = searchPlaceholderProp ?? selectTexts.searchPlaceholder
     const [open, setOpen] = useState(false)
     const [internalValue, setInternalValue] = useState<string | string[]>(defaultValue ?? (multiple ? [] : ''))
     const [search, setSearch] = useState('')
     const triggerRef = useRef<HTMLDivElement>(null)
+    const searchRef = useRef<HTMLInputElement>(null)
 
     const currentValue = value !== undefined ? value : internalValue
     const hasError = error || !!errorText
@@ -80,7 +84,10 @@ export function MSelect({
         return groups
     }, [filteredOptions])
 
-    const flatFiltered = filteredOptions
+    // Keyboard order must match the rendered (grouped) order. With interleaved groups
+    // (A1, B1, A2) the DOM shows A1, A2, B1, so indexing the raw filtered list made the
+    // arrows jump between groups.
+    const flatFiltered = useMemo(() => [...groupedOptions.values()].flat(), [groupedOptions])
 
     // MToggle or replace the current selection depending on the mode.
     const handleSelect = useCallback(
@@ -113,13 +120,56 @@ export function MSelect({
         isOpen: open,
     })
 
+    // APG select-only combobox: Enter, Space, ArrowDown / ArrowUp and Alt+ArrowDown open the list
+    // from the closed trigger; once open the shared keyboard navigation takes over.
+    const handleTriggerKeyDown = useCallback(
+        (e: React.KeyboardEvent<HTMLDivElement>) => {
+            if (disabled) return
+            if (e.target !== e.currentTarget) return
+            if (!open) {
+                if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault()
+                    setOpen(true)
+                    if (searchable || e.altKey) {
+                        resetIndex()
+                        return
+                    }
+                    const selectedIndex = flatFiltered.findIndex((o) => selectedValues.includes(o.value))
+                    if (selectedIndex >= 0) setActiveIndex(selectedIndex)
+                    else if (e.key === 'ArrowUp') setActiveIndex(flatFiltered.length - 1)
+                    else setActiveIndex(flatFiltered.findIndex((o) => !o.disabled))
+                }
+                return
+            }
+            if (e.key === 'Tab') {
+                setOpen(false)
+                setSearch('')
+                return
+            }
+            onKeyDown(e)
+        },
+        [disabled, open, searchable, flatFiltered, selectedValues, setActiveIndex, resetIndex, onKeyDown]
+    )
+
+    // The search field is an editable combobox: Home / End move the caret, everything else
+    // (arrows, Enter, Escape) drives the listbox through aria-activedescendant.
+    const handleSearchKeyDown = useCallback(
+        (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === 'Home' || e.key === 'End') return
+            onKeyDown(e)
+        },
+        [onKeyDown]
+    )
+
     // Screen readers follow the highlighted option through aria-activedescendant.
     const baseId = useId()
     const labelId = `${baseId}-label`
     const listboxId = `${baseId}-listbox`
     const optionId = (index: number) => `${baseId}-option-${index}`
+    const searchId = `${baseId}-search`
     const activeDescendant =
         open && activeIndex >= 0 && activeIndex < flatFiltered.length ? optionId(activeIndex) : undefined
+    const hasListbox = flatFiltered.length > 0
 
     // Open the popover and reset keyboard navigation when the trigger is used.
     const handleTriggerClick = useCallback(() => {
@@ -182,13 +232,14 @@ export function MSelect({
                     disabled && 'disabled'
                 )}
                 onClick={handleTriggerClick}
-                onKeyDown={onKeyDown as unknown as React.KeyboardEventHandler}
+                onKeyDown={handleTriggerKeyDown}
                 tabIndex={disabled ? -1 : 0}
                 role="combobox"
                 aria-expanded={open}
                 aria-haspopup="listbox"
-                aria-controls={open ? listboxId : undefined}
-                aria-activedescendant={activeDescendant}
+                aria-controls={open && hasListbox ? listboxId : undefined}
+                aria-activedescendant={searchable ? undefined : activeDescendant}
+                aria-disabled={disabled || undefined}
                 aria-labelledby={label ? labelId : undefined}
                 aria-invalid={hasError || undefined}
                 id={id}
@@ -233,11 +284,16 @@ export function MSelect({
                 }}
                 matchWidth
                 placement="bottom-start"
+                role={null}
+                initialFocus={searchable ? searchRef : undefined}
+                closeOnTabOut={searchable}
             >
                 <div style={{maxHeight}} className="dropdown">
                     {searchable && (
                         <div className="search-box">
                             <input
+                                ref={searchRef}
+                                id={searchId}
                                 type="text"
                                 className="search-input"
                                 placeholder={searchPlaceholder}
@@ -246,10 +302,16 @@ export function MSelect({
                                     setSearch(e.target.value)
                                     setActiveIndex(0)
                                 }}
-                                onKeyDown={onKeyDown as unknown as React.KeyboardEventHandler}
-                                aria-controls={listboxId}
+                                onKeyDown={handleSearchKeyDown}
+                                role="combobox"
+                                aria-expanded={hasListbox}
+                                aria-controls={hasListbox ? listboxId : undefined}
                                 aria-activedescendant={activeDescendant}
                                 aria-autocomplete="list"
+                                aria-labelledby={label ? labelId : undefined}
+                                aria-label={label ? undefined : selectTexts.searchLabel}
+                                autoComplete="off"
+                                spellCheck={false}
                                 autoFocus
                             />
                         </div>
@@ -263,6 +325,7 @@ export function MSelect({
                             className="options-list"
                             role="listbox"
                             aria-multiselectable={multiple || undefined}
+                            aria-labelledby={label ? labelId : undefined}
                         >
                             {[...groupedOptions.entries()].map(([group, opts]) => (
                                 <div key={group}>
@@ -287,14 +350,19 @@ export function MSelect({
                                                 aria-selected={isSelected}
                                                 aria-disabled={opt.disabled}
                                             >
+                                                {/* Visual-only check: a real checkbox inside role="option"
+                                                    would be a nested interactive control. */}
                                                 {multiple && (
-                                                    <MCheckbox
-                                                        checked={isSelected}
-                                                        size="sm"
-                                                        color={color}
-                                                        clickEffect="none"
-                                                        className="select-check"
-                                                    />
+                                                    <span
+                                                        className={cn(
+                                                            'select-check',
+                                                            color && `color-${color}`,
+                                                            isSelected && 'checked'
+                                                        )}
+                                                        aria-hidden="true"
+                                                    >
+                                                        {isSelected && <MCheckIcon />}
+                                                    </span>
                                                 )}
                                                 {renderOption ? renderOption(opt, isActive, isSelected) : opt.label}
                                             </div>

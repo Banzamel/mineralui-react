@@ -1,6 +1,7 @@
 .avatar {
     --avatar-size: 40px;
     --avatar-bg: rgba(var(--mineral-primary-rgb), 0.5);
+    /* Default accent; the .avatar.color-* rules below override it (they outrank the utility .color-*). */
     --color-rgb: var(--mineral-primary-rgb);
     --click-effect-color: rgba(var(--color-rgb), 0.18);
     display: inline-flex;
@@ -42,6 +43,18 @@
 
 .avatar.interactive {
     cursor: pointer;
+}
+
+/* Clickable avatars render as a native button or link: drop the UA chrome, keep the avatar look. */
+button.avatar,
+a.avatar {
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+    text-decoration: none;
+    appearance: none;
+    -webkit-appearance: none;
+    vertical-align: middle;
 }
 
 .avatar.interactive:hover {
@@ -89,35 +102,44 @@
 }
 
 .avatar.color-primary {
+    --color-rgb: var(--mineral-primary-rgb);
     --avatar-bg: rgba(var(--mineral-primary-rgb), 0.5);
 }
 
 .avatar.color-success {
+    --color-rgb: var(--mineral-success-rgb);
     --avatar-bg: rgba(var(--mineral-success-rgb), 0.5);
 }
 
 .avatar.color-warning {
+    --color-rgb: var(--mineral-warning-rgb);
     --avatar-bg: rgba(var(--mineral-warning-rgb), 0.5);
 }
 
 .avatar.color-error {
+    --color-rgb: var(--mineral-error-rgb);
     --avatar-bg: rgba(var(--mineral-error-rgb), 0.5);
 }
 
 .avatar.color-info {
+    --color-rgb: var(--mineral-info-rgb);
     --avatar-bg: rgba(var(--mineral-info-rgb), 0.5);
 }
 .avatar.color-light {
+    --color-rgb: var(--mineral-light-rgb);
     --avatar-bg: rgba(var(--mineral-light-rgb), 0.5);
 }
 .avatar.color-dark {
+    --color-rgb: var(--mineral-dark-color-rgb);
     --avatar-bg: rgba(var(--mineral-dark-color-rgb), 0.5);
 }
 .avatar.color-news {
+    --color-rgb: var(--mineral-news-rgb);
     --avatar-bg: rgba(var(--mineral-news-rgb), 0.5);
 }
 
 .avatar.color-neutral {
+    --color-rgb: var(--mineral-neutral-rgb);
     --avatar-bg: rgba(var(--mineral-neutral-rgb), 0.5);
 }
 

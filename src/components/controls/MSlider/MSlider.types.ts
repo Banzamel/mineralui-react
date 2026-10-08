@@ -16,4 +16,9 @@ export interface MSliderProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onCh
     label?: string
     color?: MColor
     disabled?: boolean
+    /**
+     * Human-readable value announced by screen readers (`aria-valuetext`), e.g. `(v) => `${v} %``.
+     * Defaults to the label of a mark placed exactly at the current value.
+     */
+    getAriaValueText?: (value: number) => string
 }

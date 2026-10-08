@@ -123,3 +123,9 @@ button.card-widget {
     line-height: 1.5;
     color: var(--mineral-text-muted);
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .card-widget.interactive:hover {
+        transform: none;
+    }
+}

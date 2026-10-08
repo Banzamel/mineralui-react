@@ -1,10 +1,12 @@
-import {forwardRef} from 'react'
+import {forwardRef, useId} from 'react'
 import {MIllustration} from '../MIllustration'
 import type {MIllustrationProps} from '../MIllustration.types'
 
 // Conflict scene — two overlapping calendar events on a small grid with a warning badge over the collision.
 export const MConflictIllustration = forwardRef<SVGSVGElement, MIllustrationProps>(
     function MConflictIllustration(props, ref) {
+        // Unique per instance so two illustrations on one page do not share the pattern id.
+        const hatchId = `conflictHatch-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
         return (
             <MIllustration ref={ref} viewBox="0 0 200 200" {...props}>
                 {/* Ground shadow */}
@@ -88,11 +90,11 @@ export const MConflictIllustration = forwardRef<SVGSVGElement, MIllustrationProp
 
                 {/* Hatched overlap region — diagonal stripes to highlight conflict */}
                 <defs>
-                    <pattern id="conflictHatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+                    <pattern id={hatchId} patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
                         <line x1="0" y1="0" x2="0" y2="6" stroke="var(--mineral-warning, #f59e0b)" strokeWidth="2" />
                     </pattern>
                 </defs>
-                <rect x="98" y="98" width="16" height="30" fill="url(#conflictHatch)" opacity="0.85" />
+                <rect x="98" y="98" width="16" height="30" fill={`url(#${hatchId})`} opacity="0.85" />
 
                 {/* Warning badge — circle with triangle ⚠ over the overlap */}
                 <g transform="translate(122 78)">

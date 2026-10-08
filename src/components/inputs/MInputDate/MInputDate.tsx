@@ -6,6 +6,7 @@ import {stripNonDigits, formatDateInput} from '../../../utils/formatters'
 import {validateDate, parseDateString} from '../../../utils/validators'
 import type {ValidationResult} from '../../../utils/validators'
 import {MCalendarIcon} from '../../../icons'
+import {useMValidationMessage} from '../../../i18n/frameworkTexts'
 
 const FORMAT_PLACEHOLDER: Record<string, string> = {
     'DD/MM/YYYY': 'DD{s}MM{s}YYYY',
@@ -41,6 +42,7 @@ export const MInputDate = forwardRef<HTMLInputElement, MInputDateProps>(function
 ) {
     const [internalValue, setInternalValue] = useState(defaultValue?.toString() ?? '')
     const [validation, setValidation] = useState<ValidationResult>({valid: true})
+    const translateValidation = useMValidationMessage()
     const [touched, setTouched] = useState(false)
     const internalChangeRef = useRef(false)
 
@@ -58,17 +60,17 @@ export const MInputDate = forwardRef<HTMLInputElement, MInputDateProps>(function
             return
         }
 
-        setValidation(validateDate(currentValue, {format, minDate, maxDate}))
-    }, [currentValue, format, maxDate, minDate])
+        setValidation(translateValidation(validateDate(currentValue, {format, minDate, maxDate})))
+    }, [currentValue, format, maxDate, minDate, translateValidation])
 
     const runValidation = useCallback(
         (val: string) => {
-            const result = validateDate(val, {format, minDate, maxDate})
+            const result = translateValidation(validateDate(val, {format, minDate, maxDate}))
             setValidation(result)
             onValidationChange?.(result)
             return result
         },
-        [format, minDate, maxDate, onValidationChange]
+        [format, minDate, maxDate, onValidationChange, translateValidation]
     )
 
     const emitDate = useCallback(
@@ -138,7 +140,9 @@ export const MInputDate = forwardRef<HTMLInputElement, MInputDateProps>(function
                 onKeyDown?.(e)
                 return
             }
-            if (!/^\d$/.test(e.key)) {
+            // Only printable characters are filtered — Enter, Escape and other
+            // named keys keep working (e.g. submitting the surrounding form).
+            if (e.key.length === 1 && !/^\d$/.test(e.key)) {
                 e.preventDefault()
             }
             onKeyDown?.(e)

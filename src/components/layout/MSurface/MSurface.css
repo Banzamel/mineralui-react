@@ -43,20 +43,24 @@ button.surface {
     color: var(--mineral-page-text);
 }
 
-.theme-light .surface.default {
+.theme-light .surface.default:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .surface.default {
     background-color: rgba(255, 255, 255, 1);
 }
 
-.theme-light .surface.subtle {
+.theme-light .surface.subtle:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .surface.subtle {
     background-color: rgba(248, 250, 252, 1);
 }
 
-.theme-light .surface.raised {
+.theme-light .surface.raised:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .surface.raised {
     background-color: rgba(255, 255, 255, 1);
     box-shadow: var(--mineral-shadow-md);
 }
 
-.theme-light .surface.inverse {
+.theme-light .surface.inverse:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .surface.inverse {
     background-color: rgba(226, 232, 240, 1);
     color: var(--mineral-text);
 }

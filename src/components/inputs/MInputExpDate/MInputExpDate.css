@@ -73,3 +73,21 @@
     flex-shrink: 0;
     color: rgba(var(--color-rgb), 0.72);
 }
+
+.input-exp-date-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.input-exp-date .dropdown.menu.trigger:focus-visible {
+    outline: 2px solid rgba(var(--color-rgb, var(--mineral-primary-rgb)), 0.8);
+    outline-offset: 2px;
+    border-radius: var(--mineral-radius-sm);
+}

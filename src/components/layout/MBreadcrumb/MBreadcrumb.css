@@ -36,6 +36,9 @@
 }
 
 .breadcrumb .link {
+    /* Override the global MLink `.link` base (font-size md) so crumbs keep the trail size. */
+    font-family: inherit;
+    font-size: inherit;
     color: var(--mineral-primary);
     text-decoration: none;
     transition: color 0.15s;
@@ -60,4 +63,26 @@
 
 .breadcrumb .dots {
     color: var(--mineral-text-secondary);
+}
+
+.breadcrumb .trail.expanded {
+    flex-wrap: wrap;
+}
+
+.breadcrumb .link:focus-visible,
+.breadcrumb .crumb:focus-visible {
+    outline: 2px solid var(--mineral-primary);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.breadcrumb .dots-toggle {
+    color: var(--mineral-text-secondary);
+    line-height: 1;
+    padding: 0 2px;
+}
+
+.breadcrumb .dots-toggle:hover {
+    color: var(--mineral-primary);
+    text-decoration: none;
 }

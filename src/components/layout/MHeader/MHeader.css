@@ -14,6 +14,9 @@
 .header.subtle {
     background: color-mix(in srgb, var(--mineral-page-bg) 60%, transparent);
 }
+header.header.bordered {
+    border-bottom: 1px solid var(--mineral-border);
+}
 .header.sticky {
     position: sticky;
     top: 0;

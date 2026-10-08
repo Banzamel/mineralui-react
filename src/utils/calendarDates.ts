@@ -39,9 +39,23 @@ export function stripTime(date: Date): Date {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
+const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
+
+/**
+ * Calendar day of `value` at local midnight. A date-only string (`yyyy-MM-dd`) is read as a
+ * local day — `new Date('2026-09-24')` would read it as UTC midnight, which is the previous
+ * day in every UTC−x zone.
+ */
 export function normalizeDate(value?: Date | string | null): Date | null {
     if (!value) {
         return null
+    }
+    if (typeof value === 'string') {
+        const match = DATE_ONLY_PATTERN.exec(value.trim())
+        if (match) {
+            const local = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+            return local.getMonth() === Number(match[2]) - 1 ? local : null
+        }
     }
     const parsed = toDate(value)
     if (!isValidDate(parsed)) {

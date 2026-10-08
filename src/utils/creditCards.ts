@@ -1,4 +1,5 @@
 import type {ValidationResult} from './validators'
+import {validationFailure} from './validationMessages'
 
 export type CreditCardBrand = 'visa' | 'mastercard' | 'amex' | 'discover' | 'maestro' | 'unknown'
 
@@ -14,7 +15,7 @@ export interface CreditCardBrandDetails {
 
 const OK_RESULT: ValidationResult = {valid: true}
 
-// MCard brand rules also drive formatting and visible brand badges.
+// Card brand rules also drive formatting and visible brand badges.
 const creditCardBrands: CreditCardBrandDetails[] = [
     {
         brand: 'visa',
@@ -67,7 +68,7 @@ const creditCardBrands: CreditCardBrandDetails[] = [
 function fallbackBrand(digits: string): CreditCardBrandDetails {
     return {
         brand: 'unknown',
-        label: 'MCard',
+        label: 'Card',
         iconLabel: 'CARD',
         maxLength: Math.min(Math.max(digits.length || 16, 16), 19),
         formatGroups: [4, 4, 4, 4, 3],
@@ -157,19 +158,21 @@ export function validateCardNumber(value: string): ValidationResult {
     const rule = detectCardBrand(digits)
 
     if (digits.length < 12) {
-        return {valid: false, error: 'MCard number is too short'}
+        return validationFailure('cardTooShort', 'Card number is too short')
     }
 
     if (digits.length > rule.maxLength) {
-        return {valid: false, error: `${rule.label} card number is too long`}
+        return rule.brand === 'unknown'
+            ? validationFailure('cardTooLong', 'Card number is too long')
+            : validationFailure('cardBrandTooLong', '{brand} card number is too long', {brand: rule.label})
     }
 
     if (rule.brand !== 'unknown' && !rule.regex.test(digits)) {
-        return {valid: false, error: `Invalid ${rule.label} card number`}
+        return validationFailure('cardBrandInvalid', 'Invalid {brand} card number', {brand: rule.label})
     }
 
     if (!passesLuhn(digits)) {
-        return {valid: false, error: 'Invalid card checksum'}
+        return validationFailure('cardChecksum', 'Invalid card checksum')
     }
 
     return OK_RESULT

@@ -8,14 +8,15 @@ import {MLink, MText} from '../../typography'
 import {MInputExpDate} from '../../inputs/MInputExpDate'
 import {MInputCVC} from '../../inputs/MInputCVC'
 import './MCardPaymentMethod.css'
+import {formatMText, useMCardTexts} from '../../../i18n/frameworkTexts'
 
 function resolveBrandLabel(brand: NonNullable<MCardPaymentMethodProps['brand']>) {
     return creditCardBrands.find((item) => item.brand === brand)?.iconLabel ?? 'CARD'
 }
 
 export function MCardPaymentMethod({
-    title = 'Your payment methods',
-    actionLabel = 'Change',
+    title: titleProp,
+    actionLabel: actionLabelProp,
     actionHref = '#',
     onAction,
     brand = 'visa',
@@ -23,20 +24,26 @@ export function MCardPaymentMethod({
     last4,
     badgeLabel,
     summary,
-    helperText = 'All fields are required, unless stated otherwise.',
-    expiryLabel = 'Expiration date',
-    cvcLabel = 'Security code',
+    helperText: helperTextProp,
+    expiryLabel: expiryLabelProp,
+    cvcLabel: cvcLabelProp,
     expiryProps,
     cvcProps,
     color,
     className,
     ...rest
 }: MCardPaymentMethodProps) {
+    const texts = useMCardTexts().cardPaymentMethod
+    const title = titleProp === undefined ? texts.title : titleProp
+    const actionLabel = actionLabelProp === undefined ? texts.change : actionLabelProp
+    const helperText = helperTextProp === undefined ? texts.helperText : helperTextProp
+    const expiryLabel = expiryLabelProp === undefined ? texts.expirationDate : expiryLabelProp
+    const cvcLabel = cvcLabelProp === undefined ? texts.securityCode : cvcLabelProp
     const expirySummary = expiryProps?.value ?? expiryProps?.defaultValue
-    const resolvedBadgeLabel = badgeLabel === undefined ? 'Default' : badgeLabel
+    const resolvedBadgeLabel = badgeLabel === undefined ? texts.defaultBadge : badgeLabel
     const derivedSummary = expirySummary
-        ? `Credit card - Expiration date ${String(expirySummary).replace('/', '.')}`
-        : 'Credit card'
+        ? formatMText(texts.creditCardExpires, {date: String(expirySummary).replace('/', '.')})
+        : texts.creditCard
     const resolvedSummary = summary === undefined ? derivedSummary : summary
     const brandLabel = resolveBrandLabel(brand)
     const resolvedExpiryProps = {

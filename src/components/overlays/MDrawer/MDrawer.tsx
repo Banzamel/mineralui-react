@@ -6,6 +6,7 @@ import {MButton} from '../../controls'
 import {MCloseIcon} from '../../../icons'
 import {cn} from '../../../utils/cn'
 import {useModalLayer} from '../../../utils/useModalLayer'
+import {lockBodyScroll} from '../scrollLock'
 import './MDrawer.css'
 import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
@@ -56,6 +57,7 @@ export function MDrawer({
     const [mounted, setMounted] = useState(false)
     const [closing, setClosing] = useState(false)
     const backdropRef = useRef<HTMLDivElement>(null)
+    const drawerRef = useRef<HTMLDivElement>(null)
     const titleId = useId()
 
     useModalLayer({active: open && mounted, containerRef: backdropRef, onEscape: closeOnEscape ? onClose : undefined})
@@ -78,15 +80,34 @@ export function MDrawer({
         }
     }, [open, mounted])
 
+    // A drawer without an overlay is non-modal: the page beside it stays usable,
+    // so it neither locks scrolling nor blocks clicks.
     useEffect(() => {
-        if (!mounted) return
+        if (!mounted || !overlay) return
+        return lockBodyScroll()
+    }, [mounted, overlay])
 
-        const prev = document.body.style.overflow
-        document.body.style.overflow = 'hidden'
-        return () => {
-            document.body.style.overflow = prev
+    // Without an overlay the backdrop lets clicks through (`pointer-events: none`),
+    // so "click outside closes" is detected on the document instead.
+    const onCloseRef = useRef(onClose)
+    useEffect(() => {
+        onCloseRef.current = onClose
+    }, [onClose])
+    useEffect(() => {
+        if (!open || !mounted || overlay || !closeOnBackdrop) return
+
+        const handlePointerDown = (event: globalThis.MouseEvent) => {
+            const target = event.target
+            if (!(target instanceof Element)) return
+            if (drawerRef.current?.contains(target)) return
+            // Popovers, menus and other overlays opened from the drawer portal outside it.
+            if (target.closest('.popover, .mineral-backdrop')) return
+            onCloseRef.current()
         }
-    }, [mounted])
+
+        document.addEventListener('mousedown', handlePointerDown)
+        return () => document.removeEventListener('mousedown', handlePointerDown)
+    }, [open, mounted, overlay, closeOnBackdrop])
 
     if (!mounted) return null
 
@@ -148,9 +169,10 @@ export function MDrawer({
                 onMouseDown={handleBackdropClick}
             >
                 <div
+                    ref={drawerRef}
                     className={cn('drawer', side, size, className)}
                     role="dialog"
-                    aria-modal="true"
+                    aria-modal={overlay ? 'true' : undefined}
                     aria-labelledby={header ? titleId : undefined}
                     {...rest}
                 >

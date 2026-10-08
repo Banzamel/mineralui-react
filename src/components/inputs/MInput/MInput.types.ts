@@ -1,4 +1,4 @@
-import type {ChangeEvent, CSSProperties, FocusEvent, KeyboardEvent, ReactNode} from 'react'
+import type {ChangeEvent, CSSProperties, FocusEvent, InputHTMLAttributes, KeyboardEvent, ReactNode} from 'react'
 import type {MColor, MSize} from '../../../theme'
 import type {MClickEffect} from '../../../utils/useInteractionEffect'
 
@@ -47,4 +47,9 @@ export interface MInputProps {
     style?: CSSProperties
     inputClassName?: string
     labelClassName?: string
+    /**
+     * Extra attributes for the native `<input>` (ARIA such as `role="combobox"`,
+     * `aria-activedescendant`, `aria-label`, `data-*`). The component's own props win on conflict.
+     */
+    inputProps?: InputHTMLAttributes<HTMLInputElement> & Record<`data-${string}`, string | undefined>
 }

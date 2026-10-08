@@ -202,3 +202,9 @@
 .card-tile .tile-fav-active.button {
     color: #e74c3c;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .card-tile.interactive:hover {
+        transform: none;
+    }
+}

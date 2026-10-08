@@ -8,7 +8,8 @@ import {MButton} from '../../controls'
 import {MDropdownItem, MDropdownMenu} from '../../overlays'
 import {resolveMCardAction} from '../shared'
 import './MCardTile.css'
-import {useMCommonTexts} from '../../../i18n/frameworkTexts'
+import '../shared/MCardShared.css'
+import {useMCardTexts, useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 // Tile card: whole surface acts as a link/button, media can fill the card with text overlay.
 // Media can be an image URL, a video URL, an MIllustration element, or a live camera stream.
@@ -39,6 +40,7 @@ export function MCardTile({
     ...rest
 }: MCardTileProps) {
     const texts = useMCommonTexts()
+    const cardTexts = useMCardTexts()
     const videoRef = useRef<HTMLVideoElement>(null)
 
     useEffect(() => {
@@ -211,7 +213,7 @@ export function MCardTile({
                             iconOnly
                             shape="circle"
                             onClick={onFavorite}
-                            aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
+                            aria-label={favorite ? cardTexts.removeFromFavorites : cardTexts.addToFavorites}
                             className={cn('tile-overlay-btn', favorite && 'tile-fav-active')}
                         >
                             {favorite ? <MHeartFillIcon /> : <MHeartIcon />}

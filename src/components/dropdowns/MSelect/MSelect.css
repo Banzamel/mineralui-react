@@ -166,6 +166,28 @@
 .select-popover .select-check {
     flex-shrink: 0;
     pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(var(--color-rgb, var(--mineral-primary-rgb)), 0.4);
+    border-radius: 3px;
+    color: #fff;
+    transition:
+        border-color var(--mineral-transition-fast),
+        background-color var(--mineral-transition-fast);
+}
+
+.select-popover .select-check.checked {
+    background: rgba(var(--color-rgb, var(--mineral-primary-rgb)), 1);
+    border-color: rgba(var(--color-rgb, var(--mineral-primary-rgb)), 1);
+}
+
+.select-popover .select-check svg {
+    display: block;
+    width: 12px;
+    height: 12px;
 }
 
 .select-popover .group-header {

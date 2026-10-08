@@ -15,8 +15,8 @@ export const MRadio = forwardRef<HTMLInputElement, MRadioProps>(function MRadio(
         id,
         value,
         disabled = false,
-        size = 'md',
-        color = 'primary',
+        size,
+        color,
         label,
         labelPosition = 'right',
         onChange,
@@ -30,9 +30,10 @@ export const MRadio = forwardRef<HTMLInputElement, MRadioProps>(function MRadio(
     const group = useRadioGroup()
 
     const resolvedName = group?.name ?? name
-    const resolvedDisabled = group?.disabled ?? disabled
-    const resolvedSize = group?.size ?? size
-    const resolvedColor = group?.color ?? color
+    // The radio's own props win over the group; the group only fills in what the radio leaves out.
+    const resolvedDisabled = disabled || Boolean(group?.disabled)
+    const resolvedSize = size ?? group?.size ?? 'md'
+    const resolvedColor = color ?? group?.color ?? 'primary'
     const resolvedChecked = group ? group.value === value : checked
     const {effectClassName, effectLayer, handlePointerDown, triggerEffect} = useInteractionEffect<HTMLSpanElement>({
         effect: clickEffect,

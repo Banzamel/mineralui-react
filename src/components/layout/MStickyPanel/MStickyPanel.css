@@ -26,3 +26,8 @@
 .m-sticky-panel.hide-scrollbar::-webkit-scrollbar {
     display: none; /* Chrome/Safari/Edge */
 }
+
+.m-sticky-panel:focus-visible {
+    outline: 2px solid var(--mineral-primary);
+    outline-offset: 2px;
+}

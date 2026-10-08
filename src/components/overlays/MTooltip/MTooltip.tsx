@@ -16,6 +16,8 @@ import {MPortal} from '../../primitives'
 import './MTooltip.css'
 
 const VIEWPORT_MARGIN = 8
+// Grace period for moving the pointer from the trigger across the gap onto the bubble.
+const HOVER_HIDE_DELAY = 120
 
 const OPPOSITE: Record<MTooltipPlacement, MTooltipPlacement> = {
     top: 'bottom',
@@ -76,23 +78,44 @@ export function MTooltip({content, placement = 'top', delay = 0, className, chil
     const wrapperRef = useRef<HTMLDivElement>(null)
     const bubbleRef = useRef<HTMLDivElement>(null)
     const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
+    const hideTimeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
+
+    const cancelHide = useCallback(() => {
+        if (hideTimeoutRef.current) {
+            clearTimeout(hideTimeoutRef.current)
+            hideTimeoutRef.current = null
+        }
+    }, [])
 
     const show = useCallback(() => {
+        cancelHide()
+        if (timeoutRef.current) return
         if (delay > 0) {
-            timeoutRef.current = setTimeout(() => setVisible(true), delay)
+            timeoutRef.current = setTimeout(() => {
+                timeoutRef.current = null
+                setVisible(true)
+            }, delay)
         } else {
             setVisible(true)
         }
-    }, [delay])
+    }, [delay, cancelHide])
 
     const hide = useCallback(() => {
+        cancelHide()
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current)
             timeoutRef.current = null
         }
         setVisible(false)
         setPos(null)
-    }, [])
+    }, [cancelHide])
+
+    // WCAG 1.4.13 (hoverable): leaving the trigger only hides the bubble after a short
+    // grace period, so the pointer can cross the gap and rest on the bubble itself.
+    const scheduleHide = useCallback(() => {
+        cancelHide()
+        hideTimeoutRef.current = setTimeout(hide, HOVER_HIDE_DELAY)
+    }, [cancelHide, hide])
 
     useLayoutEffect(() => {
         if (!visible || !wrapperRef.current || !bubbleRef.current) return
@@ -114,6 +137,7 @@ export function MTooltip({content, placement = 'top', delay = 0, className, chil
     useEffect(
         () => () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current)
+            if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current)
         },
         []
     )
@@ -136,7 +160,7 @@ export function MTooltip({content, placement = 'top', delay = 0, className, chil
             ref={wrapperRef}
             className={cn('tooltip wrapper', className)}
             onMouseEnter={show}
-            onMouseLeave={hide}
+            onMouseLeave={scheduleHide}
             onFocus={show}
             onBlur={hide}
             {...rest}
@@ -150,6 +174,8 @@ export function MTooltip({content, placement = 'top', delay = 0, className, chil
                         className={cn('tooltip bubble', pos?.placement ?? placement)}
                         role="tooltip"
                         style={pos ? {top: pos.top, left: pos.left} : {visibility: 'hidden'}}
+                        onMouseEnter={cancelHide}
+                        onMouseLeave={scheduleHide}
                     >
                         {content}
                     </div>

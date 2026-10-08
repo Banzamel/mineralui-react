@@ -140,6 +140,12 @@
     animation: tabs-fade-in 600ms var(--mineral-ease-out);
 }
 
+.tabs .tabs-panel:focus-visible {
+    outline: 2px solid var(--mineral-primary);
+    outline-offset: 2px;
+    border-radius: var(--mineral-radius-sm, 4px);
+}
+
 @keyframes tabs-fade-in {
     from {
         opacity: 0;

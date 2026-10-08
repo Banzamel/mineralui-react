@@ -1,22 +1,34 @@
-import {useId, useMemo, useState} from 'react'
+import {useId, useMemo, useRef, useState} from 'react'
 import type {KeyboardEvent} from 'react'
 import type {MTabsItem, MTabsProps} from './MTabs.types'
 import {cn} from '../../../utils/cn'
 import {useInteractionEffect} from '../../../utils/useInteractionEffect'
+import {getRadioGroupTarget, isRtlElement} from '../../../utils/radioGroupKeys'
 import './MTabs.css'
 
 interface MTabsTriggerProps {
     item: MTabsItem
     isActive: boolean
     tabId: string
-    panelId: string
+    /** Only set when the tab's panel is actually rendered, so `aria-controls` never dangles. */
+    panelId: string | undefined
     clickEffect: MTabsProps['clickEffect']
     rippleColor: string | undefined
     onSelect: (value: string) => void
+    registerRef: (value: string, node: HTMLButtonElement | null) => void
 }
 
 // Keep the tab trigger behavior isolated from the list and panel rendering.
-function MTabsTrigger({item, isActive, tabId, panelId, clickEffect, rippleColor, onSelect}: MTabsTriggerProps) {
+function MTabsTrigger({
+    item,
+    isActive,
+    tabId,
+    panelId,
+    clickEffect,
+    rippleColor,
+    onSelect,
+    registerRef,
+}: MTabsTriggerProps) {
     const {effectClassName, effectLayer, handlePointerDown, triggerEffect} = useInteractionEffect<HTMLButtonElement>({
         effect: clickEffect,
         disabled: item.disabled,
@@ -27,6 +39,7 @@ function MTabsTrigger({item, isActive, tabId, panelId, clickEffect, rippleColor,
     return (
         <button
             type="button"
+            ref={(node) => registerRef(item.value, node)}
             id={tabId}
             role="tab"
             aria-selected={isActive}
@@ -83,29 +96,33 @@ export function MTabs({
         onValueChange?.(nextValue)
     }
 
-    // Re-map keyboard navigation depending on the rendered orientation.
+    const tabRefs = useRef(new Map<string, HTMLButtonElement>())
+    function registerRef(itemValue: string, node: HTMLButtonElement | null) {
+        if (node) tabRefs.current.set(itemValue, node)
+        else tabRefs.current.delete(itemValue)
+    }
+
+    // APG tabs with automatic activation: arrows along the orientation only (wrapping, flipped in
+    // RTL for horizontal lists), Home / End jump to the ends, and focus follows the selection.
     function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+        if (event.altKey || event.ctrlKey || event.metaKey) return
+        const axisKeys = orientation === 'vertical' ? ['ArrowUp', 'ArrowDown'] : ['ArrowLeft', 'ArrowRight']
+        if (!axisKeys.includes(event.key) && event.key !== 'Home' && event.key !== 'End') return
+
         const enabledItems = items.filter((item) => !item.disabled)
-        const currentIndex = enabledItems.findIndex((item) => item.value === activeItem?.value)
+        if (enabledItems.length === 0) return
+        // Start from the focused tab when there is one, otherwise from the selected tab.
+        const focusedValue = [...tabRefs.current.entries()].find(([, node]) => node === event.target)?.[0]
+        const fromValue = focusedValue ?? activeItem?.value
+        const currentIndex = enabledItems.findIndex((item) => item.value === fromValue)
+        const rtl = orientation === 'horizontal' && isRtlElement(event.currentTarget)
+        const targetIndex = getRadioGroupTarget(event.key, currentIndex, enabledItems.length, rtl)
+        if (targetIndex === null) return
 
-        if (currentIndex === -1) {
-            return
-        }
-
-        const nextKeys = orientation === 'vertical' ? ['ArrowDown'] : ['ArrowRight', 'ArrowDown']
-        const previousKeys = orientation === 'vertical' ? ['ArrowUp'] : ['ArrowLeft', 'ArrowUp']
-
-        if (nextKeys.includes(event.key)) {
-            event.preventDefault()
-            const nextItem = enabledItems[(currentIndex + 1) % enabledItems.length]
-            selectTab(nextItem.value)
-        }
-
-        if (previousKeys.includes(event.key)) {
-            event.preventDefault()
-            const nextItem = enabledItems[(currentIndex - 1 + enabledItems.length) % enabledItems.length]
-            selectTab(nextItem.value)
-        }
+        event.preventDefault()
+        const target = enabledItems[targetIndex]
+        if (target.value !== activeItem?.value) selectTab(target.value)
+        tabRefs.current.get(target.value)?.focus()
     }
 
     return (
@@ -114,7 +131,8 @@ export function MTabs({
                 {items.map((item) => {
                     const isActive = item.value === activeItem?.value
                     const tabId = `${baseId}-${item.value}-tab`
-                    const panelId = `${baseId}-${item.value}-panel`
+                    const hasPanel = showPanels && isActive && item.content !== undefined
+                    const panelId = hasPanel ? `${baseId}-${item.value}-panel` : undefined
 
                     return (
                         <MTabsTrigger
@@ -126,6 +144,7 @@ export function MTabs({
                             clickEffect={clickEffect}
                             rippleColor={rippleColor}
                             onSelect={selectTab}
+                            registerRef={registerRef}
                         />
                     )
                 })}
@@ -137,6 +156,7 @@ export function MTabs({
                     id={`${baseId}-${activeItem.value}-panel`}
                     role="tabpanel"
                     aria-labelledby={`${baseId}-${activeItem.value}-tab`}
+                    tabIndex={0}
                     className={cn('tabs-panel', panelClassName)}
                 >
                     {activeItem.content}

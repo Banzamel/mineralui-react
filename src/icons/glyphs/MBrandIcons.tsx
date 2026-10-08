@@ -1,13 +1,15 @@
-import {forwardRef} from 'react'
+import {forwardRef, useId} from 'react'
 import type {ReactNode} from 'react'
 import {MIcon} from '../MIcon'
 import type {MIconProps} from '../MIcon.types'
 
-function makeBrandIcon(name: string, body: ReactNode) {
+function makeBrandIcon(name: string, body: ReactNode | ((uid: string) => ReactNode)) {
     const BrandIcon = forwardRef<SVGSVGElement, MIconProps>(function BrandIcon(props, ref) {
+        // Per-instance id so glyphs with <defs> (gradients) never share an id on one page.
+        const uid = useId().replace(/:/g, '')
         return (
             <MIcon ref={ref} {...props}>
-                {body}
+                {typeof body === 'function' ? body(uid) : body}
             </MIcon>
         )
     })
@@ -89,22 +91,21 @@ export const MInstagramIcon = makeBrandIcon(
     </>
 )
 
-export const MInstagramColorIcon = makeBrandIcon(
-    'MInstagramColorIcon',
+export const MInstagramColorIcon = makeBrandIcon('MInstagramColorIcon', (uid) => (
     <>
         <defs>
-            <linearGradient id="instagram-brand" x1="5" y1="19" x2="19" y2="5" gradientUnits="userSpaceOnUse">
+            <linearGradient id={`instagram-brand-${uid}`} x1="5" y1="19" x2="19" y2="5" gradientUnits="userSpaceOnUse">
                 <stop offset="0" stopColor="#f59e0b" />
                 <stop offset="0.45" stopColor="#ef4444" />
                 <stop offset="1" stopColor="#8b5cf6" />
             </linearGradient>
         </defs>
-        <rect x="4.8" y="4.8" width="14.4" height="14.4" rx="4.2" fill="url(#instagram-brand)" stroke="none" />
+        <rect x="4.8" y="4.8" width="14.4" height="14.4" rx="4.2" fill={`url(#instagram-brand-${uid})`} stroke="none" />
         <rect x="7.3" y="7.3" width="9.4" height="9.4" rx="3.1" stroke="#fff" />
         <circle cx="12" cy="12" r="2.75" stroke="#fff" />
         <circle cx="16.1" cy="7.95" r="0.8" fill="#fff" stroke="none" />
     </>
-)
+))
 
 export const MLinkedInIcon = makeBrandIcon(
     'MLinkedInIcon',

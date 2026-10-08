@@ -6,6 +6,43 @@
     width: 100%;
 }
 
+/* The base rule above loads after the .color-* utilities, so each colour is restated here. */
+.slider.color-primary {
+    --color-rgb: var(--mineral-primary-rgb);
+}
+
+.slider.color-neutral {
+    --color-rgb: var(--mineral-neutral-rgb);
+}
+
+.slider.color-success {
+    --color-rgb: var(--mineral-success-rgb);
+}
+
+.slider.color-error {
+    --color-rgb: var(--mineral-error-rgb);
+}
+
+.slider.color-warning {
+    --color-rgb: var(--mineral-warning-rgb);
+}
+
+.slider.color-info {
+    --color-rgb: var(--mineral-info-rgb);
+}
+
+.slider.color-light {
+    --color-rgb: var(--mineral-light-rgb);
+}
+
+.slider.color-dark {
+    --color-rgb: var(--mineral-dark-color-rgb);
+}
+
+.slider.color-news {
+    --color-rgb: var(--mineral-news-rgb);
+}
+
 .slider.disabled {
     opacity: var(--mineral-disabled-opacity);
     pointer-events: none;
@@ -61,6 +98,18 @@
         0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
+.slider .thumb:focus {
+    outline: none;
+}
+
+.slider .thumb:focus-visible {
+    outline: 2px solid rgba(var(--color-rgb), 1);
+    outline-offset: 3px;
+    box-shadow:
+        0 0 0 6px rgba(var(--color-rgb), 0.2),
+        0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
 .slider .marks {
     position: relative;
     width: 100%;
@@ -87,4 +136,11 @@
     font-size: var(--mineral-font-size-xs);
     color: var(--mineral-text-secondary);
     white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .slider .fill,
+    .slider .thumb {
+        transition: none;
+    }
 }

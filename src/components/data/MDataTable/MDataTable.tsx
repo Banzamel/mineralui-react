@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useRef, useState} from 'react'
+import {useCallback, useId, useMemo, useRef, useState} from 'react'
 import type * as React from 'react'
 import type {MDataTableProps, MDataTableSort} from './MDataTable.types'
 import {MButton, MCheckbox} from '../../controls'
@@ -8,6 +8,7 @@ import {MPopover} from '../../primitives'
 import {MLoader} from '../../feedback'
 import {MArrowDownIcon, MArrowUpDownIcon, MArrowUpIcon, MFilterIcon, MSortIcon} from '../../../icons'
 import {cn} from '../../../utils/cn'
+import {formatMText, useMCommonTexts, useMDataTableTexts, useMDataViewTexts} from '../../../i18n/frameworkTexts'
 import './MDataTable.css'
 
 function getRowKey<T>(row: T, index: number, rowKey?: string | ((row: T, index: number) => string)): string {
@@ -41,7 +42,7 @@ export function MDataTable<T = any>({
     compact = false,
     stickyHeader = false,
     loading = false,
-    loadingLabel = 'Loading',
+    loadingLabel,
     scrollOffset,
     sort: controlledSort,
     onSortChange,
@@ -61,12 +62,15 @@ export function MDataTable<T = any>({
     manualPagination = false,
     selectedKeys: controlledSelected,
     onSelectionChange,
-    emptyText = 'No data',
-    filterPlaceholder = 'Search...',
+    emptyText,
+    filterPlaceholder,
     className,
     style,
     ...rest
 }: MDataTableProps<T>) {
+    const commonTexts = useMCommonTexts()
+    const viewTexts = useMDataViewTexts()
+    const tableTexts = useMDataTableTexts()
     const [internalSort, setInternalSort] = useState<MDataTableSort | null>(null)
     const [internalSelected, setInternalSelected] = useState<string[]>([])
     const [internalSearch, setInternalSearch] = useState('')
@@ -76,6 +80,9 @@ export function MDataTable<T = any>({
     const [sortOpen, setSortOpen] = useState(false)
     const filterBtnRef = useRef<HTMLElement>(null)
     const sortBtnRef = useRef<HTMLElement>(null)
+    const toolbarId = useId()
+    const filterPopoverId = `${toolbarId}-filter`
+    const sortPopoverId = `${toolbarId}-sort`
 
     const activeSort = controlledSort !== undefined ? controlledSort : internalSort
     const search = controlledSearch !== undefined ? controlledSearch : internalSearch
@@ -280,7 +287,7 @@ export function MDataTable<T = any>({
                             className="filter-search"
                             size="sm"
                             fullWidth
-                            placeholder={filterPlaceholder}
+                            placeholder={filterPlaceholder ?? viewTexts.searchPlaceholder}
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             onClear={() => setSearch('')}
@@ -296,21 +303,38 @@ export function MDataTable<T = any>({
                                         variant="outlined"
                                         size="sm"
                                         startIcon={<MFilterIcon />}
+                                        aria-haspopup="dialog"
                                         aria-expanded={filterOpen}
+                                        aria-controls={filterOpen ? filterPopoverId : undefined}
                                         onClick={openFilter}
                                     >
-                                        Filter
+                                        {viewTexts.filter}
                                     </MButton>
                                     <MPopover
                                         open={filterOpen}
                                         anchorRef={filterBtnRef}
                                         onClose={() => setFilterOpen(false)}
                                         placement="bottom-end"
+                                        role="dialog"
+                                        id={filterPopoverId}
+                                        aria-label={viewTexts.filter}
+                                        initialFocus="first"
+                                        closeOnTabOut
                                         className="data-table-dropdown"
                                     >
-                                        {filterKeys.map((filterKey) => (
-                                            <div key={filterKey.key} className="data-table-filter-group">
-                                                <span className="data-table-filter-label">{filterKey.label}</span>
+                                        {filterKeys.map((filterKey, groupIndex) => (
+                                            <div
+                                                key={filterKey.key}
+                                                className="data-table-filter-group"
+                                                role="group"
+                                                aria-labelledby={`${filterPopoverId}-group-${groupIndex}`}
+                                            >
+                                                <span
+                                                    id={`${filterPopoverId}-group-${groupIndex}`}
+                                                    className="data-table-filter-label"
+                                                >
+                                                    {filterKey.label}
+                                                </span>
                                                 {(filterOptions[filterKey.key] ?? []).map((option) => (
                                                     <div key={option} className="data-table-filter-option">
                                                         <MCheckbox
@@ -345,16 +369,33 @@ export function MDataTable<T = any>({
                                                 <MSortIcon />
                                             )
                                         }
+                                        aria-haspopup="dialog"
                                         aria-expanded={sortOpen}
+                                        aria-controls={sortOpen ? sortPopoverId : undefined}
                                         onClick={openSort}
                                     >
-                                        {activeSortMenuItem ? `Sort: ${activeSortMenuItem.label}` : 'Sort'}
+                                        {activeSortMenuItem
+                                            ? formatMText(viewTexts.sortBy, {label: activeSortMenuItem.label})
+                                            : viewTexts.sort}
+                                        {activeSortMenuItem && activeSort && (
+                                            <span className="data-table-sr-only">
+                                                {', '}
+                                                {activeSort.dir === 'asc'
+                                                    ? viewTexts.sortAscending
+                                                    : viewTexts.sortDescending}
+                                            </span>
+                                        )}
                                     </MButton>
                                     <MPopover
                                         open={sortOpen}
                                         anchorRef={sortBtnRef}
                                         onClose={() => setSortOpen(false)}
                                         placement="bottom-end"
+                                        role="dialog"
+                                        id={sortPopoverId}
+                                        aria-label={viewTexts.sort}
+                                        initialFocus="first"
+                                        closeOnTabOut
                                         className="data-table-dropdown"
                                     >
                                         {sortKeys.map((sortItem) => (
@@ -365,6 +406,7 @@ export function MDataTable<T = any>({
                                                     'data-table-sort-item',
                                                     activeSort?.key === sortItem.key && 'active'
                                                 )}
+                                                aria-pressed={activeSort?.key === sortItem.key}
                                                 onClick={() => {
                                                     if (activeSort?.key === sortItem.key) {
                                                         setSort({
@@ -384,6 +426,12 @@ export function MDataTable<T = any>({
                                                         ) : (
                                                             <MArrowDownIcon className="data-table-sort-icon" />
                                                         )}
+                                                        <span className="data-table-sr-only">
+                                                            {', '}
+                                                            {activeSort.dir === 'asc'
+                                                                ? viewTexts.sortAscending
+                                                                : viewTexts.sortDescending}
+                                                        </span>
                                                     </span>
                                                 )}
                                             </button>
@@ -395,18 +443,21 @@ export function MDataTable<T = any>({
                     )}
                 </div>
             )}
-            <div className={cn('data-table-body', loading && 'loading')} aria-busy={loading || undefined}>
-                <div className="scroll">
+            <div className={cn('data-table-body', loading && 'loading')}>
+                <div className="scroll" aria-busy={loading || undefined}>
                     <table className={cn('root', striped && 'striped', compact && 'compact')}>
                         <thead className={cn('head', stickyHeader && 'sticky')}>
                             <tr>
                                 {selectable && (
-                                    <th className="th check-col">
+                                    <th className="th check-col" scope="col">
                                         <MCheckbox
                                             checked={allSelected}
                                             onChange={toggleAll}
                                             size="sm"
                                             clickEffect="none"
+                                            label={
+                                                <span className="data-table-sr-only">{tableTexts.selectAllRows}</span>
+                                            }
                                         />
                                     </th>
                                 )}
@@ -417,6 +468,14 @@ export function MDataTable<T = any>({
                                     return (
                                         <th
                                             key={col.key}
+                                            scope="col"
+                                            aria-sort={
+                                                isSorted
+                                                    ? activeSort!.dir === 'asc'
+                                                        ? 'ascending'
+                                                        : 'descending'
+                                                    : undefined
+                                            }
                                             className={cn(
                                                 'th',
                                                 isSortable && 'sortable',
@@ -428,22 +487,28 @@ export function MDataTable<T = any>({
                                             }}
                                             onClick={isSortable ? () => handleSort(col.key) : undefined}
                                         >
-                                            <span className="th-content">
-                                                {col.label}
-                                                {isSortable && (
-                                                    <span className="sort-icon">
-                                                        {isSorted ? (
-                                                            activeSort!.dir === 'asc' ? (
-                                                                <MArrowUpIcon aria-hidden="true" />
+                                            {isSortable ? (
+                                                // The header cell owns the click (so its padding sorts too);
+                                                // the button makes the header reachable and operable by keyboard.
+                                                <button type="button" className="th-sort-button">
+                                                    <span className="th-content">
+                                                        {col.label}
+                                                        <span className="sort-icon">
+                                                            {isSorted ? (
+                                                                activeSort!.dir === 'asc' ? (
+                                                                    <MArrowUpIcon aria-hidden="true" />
+                                                                ) : (
+                                                                    <MArrowDownIcon aria-hidden="true" />
+                                                                )
                                                             ) : (
-                                                                <MArrowDownIcon aria-hidden="true" />
-                                                            )
-                                                        ) : (
-                                                            <MArrowUpDownIcon aria-hidden="true" />
-                                                        )}
+                                                                <MArrowUpDownIcon aria-hidden="true" />
+                                                            )}
+                                                        </span>
                                                     </span>
-                                                )}
-                                            </span>
+                                                </button>
+                                            ) : (
+                                                <span className="th-content">{col.label}</span>
+                                            )}
                                         </th>
                                     )
                                 })}
@@ -453,7 +518,7 @@ export function MDataTable<T = any>({
                             {pageData.length === 0 && (
                                 <tr>
                                     <td className="empty" colSpan={columns.length + (selectable ? 1 : 0)}>
-                                        {emptyText}
+                                        {emptyText ?? tableTexts.empty}
                                     </td>
                                 </tr>
                             )}
@@ -474,6 +539,13 @@ export function MDataTable<T = any>({
                                                     onChange={() => {}}
                                                     size="sm"
                                                     clickEffect="none"
+                                                    label={
+                                                        <span className="data-table-sr-only">
+                                                            {formatMText(tableTexts.selectRow, {
+                                                                index: (page - 1) * pageSize + index + 1,
+                                                            })}
+                                                        </span>
+                                                    }
                                                 />
                                             </td>
                                         )}
@@ -495,8 +567,8 @@ export function MDataTable<T = any>({
                     </table>
                 </div>
                 {loading && (
-                    <div className="data-table-loading" role="status" aria-live="polite">
-                        <MLoader center={false} minHeight="auto" label={loadingLabel} />
+                    <div className="data-table-loading">
+                        <MLoader center={false} minHeight="auto" label={loadingLabel ?? commonTexts.loading} />
                     </div>
                 )}
             </div>

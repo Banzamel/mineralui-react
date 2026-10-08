@@ -20,6 +20,12 @@
     z-index: 1;
 }
 
+/* The ripple sits above the opaque image, otherwise the wave is hidden behind it. */
+.image-wrap > .click-effect-layer {
+    z-index: 2;
+    pointer-events: none;
+}
+
 .image-wrap .image {
     width: 100%;
 }

@@ -1,4 +1,4 @@
-import {useState, useCallback, useMemo} from 'react'
+import {useState, useCallback, useId, useMemo} from 'react'
 import type {MRadioGroupProps} from './MRadio.types'
 import {RadioContext} from './RadioContext'
 import {cn} from '../../../utils/cn'
@@ -22,6 +22,8 @@ export function MRadioGroup({
     style,
 }: MRadioGroupProps) {
     const [internalValue, setInternalValue] = useState(defaultValue)
+    const errorId = useId()
+    const hasError = error || Boolean(errorText)
     const currentValue = value !== undefined ? value : internalValue
 
     // Mirror controlled and uncontrolled usage with the same group API.
@@ -43,11 +45,17 @@ export function MRadioGroup({
 
     return (
         <RadioContext.Provider value={ctx}>
-            <fieldset className={cn('radio-group', direction, className)} style={style} role="radiogroup">
+            <fieldset
+                className={cn('radio-group', direction, className)}
+                style={style}
+                role="radiogroup"
+                aria-invalid={hasError || undefined}
+                aria-describedby={errorText ? errorId : undefined}
+            >
                 {label && <legend className={cn('label', error && 'error')}>{label}</legend>}
                 {children}
                 {errorText && (
-                    <span className="field-error" role="alert">
+                    <span id={errorId} className="field-error" role="alert">
                         {errorText}
                     </span>
                 )}

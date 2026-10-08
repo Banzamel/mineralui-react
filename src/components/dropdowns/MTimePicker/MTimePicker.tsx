@@ -1,12 +1,13 @@
-import {useState, useRef, useCallback, useMemo, useEffect} from 'react'
+import {useState, useRef, useCallback, useMemo} from 'react'
 import type * as React from 'react'
 import type {MTimePickerProps} from './MTimePicker.types'
 import {MPopover} from '../../primitives'
+import {TimeColumnListbox} from '../shared/TimeColumnListbox'
 import {cn} from '../../../utils/cn'
 import {MClockIcon, MCloseIcon} from '../../../icons'
 import {formatTime, parseTime} from '../../../utils/dateUtils'
 import './MTimePicker.css'
-import {useMCommonTexts} from '../../../i18n/frameworkTexts'
+import {useMCommonTexts, useMTimePickerTexts} from '../../../i18n/frameworkTexts'
 
 type ParsedTimeValue = {hours: number; minutes: number; seconds: number}
 type Meridiem = 'AM' | 'PM'
@@ -83,6 +84,20 @@ function isTimeInRange(
     return (!min || compareTimeParts(value, min) >= 0) && (!max || compareTimeParts(value, max) <= 0)
 }
 
+type TimeParts = {hours: number; minutes: number; seconds: number}
+
+// True when the closed window [from, to] overlaps the optional min / max range.
+function windowIntersectsRange(from: TimeParts, to: TimeParts, min?: TimeParts | null, max?: TimeParts | null) {
+    return (!min || compareTimeParts(to, min) >= 0) && (!max || compareTimeParts(from, max) <= 0)
+}
+
+// Pull a time back inside the optional min / max range.
+function clampTime(value: TimeParts, min?: TimeParts | null, max?: TimeParts | null): TimeParts {
+    if (min && compareTimeParts(value, min) < 0) return {...min}
+    if (max && compareTimeParts(value, max) > 0) return {...max}
+    return value
+}
+
 // Render a time input backed by scrollable hour, minute and second columns.
 export function MTimePicker({
     value,
@@ -112,7 +127,10 @@ export function MTimePicker({
     style,
 }: MTimePickerProps) {
     const texts = useMCommonTexts()
+    const timeTexts = useMTimePickerTexts()
     const [open, setOpen] = useState(false)
+    // Opening from the keyboard moves focus into the first column (APG dialog); a click keeps it in the field.
+    const [focusOnOpen, setFocusOnOpen] = useState(false)
     const [internalValue, setInternalValue] = useState(defaultValue ?? '')
     const triggerRef = useRef<HTMLDivElement>(null)
 
@@ -164,15 +182,45 @@ export function MTimePicker({
         [maxTime, minTime]
     )
 
+    // A column option is available when ANY time it can lead to lies in range — not just
+    // the combination with the other columns' current values. Picking hour 9 while the
+    // minutes read 15 with `min="09:30"` is allowed and clamps to 09:30.
+    const lastSecond = showSeconds ? 59 : 0
+    const isMinuteAvailable = useCallback(
+        (hoursValue: number, minutesValue: number) =>
+            windowIntersectsRange(
+                {hours: hoursValue, minutes: minutesValue, seconds: 0},
+                {hours: hoursValue, minutes: minutesValue, seconds: lastSecond},
+                minTime,
+                maxTime
+            ),
+        [lastSecond, maxTime, minTime]
+    )
+    const isHourAvailable = useCallback(
+        (hoursValue: number) => minutes.some((minutesValue) => isMinuteAvailable(hoursValue, minutesValue)),
+        [isMinuteAvailable, minutes]
+    )
+    const isMeridiemAvailable = useCallback(
+        (meridiem: Meridiem) => {
+            const offset = meridiem === 'AM' ? 0 : 12
+            for (let hour = offset; hour < offset + 12; hour++) {
+                if (isHourAvailable(hour)) return true
+            }
+            return false
+        },
+        [isHourAvailable]
+    )
+
     // Apply the selected time and keep uncontrolled usage in sync.
     const handleSelect = useCallback(
         (hoursValue: number, minutesValue: number, secondsValue: number = 0) => {
-            if (!isSelectable(hoursValue, minutesValue, secondsValue)) return
-            const time = formatTimeValue(hoursValue, minutesValue, secondsValue, showSeconds, format)
+            const next = clampTime({hours: hoursValue, minutes: minutesValue, seconds: secondsValue}, minTime, maxTime)
+            if (!isSelectable(next.hours, next.minutes, next.seconds)) return
+            const time = formatTimeValue(next.hours, next.minutes, next.seconds, showSeconds, format)
             if (value === undefined) setInternalValue(time)
             onChange?.(time)
         },
-        [format, isSelectable, onChange, showSeconds, value]
+        [format, isSelectable, maxTime, minTime, onChange, showSeconds, value]
     )
 
     const handleInputChange = useCallback(
@@ -203,6 +251,22 @@ export function MTimePicker({
         },
         [displayTime?.hours, handleSelect, parsed?.minutes, parsed?.seconds]
     )
+
+    // ArrowDown / Alt+ArrowDown in the field opens the columns and moves focus into them.
+    const handleInputKeyDown = useCallback(
+        (event: React.KeyboardEvent<HTMLInputElement>) => {
+            if (disabled || readOnly || event.key !== 'ArrowDown') return
+            event.preventDefault()
+            setFocusOnOpen(true)
+            setOpen(true)
+        },
+        [disabled, readOnly]
+    )
+
+    const handleClose = useCallback(() => {
+        setOpen(false)
+        setFocusOnOpen(false)
+    }, [])
 
     // Clear the current time without closing the trigger first.
     const handleClear = useCallback(
@@ -249,6 +313,7 @@ export function MTimePicker({
                     value={displayValue}
                     onChange={handleInputChange}
                     onBlur={handleInputBlur}
+                    onKeyDown={handleInputKeyDown}
                     placeholder={
                         placeholder ??
                         (format === '12h'
@@ -283,11 +348,16 @@ export function MTimePicker({
                 className="time picker popover"
                 open={open}
                 anchorRef={triggerRef}
-                onClose={() => setOpen(false)}
+                onClose={handleClose}
                 placement="bottom-start"
+                role="dialog"
+                aria-label={label ?? timeTexts.dialogLabel}
+                initialFocus={focusOnOpen ? 'first' : undefined}
+                closeOnTabOut
             >
                 <div className="time columns">
-                    <TimeColumn
+                    <TimeColumnListbox
+                        classNames={TIME_COLUMN_CLASSES}
                         items={hours}
                         selected={format === '12h' ? displayTime?.hours : parsed?.hours}
                         onSelect={(hoursValue) =>
@@ -300,29 +370,25 @@ export function MTimePicker({
                             )
                         }
                         isDisabled={(hoursValue) =>
-                            !isSelectable(
-                                format === '12h'
-                                    ? to24HourValue(hoursValue, displayTime?.meridiem ?? 'AM')
-                                    : hoursValue,
-                                parsed?.minutes ?? 0,
-                                parsed?.seconds ?? 0
+                            !isHourAvailable(
+                                format === '12h' ? to24HourValue(hoursValue, displayTime?.meridiem ?? 'AM') : hoursValue
                             )
                         }
-                        label="Hr"
+                        label={timeTexts.hours}
                     />
-                    <TimeColumn
+                    <TimeColumnListbox
+                        classNames={TIME_COLUMN_CLASSES}
                         items={minutes}
                         selected={parsed?.minutes}
                         onSelect={(minutesValue) =>
                             handleSelect(parsed?.hours ?? 0, minutesValue, parsed?.seconds ?? 0)
                         }
-                        isDisabled={(minutesValue) =>
-                            !isSelectable(parsed?.hours ?? 0, minutesValue, parsed?.seconds ?? 0)
-                        }
-                        label="Min"
+                        isDisabled={(minutesValue) => !isMinuteAvailable(parsed?.hours ?? 0, minutesValue)}
+                        label={timeTexts.minutes}
                     />
                     {showSeconds && (
-                        <TimeColumn
+                        <TimeColumnListbox
+                            classNames={TIME_COLUMN_CLASSES}
                             items={seconds}
                             selected={parsed?.seconds}
                             onSelect={(secondsValue) =>
@@ -331,15 +397,17 @@ export function MTimePicker({
                             isDisabled={(secondsValue) =>
                                 !isSelectable(parsed?.hours ?? 0, parsed?.minutes ?? 0, secondsValue)
                             }
-                            label="Sec"
+                            label={timeTexts.seconds}
                         />
                     )}
                     {format === '12h' && (
-                        <TimeColumn
+                        <TimeColumnListbox
+                            classNames={TIME_COLUMN_CLASSES}
                             items={['AM', 'PM']}
                             selected={displayTime?.meridiem}
                             onSelect={handleMeridiemChange}
-                            label="AM/PM"
+                            isDisabled={(meridiem) => !isMeridiemAvailable(meridiem)}
+                            label={timeTexts.meridiem}
                         />
                     )}
                 </div>
@@ -360,53 +428,9 @@ export function MTimePicker({
     )
 }
 
-// Render one scrollable time column and keep the selected value centered.
-function TimeColumn<T extends number | Meridiem>({
-    items,
-    selected,
-    onSelect,
-    isDisabled,
-    label,
-}: {
-    items: T[]
-    selected?: T
-    onSelect: (value: T) => void
-    isDisabled?: (value: T) => boolean
-    label: string
-}) {
-    const listRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        if (selected === undefined || !listRef.current) return
-        const element = listRef.current.querySelector(`[data-value="${selected}"]`) as HTMLElement | null
-        if (element) {
-            const list = listRef.current
-            list.scrollTop = element.offsetTop - list.clientHeight / 2 + element.offsetHeight / 2
-        }
-    }, [selected])
-
-    const renderValue = (value: T) => (typeof value === 'number' ? value.toString().padStart(2, '0') : value)
-
-    return (
-        <div className="time column">
-            <div className="time column label">{label}</div>
-            <div ref={listRef} className="time column list">
-                {items.map((item) => {
-                    const disabled = isDisabled?.(item) ?? false
-                    return (
-                        <button
-                            key={item}
-                            type="button"
-                            data-value={item}
-                            className={cn('time column item', item === selected && 'selected', disabled && 'disabled')}
-                            onClick={() => onSelect(item)}
-                            disabled={disabled}
-                        >
-                            {renderValue(item)}
-                        </button>
-                    )
-                })}
-            </div>
-        </div>
-    )
+const TIME_COLUMN_CLASSES = {
+    column: 'time column',
+    label: 'time column label',
+    list: 'time column list',
+    item: 'time column item',
 }

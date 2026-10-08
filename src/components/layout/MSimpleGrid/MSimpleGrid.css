@@ -5,24 +5,29 @@
 }
 
 .grid.columns-1 {
+    --grid-columns: 1;
     grid-template-columns: 1fr;
 }
 
 .grid.columns-2 {
+    --grid-columns: 2;
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .grid.columns-3 {
+    --grid-columns: 3;
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .grid.columns-4 {
+    --grid-columns: 4;
     grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 @media (max-width: 1024px) {
     .grid.columns-4,
     .grid.columns-3 {
+        --grid-columns: 2;
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
@@ -31,6 +36,23 @@
     .grid.columns-2,
     .grid.columns-3,
     .grid.columns-4 {
+        --grid-columns: 1;
         grid-template-columns: minmax(0, 1fr);
     }
+}
+
+/* minItemWidth: auto-fill columns no narrower than --grid-min-item-width (capped by the
+   container) and never more than --grid-columns. Declared last so it wins over the
+   fixed-column rules above; the responsive caps still apply through --grid-columns. */
+.grid.min-item-width {
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(
+            max(
+                min(var(--grid-min-item-width), 100%),
+                calc((100% - (var(--grid-columns, 1) - 1) * var(--mineral-spacing-lg)) / var(--grid-columns, 1))
+            ),
+            1fr
+        )
+    );
 }

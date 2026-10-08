@@ -32,6 +32,24 @@
     overflow-x: auto;
 }
 
+.code-block-card .code-block-scroll:focus-visible {
+    outline: 2px solid rgba(var(--mineral-primary-rgb), 1);
+    outline-offset: -2px;
+}
+
+/* Visually hidden "Copied" announcement. */
+.code-block-card .code-block-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 .code-block-card .code-block-pre {
     margin: 0;
     padding: var(--mineral-spacing-lg);
@@ -144,71 +162,111 @@
     color: rgba(250, 204, 21, 0.96);
 }
 
-.theme-light .code-block-card {
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .code-block-card {
     --code-block-body-bg: rgba(255, 255, 255, 0.96);
     --code-block-header-bg: rgba(241, 245, 249, 0.92);
     --code-block-header-border: rgba(15, 23, 42, 0.08);
 }
 
-.theme-light .code-block-card .code-block-pre {
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .code-block-pre,
+:where(.theme-dark) .theme-light .code-block-card .code-block-pre {
     color: rgba(30, 41, 59, 1);
 }
 
-.theme-light .code-block-card .hljs-comment,
-.theme-light .code-block-card .hljs-quote {
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-comment,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-quote,
+:where(.theme-dark) .theme-light .code-block-card .hljs-comment,
+:where(.theme-dark) .theme-light .code-block-card .hljs-quote {
     color: rgba(100, 116, 139, 0.95);
 }
 
-.theme-light .code-block-card .hljs-punctuation,
-.theme-light .code-block-card .hljs-operator,
-.theme-light .code-block-card .hljs-link,
-.theme-light .code-block-card .hljs-meta,
-.theme-light .code-block-card .hljs-attr,
-.theme-light .code-block-card .hljs-attribute,
-.theme-light .code-block-card .hljs-params,
-.theme-light .code-block-card .hljs-subst {
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-punctuation,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-operator,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-link,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-meta,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-attr,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-attribute,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-params,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-subst,
+:where(.theme-dark) .theme-light .code-block-card .hljs-punctuation,
+:where(.theme-dark) .theme-light .code-block-card .hljs-operator,
+:where(.theme-dark) .theme-light .code-block-card .hljs-link,
+:where(.theme-dark) .theme-light .code-block-card .hljs-meta,
+:where(.theme-dark) .theme-light .code-block-card .hljs-attr,
+:where(.theme-dark) .theme-light .code-block-card .hljs-attribute,
+:where(.theme-dark) .theme-light .code-block-card .hljs-params,
+:where(.theme-dark) .theme-light .code-block-card .hljs-subst {
     color: rgba(51, 65, 85, 0.9);
 }
 
-.theme-light .code-block-card .hljs-property,
-.theme-light .code-block-card .hljs-tag,
-.theme-light .code-block-card .hljs-name,
-.theme-light .code-block-card .hljs-selector-tag,
-.theme-light .code-block-card .hljs-literal,
-.theme-light .code-block-card .hljs-number,
-.theme-light .code-block-card .hljs-symbol,
-.theme-light .code-block-card .hljs-bullet,
-.theme-light .code-block-card .hljs-variable.constant_,
-.theme-light .code-block-card .hljs-deletion {
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-property,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-tag,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-name,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-selector-tag,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-literal,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-number,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-symbol,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-bullet,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-variable.constant_,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-deletion,
+:where(.theme-dark) .theme-light .code-block-card .hljs-property,
+:where(.theme-dark) .theme-light .code-block-card .hljs-tag,
+:where(.theme-dark) .theme-light .code-block-card .hljs-name,
+:where(.theme-dark) .theme-light .code-block-card .hljs-selector-tag,
+:where(.theme-dark) .theme-light .code-block-card .hljs-literal,
+:where(.theme-dark) .theme-light .code-block-card .hljs-number,
+:where(.theme-dark) .theme-light .code-block-card .hljs-symbol,
+:where(.theme-dark) .theme-light .code-block-card .hljs-bullet,
+:where(.theme-dark) .theme-light .code-block-card .hljs-variable.constant_,
+:where(.theme-dark) .theme-light .code-block-card .hljs-deletion {
     color: rgba(194, 65, 12, 0.95);
 }
 
-.theme-light .code-block-card .hljs-selector-class,
-.theme-light .code-block-card .hljs-selector-id,
-.theme-light .code-block-card .hljs-selector-attr,
-.theme-light .code-block-card .hljs-string,
-.theme-light .code-block-card .hljs-char,
-.theme-light .code-block-card .hljs-built_in,
-.theme-light .code-block-card .hljs-addition {
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-selector-class,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-selector-id,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-selector-attr,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-string,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-char,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-built_in,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-addition,
+:where(.theme-dark) .theme-light .code-block-card .hljs-selector-class,
+:where(.theme-dark) .theme-light .code-block-card .hljs-selector-id,
+:where(.theme-dark) .theme-light .code-block-card .hljs-selector-attr,
+:where(.theme-dark) .theme-light .code-block-card .hljs-string,
+:where(.theme-dark) .theme-light .code-block-card .hljs-char,
+:where(.theme-dark) .theme-light .code-block-card .hljs-built_in,
+:where(.theme-dark) .theme-light .code-block-card .hljs-addition {
     color: rgba(21, 128, 61, 0.95);
 }
 
-.theme-light .code-block-card .hljs-keyword,
-.theme-light .code-block-card .hljs-selector-pseudo,
-.theme-light .code-block-card .hljs-template-tag {
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-keyword,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-selector-pseudo,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-template-tag,
+:where(.theme-dark) .theme-light .code-block-card .hljs-keyword,
+:where(.theme-dark) .theme-light .code-block-card .hljs-selector-pseudo,
+:where(.theme-dark) .theme-light .code-block-card .hljs-template-tag {
     color: rgba(3, 105, 161, 0.98);
 }
 
-.theme-light .code-block-card .hljs-title,
-.theme-light .code-block-card .hljs-title.class_,
-.theme-light .code-block-card .hljs-title.function_,
-.theme-light .code-block-card .hljs-function .hljs-title,
-.theme-light .code-block-card .hljs-type {
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-title,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-title.class_,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-title.function_,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-function .hljs-title,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-type,
+:where(.theme-dark) .theme-light .code-block-card .hljs-title,
+:where(.theme-dark) .theme-light .code-block-card .hljs-title.class_,
+:where(.theme-dark) .theme-light .code-block-card .hljs-title.function_,
+:where(.theme-dark) .theme-light .code-block-card .hljs-function .hljs-title,
+:where(.theme-dark) .theme-light .code-block-card .hljs-type {
     color: rgba(109, 40, 217, 0.95);
 }
 
-.theme-light .code-block-card .hljs-regexp,
-.theme-light .code-block-card .hljs-variable,
-.theme-light .code-block-card .hljs-template-variable {
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-regexp,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-variable,
+.theme-light .code-block-card:not(:where(.theme-dark, .theme-dark *)) .hljs-template-variable,
+:where(.theme-dark) .theme-light .code-block-card .hljs-regexp,
+:where(.theme-dark) .theme-light .code-block-card .hljs-variable,
+:where(.theme-dark) .theme-light .code-block-card .hljs-template-variable {
     color: rgba(161, 98, 7, 0.95);
 }

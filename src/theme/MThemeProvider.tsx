@@ -1,7 +1,48 @@
-import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode} from 'react'
+import {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useReducer,
+    useRef,
+    useState,
+    type ReactNode,
+} from 'react'
 import type {MTheme, MMode, MModePreference} from './MTheme.types'
 
 const STORAGE_KEY = 'mineralui-theme'
+
+// Apply DOM classes before paint on the client; no-op during SSR.
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
+
+export interface MThemeInitScriptOptions {
+    /** Mode used when nothing is persisted. Matches the `mode` prop of `MThemeProvider`. Default `'dark'`. */
+    defaultMode?: MModePreference
+    /** Read the persisted mode (`localStorage['mineralui-theme']`). Default `true`. */
+    persist?: boolean
+}
+
+/**
+ * Inline script that sets the `theme-light` class on `<html>` before the first paint, so SSR / static
+ * pages do not flash the dark theme. Render it in `<head>`, e.g.
+ * `<script dangerouslySetInnerHTML={{__html: getMThemeInitScript({defaultMode: 'light'})}} />`.
+ * `MThemeProvider scope="body"` keeps the `<html>` class in sync afterwards.
+ */
+export function getMThemeInitScript({defaultMode = 'dark', persist = true}: MThemeInitScriptOptions = {}): string {
+    const fallback = JSON.stringify(defaultMode === 'light' || defaultMode === 'system' ? defaultMode : 'dark')
+    const read = persist ? `try{m=localStorage.getItem(${JSON.stringify(STORAGE_KEY)})}catch(e){}` : ''
+    return (
+        `(function(){try{var m=null;${read}` +
+        `if(m!=='dark'&&m!=='light'&&m!=='system')m=${fallback};` +
+        `if(m==='system')m=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';` +
+        `document.documentElement.classList.toggle('theme-light',m==='light')}catch(e){}})()`
+    )
+}
+
+/** `getMThemeInitScript()` with the defaults (dark, persisted). */
+export const M_THEME_INIT_SCRIPT = getMThemeInitScript()
 
 // Resolve the final mode once 'system' is allowed.
 function resolveMode(pref: MModePreference): MMode {
@@ -89,6 +130,8 @@ export type MThemeScope = 'body' | 'wrapper'
 export interface MThemeProviderProps {
     theme?: MTheme
     mode?: MModePreference
+    /** Read and write the persisted mode. Defaults to `true` for `scope="body"` and `false` for
+     *  `scope="wrapper"`, so a local preview never overrides the user's global choice. */
     persist?: boolean
     scope?: MThemeScope
     children: ReactNode
@@ -98,10 +141,11 @@ export interface MThemeProviderProps {
 export function MThemeProvider({
     theme,
     mode: modeProp = 'dark',
-    persist = true,
+    persist: persistProp,
     scope = 'body',
     children,
 }: MThemeProviderProps) {
+    const persist = persistProp ?? scope === 'body'
     const ref = useRef<HTMLDivElement>(null)
     const safeTheme = useMemo(() => theme ?? {}, [theme])
 
@@ -112,6 +156,17 @@ export function MThemeProvider({
         }
         return modeProp
     })
+
+    // Follow later changes of the `mode` prop (the persisted value only wins on mount).
+    const lastModeProp = useRef(modeProp)
+    useEffect(() => {
+        if (lastModeProp.current === modeProp) return
+        lastModeProp.current = modeProp
+        setModeState(modeProp)
+    }, [modeProp])
+
+    // Re-render on OS colour-scheme changes; resolveMode reads matchMedia during render.
+    const [, refreshSystemMode] = useReducer((tick: number) => tick + 1, 0)
 
     const resolved = resolveMode(mode)
 
@@ -137,15 +192,20 @@ export function MThemeProvider({
     useEffect(() => {
         if (mode !== 'system') return
         const mq = window.matchMedia('(prefers-color-scheme: dark)')
-        const handler = () => setModeState('system')
+        const handler = () => refreshSystemMode()
         mq.addEventListener('change', handler)
         return () => mq.removeEventListener('change', handler)
     }, [mode])
 
-    // Apply token overrides and light/dark class.
-    useEffect(() => {
+    // Apply token overrides and light/dark class before paint.
+    useIsomorphicLayoutEffect(() => {
         const target = scope === 'body' ? document.body : ref.current
         if (!target) return
+
+        // Body scope: keep <html> in sync too, so the class set by getMThemeInitScript() never goes stale.
+        // Wrapper scope: the wrapper's className (theme-light / theme-dark) is rendered by React.
+        const classTargets = scope === 'body' ? [target, document.documentElement] : []
+        for (const node of classTargets) node.classList.toggle('theme-light', resolved === 'light')
 
         for (const [key, value] of Object.entries(safeTheme)) {
             const cssVar = varMap[key as keyof MTheme]
@@ -157,8 +217,6 @@ export function MThemeProvider({
             }
         }
 
-        target.classList.toggle('theme-light', resolved === 'light')
-
         return () => {
             for (const key of Object.keys(safeTheme)) {
                 const cssVar = varMap[key as keyof MTheme]
@@ -169,7 +227,7 @@ export function MThemeProvider({
                     }
                 }
             }
-            target.classList.remove('theme-light')
+            for (const node of classTargets) node.classList.remove('theme-light')
         }
     }, [resolved, safeTheme, scope])
 
@@ -187,7 +245,7 @@ export function MThemeProvider({
     return (
         <ThemeContext.Provider value={ctx}>
             {scope === 'wrapper' ? (
-                <div ref={ref} className={resolved === 'light' ? 'theme-light' : undefined}>
+                <div ref={ref} className={resolved === 'light' ? 'theme-light' : 'theme-dark'}>
                     {children}
                 </div>
             ) : (

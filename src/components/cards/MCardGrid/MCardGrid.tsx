@@ -1,4 +1,4 @@
-import {Fragment, useState, useMemo, useRef, useCallback, type CSSProperties} from 'react'
+import {Fragment, useId, useState, useMemo, useRef, useCallback, type CSSProperties} from 'react'
 import type {MCardGridProps, MCardGridResponsiveColumns, MCardGridSort} from './MCardGrid.types'
 import {cn} from '../../../utils/cn'
 import {MButton, MCheckbox} from '../../controls'
@@ -8,6 +8,7 @@ import {MPopover} from '../../primitives'
 import {MLoader} from '../../feedback'
 import {MArrowDownIcon, MArrowUpIcon, MFilterIcon, MSortIcon} from '../../../icons'
 import './MCardGrid.css'
+import {formatMText, useMCardTexts} from '../../../i18n/frameworkTexts'
 
 /**
  * Builds inline style for `.card-grid-items`:
@@ -47,7 +48,7 @@ export function MCardGrid<T extends Record<string, unknown>>({
     color = 'primary',
     searchable = false,
     searchKeys,
-    searchPlaceholder = 'Search...',
+    searchPlaceholder: searchPlaceholderProp,
     search: controlledSearch,
     onSearchChange,
     filterable = false,
@@ -69,14 +70,18 @@ export function MCardGrid<T extends Record<string, unknown>>({
     manualSort = false,
     manualPagination = false,
     loading = false,
-    loadingLabel = 'Loading',
+    loadingLabel: loadingLabelProp,
     scrollOffset,
     columns = 3,
-    emptyMessage = 'No results found.',
+    emptyMessage: emptyMessageProp,
     className,
     style,
     ...rest
 }: MCardGridProps<T>) {
+    const gridTexts = useMCardTexts().cardGrid
+    const searchPlaceholder = searchPlaceholderProp === undefined ? gridTexts.searchPlaceholder : searchPlaceholderProp
+    const loadingLabel = loadingLabelProp === undefined ? gridTexts.loading : loadingLabelProp
+    const emptyMessage = emptyMessageProp === undefined ? gridTexts.emptyMessage : emptyMessageProp
     const [internalSearch, setInternalSearch] = useState('')
     const [internalFilters, setInternalFilters] = useState<Record<string, string[]>>({})
     const [internalSort, setInternalSort] = useState<MCardGridSort<T> | null>(defaultSort ?? null)
@@ -85,6 +90,9 @@ export function MCardGrid<T extends Record<string, unknown>>({
     const [sortOpen, setSortOpen] = useState(false)
     const filterBtnRef = useRef<HTMLElement>(null)
     const sortBtnRef = useRef<HTMLElement>(null)
+    const toolbarId = useId()
+    const filterPopoverId = `${toolbarId}-filter`
+    const sortPopoverId = `${toolbarId}-sort`
 
     const search = controlledSearch !== undefined ? controlledSearch : internalSearch
     const filters = controlledFilters !== undefined ? controlledFilters : internalFilters
@@ -249,21 +257,38 @@ export function MCardGrid<T extends Record<string, unknown>>({
                                     color={color}
                                     size="sm"
                                     startIcon={<MFilterIcon />}
+                                    aria-haspopup="dialog"
                                     aria-expanded={filterOpen}
+                                    aria-controls={filterOpen ? filterPopoverId : undefined}
                                     onClick={openFilter}
                                 >
-                                    Filter
+                                    {gridTexts.filter}
                                 </MButton>
                                 <MPopover
                                     open={filterOpen}
                                     anchorRef={filterBtnRef}
                                     onClose={() => setFilterOpen(false)}
                                     placement="bottom-end"
+                                    role="dialog"
+                                    id={filterPopoverId}
+                                    aria-label={gridTexts.filter}
+                                    initialFocus="first"
+                                    closeOnTabOut
                                     className="card-grid-dropdown"
                                 >
-                                    {filterKeys.map((filterKey) => (
-                                        <div key={filterKey.key} className="card-grid-filter-group">
-                                            <span className="card-grid-filter-label">{filterKey.label}</span>
+                                    {filterKeys.map((filterKey, groupIndex) => (
+                                        <div
+                                            key={filterKey.key}
+                                            className="card-grid-filter-group"
+                                            role="group"
+                                            aria-labelledby={`${filterPopoverId}-group-${groupIndex}`}
+                                        >
+                                            <span
+                                                id={`${filterPopoverId}-group-${groupIndex}`}
+                                                className="card-grid-filter-label"
+                                            >
+                                                {filterKey.label}
+                                            </span>
                                             {(filterOptions[filterKey.key] ?? []).map((option) => (
                                                 <div key={option} className="card-grid-filter-option">
                                                     <MCheckbox
@@ -299,16 +324,33 @@ export function MCardGrid<T extends Record<string, unknown>>({
                                             <MSortIcon />
                                         )
                                     }
+                                    aria-haspopup="dialog"
                                     aria-expanded={sortOpen}
+                                    aria-controls={sortOpen ? sortPopoverId : undefined}
                                     onClick={openSort}
                                 >
-                                    {activeSort ? `Sort: ${activeSort.label}` : 'Sort'}
+                                    {activeSort
+                                        ? formatMText(gridTexts.sortBy, {label: activeSort.label})
+                                        : gridTexts.sort}
+                                    {activeSort && sort && (
+                                        <span className="card-grid-sr-only">
+                                            {', '}
+                                            {sort.direction === 'asc'
+                                                ? gridTexts.sortAscending
+                                                : gridTexts.sortDescending}
+                                        </span>
+                                    )}
                                 </MButton>
                                 <MPopover
                                     open={sortOpen}
                                     anchorRef={sortBtnRef}
                                     onClose={() => setSortOpen(false)}
                                     placement="bottom-end"
+                                    role="dialog"
+                                    id={sortPopoverId}
+                                    aria-label={gridTexts.sort}
+                                    initialFocus="first"
+                                    closeOnTabOut
                                     className="card-grid-dropdown"
                                 >
                                     {sortKeys.map((sortItem) => (
@@ -319,6 +361,7 @@ export function MCardGrid<T extends Record<string, unknown>>({
                                                 'card-grid-sort-item',
                                                 sort?.key === sortItem.key && 'active'
                                             )}
+                                            aria-pressed={sort?.key === sortItem.key}
                                             onClick={() => {
                                                 if (sort?.key === sortItem.key) {
                                                     setSort({
@@ -338,6 +381,12 @@ export function MCardGrid<T extends Record<string, unknown>>({
                                                     ) : (
                                                         <MArrowDownIcon className="card-grid-sort-icon" />
                                                     )}
+                                                    <span className="card-grid-sr-only">
+                                                        {', '}
+                                                        {sort.direction === 'asc'
+                                                            ? gridTexts.sortAscending
+                                                            : gridTexts.sortDescending}
+                                                    </span>
                                                 </span>
                                             )}
                                         </button>
@@ -349,9 +398,14 @@ export function MCardGrid<T extends Record<string, unknown>>({
                 </div>
             )}
 
-            <div className={cn('card-grid-body', loading && 'loading')} aria-busy={loading || undefined}>
+            <div className={cn('card-grid-body', loading && 'loading')}>
+                {/* aria-busy sits on the content only, so the loader's own status region is still announced. */}
                 {paginatedItems.length > 0 ? (
-                    <div className="card-grid-items" style={buildColumnsStyle(columns)}>
+                    <div
+                        className="card-grid-items"
+                        style={buildColumnsStyle(columns)}
+                        aria-busy={loading || undefined}
+                    >
                         {paginatedItems.map((item, index) => {
                             // Wrap each card so consumers don't have to remember `key={item.id}` in renderCard.
                             // Prefer the item's id when present (stable across reorders), fall back to index.
@@ -360,10 +414,13 @@ export function MCardGrid<T extends Record<string, unknown>>({
                         })}
                     </div>
                 ) : (
-                    <div className="card-grid-empty">{emptyMessage}</div>
+                    <div className="card-grid-empty" aria-busy={loading || undefined}>
+                        {emptyMessage}
+                    </div>
                 )}
                 {loading && (
-                    <div className="card-grid-loading" role="status" aria-live="polite">
+                    // MLoader is the single status region; the overlay adds no second live region.
+                    <div className="card-grid-loading">
                         <MLoader center={false} minHeight="auto" color={color} label={loadingLabel} />
                     </div>
                 )}

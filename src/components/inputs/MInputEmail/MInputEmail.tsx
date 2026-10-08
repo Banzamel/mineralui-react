@@ -5,6 +5,7 @@ import {MInput} from '../MInput'
 import {validateEmail} from '../../../utils/validators'
 import type {ValidationResult} from '../../../utils/validators'
 import {MCheckIcon, MMailIcon} from '../../../icons'
+import {useMValidationMessage} from '../../../i18n/frameworkTexts'
 
 // Extend the base input with email validation and optional success feedback.
 export const MInputEmail = forwardRef<HTMLInputElement, MInputEmailProps>(function MInputEmail(
@@ -27,6 +28,7 @@ export const MInputEmail = forwardRef<HTMLInputElement, MInputEmailProps>(functi
 ) {
     const [internalValue, setInternalValue] = useState(defaultValue?.toString() ?? '')
     const [validation, setValidation] = useState<ValidationResult>({valid: true})
+    const translateValidation = useMValidationMessage()
     const [touched, setTouched] = useState(false)
 
     const currentValue = value !== undefined ? value.toString() : internalValue
@@ -34,12 +36,12 @@ export const MInputEmail = forwardRef<HTMLInputElement, MInputEmailProps>(functi
     // Reuse the shared email validator and surface the latest result upstream.
     const runValidation = useCallback(
         (val: string) => {
-            const result = validateEmail(val)
+            const result = translateValidation(validateEmail(val))
             setValidation(result)
             onValidationChange?.(result)
             return result
         },
-        [onValidationChange]
+        [onValidationChange, translateValidation]
     )
 
     // Validate while typing only when the component is configured to do so.

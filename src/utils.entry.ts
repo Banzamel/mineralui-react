@@ -16,6 +16,8 @@ export {
     composeValidators,
 } from './utils/validators'
 export type {ValidationResult, ValidatorFn} from './utils/validators'
+export {getValidationMessageInfo} from './utils/validationMessages'
+export type {ValidationMessageInfo, ValidationMessageParams} from './utils/validationMessages'
 export {
     formatPostCode,
     formatIBAN,
@@ -62,7 +64,14 @@ export type {RelativeTimeFallbackFormat, RelativeTimeUnit, RelativeTimeValue} fr
 export {useDebounce, useDebouncedCallback} from './utils/useDebounce'
 export {useClickOutside} from './utils/useClickOutside'
 export {useKeyboardNav} from './utils/useKeyboardNav'
-export type {UseKeyboardNavOptions} from './utils/useKeyboardNav'
+export type {
+    UseKeyboardNavOptions,
+    UseKeyboardNavMode,
+    UseKeyboardNavOrientation,
+    UseKeyboardNavItemProps,
+    UseKeyboardNavContainerProps,
+    UseKeyboardNavResult,
+} from './utils/useKeyboardNav'
 export {useInteractionEffect} from './utils/useInteractionEffect'
 export type {MClickEffect, UseInteractionEffectOptions, UseInteractionEffectResult} from './utils/useInteractionEffect'
 export {useGhostText} from './utils/useGhostText'

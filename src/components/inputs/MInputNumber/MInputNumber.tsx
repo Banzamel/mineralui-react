@@ -1,4 +1,4 @@
-import {useState, useCallback, useRef, useEffect, forwardRef} from 'react'
+import {useState, useCallback, useRef, useEffect, useId, forwardRef} from 'react'
 import type * as React from 'react'
 import type {MInputNumberProps} from './MInputNumber.types'
 import {MInput} from '../MInput'
@@ -20,6 +20,11 @@ function roundToPrecision(val: number, precision: number): number {
     return Math.round(val * factor) / factor
 }
 
+// Parse user input, accepting a comma as the decimal separator (`1,5` → 1.5).
+function parseNumber(val: string): number {
+    return parseFloat(val.replace(',', '.'))
+}
+
 // Extend the base input with stepping, clamping and keyboard increment support.
 export const MInputNumber = forwardRef<HTMLInputElement, MInputNumberProps>(function MInputNumber(
     {
@@ -37,11 +42,16 @@ export const MInputNumber = forwardRef<HTMLInputElement, MInputNumberProps>(func
         onBlur,
         disabled = false,
         className,
+        id: idProp,
+        inputProps,
         ...rest
     },
     ref
 ) {
     const texts = useMCommonTexts()
+    // The steppers point at the input through `aria-controls`, so the id must always exist.
+    const generatedId = useId()
+    const inputId = idProp ?? generatedId
     const [internalValue, setInternalValue] = useState(defaultValue?.toString() ?? '')
     const currentValue = value !== undefined ? value.toString() : internalValue
     const intervalRef = useRef<ReturnType<typeof setInterval>>(null)
@@ -57,21 +67,29 @@ export const MInputNumber = forwardRef<HTMLInputElement, MInputNumberProps>(func
             if (value === undefined) {
                 setInternalValue(newVal)
             }
-            const num = parseFloat(newVal)
+            const num = parseNumber(newVal)
             onValueChange?.(isNaN(num) ? null : num)
         },
         [value, onValueChange]
     )
 
-    // Move the current value by one step in the requested direction.
-    const increment = useCallback(
-        (direction: 1 | -1) => {
-            const current = parseFloat(currentValueRef.current) || 0
-            const newVal = roundToPrecision(clampValue(current + step * direction, min, max), precision)
+    // Commit an already computed numeric value (clamped and rounded).
+    const commitNumber = useCallback(
+        (next: number) => {
+            const newVal = roundToPrecision(clampValue(next, min, max), precision)
             currentValueRef.current = newVal.toString()
             updateValue(newVal.toString())
         },
-        [step, min, max, precision, updateValue]
+        [min, max, precision, updateValue]
+    )
+
+    // Move the current value by `multiplier` steps in the requested direction.
+    const increment = useCallback(
+        (direction: 1 | -1, multiplier = 1) => {
+            const current = parseNumber(currentValueRef.current) || 0
+            commitNumber(current + step * multiplier * direction)
+        },
+        [step, commitNumber]
     )
 
     // Repeat stepping while the pointer is held on a stepper button.
@@ -108,7 +126,7 @@ export const MInputNumber = forwardRef<HTMLInputElement, MInputNumberProps>(func
     // Snap the entered value back into range when the field loses focus.
     const handleBlur = useCallback(
         (e: React.FocusEvent<HTMLInputElement>) => {
-            const num = parseFloat(currentValueRef.current)
+            const num = parseNumber(currentValueRef.current)
             if (!isNaN(num)) {
                 const clamped = roundToPrecision(clampValue(num, min, max), precision)
                 currentValueRef.current = clamped.toString()
@@ -119,7 +137,8 @@ export const MInputNumber = forwardRef<HTMLInputElement, MInputNumberProps>(func
         [min, max, precision, updateValue, onBlur]
     )
 
-    // Support ArrowUp and ArrowDown as a keyboard stepper.
+    // WAI-ARIA spinbutton keys: arrows step, PageUp / PageDown step by ten, Home / End jump to the
+    // bounds (only when they exist, otherwise the keys keep moving the caret).
     const handleKeyDown = useCallback(
         (e: React.KeyboardEvent<HTMLInputElement>) => {
             if (e.key === 'ArrowUp') {
@@ -128,11 +147,31 @@ export const MInputNumber = forwardRef<HTMLInputElement, MInputNumberProps>(func
             } else if (e.key === 'ArrowDown') {
                 e.preventDefault()
                 increment(-1)
+            } else if (e.key === 'PageUp') {
+                e.preventDefault()
+                increment(1, 10)
+            } else if (e.key === 'PageDown') {
+                e.preventDefault()
+                increment(-1, 10)
+            } else if (e.key === 'Home' && min !== undefined) {
+                e.preventDefault()
+                commitNumber(min)
+            } else if (e.key === 'End' && max !== undefined) {
+                e.preventDefault()
+                commitNumber(max)
             }
             onKeyDown?.(e)
         },
-        [increment, onKeyDown]
+        [increment, commitNumber, min, max, onKeyDown]
     )
+
+    // Screen readers and keyboard activation fire a click without a preceding pointerdown
+    // (`detail === 0`); pointer clicks were already handled by the hold-to-repeat logic.
+    const handleStepClick = (direction: 1 | -1) => (event: React.MouseEvent<HTMLButtonElement>) => {
+        if (event.detail === 0) increment(direction)
+    }
+
+    const numericValue = parseNumber(currentValue)
 
     const stepper =
         showStepper && !disabled ? (
@@ -147,8 +186,10 @@ export const MInputNumber = forwardRef<HTMLInputElement, MInputNumberProps>(func
                     onPointerUp={stopHold}
                     onPointerLeave={stopHold}
                     onPointerCancel={stopHold}
+                    onClick={handleStepClick(1)}
                     tabIndex={-1}
                     aria-label={texts.increment}
+                    aria-controls={inputId}
                 >
                     <MChevronUpIcon />
                 </button>
@@ -162,8 +203,10 @@ export const MInputNumber = forwardRef<HTMLInputElement, MInputNumberProps>(func
                     onPointerUp={stopHold}
                     onPointerLeave={stopHold}
                     onPointerCancel={stopHold}
+                    onClick={handleStepClick(-1)}
                     tabIndex={-1}
                     aria-label={texts.decrement}
+                    aria-controls={inputId}
                 >
                     <MChevronDownIcon />
                 </button>
@@ -174,6 +217,14 @@ export const MInputNumber = forwardRef<HTMLInputElement, MInputNumberProps>(func
         <MInput
             {...rest}
             ref={ref}
+            id={inputId}
+            inputProps={{
+                role: 'spinbutton',
+                'aria-valuenow': isNaN(numericValue) ? undefined : numericValue,
+                'aria-valuemin': min,
+                'aria-valuemax': max,
+                ...inputProps,
+            }}
             type="text"
             inputMode="decimal"
             value={currentValue}

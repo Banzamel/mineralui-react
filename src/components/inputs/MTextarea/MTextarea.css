@@ -40,11 +40,17 @@
 }
 
 /* --- Sizes (height and padding overridden for textarea) --- */
+.textarea .container.field-xs,
 .textarea .container.field-sm,
 .textarea .container.field-md,
-.textarea .container.field-lg {
+.textarea .container.field-lg,
+.textarea .container.field-xl {
     height: auto;
     padding: 0;
+}
+
+.textarea .container.field-xs .field {
+    padding: var(--mineral-spacing-xs) var(--mineral-spacing-xs);
 }
 
 .textarea .container.field-sm .field {
@@ -56,6 +62,10 @@
 }
 
 .textarea .container.field-lg .field {
+    padding: var(--mineral-spacing-md) var(--mineral-spacing-lg);
+}
+
+.textarea .container.field-xl .field {
     padding: var(--mineral-spacing-md) var(--mineral-spacing-lg);
 }
 

@@ -186,3 +186,9 @@ button.card-payment {
     color: var(--mineral-text-heading);
     margin: 2px 0 0;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .card-payment.interactive:hover {
+        transform: none;
+    }
+}

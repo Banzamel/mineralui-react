@@ -1,4 +1,4 @@
-import {useState, useCallback, useRef, useMemo, useEffect, forwardRef} from 'react'
+import {useState, useCallback, useRef, useMemo, useEffect, useId, forwardRef} from 'react'
 import type * as React from 'react'
 import type {MInputFileProps, MInputFileCropOptions} from './MInputFile.types'
 import {MCropEditor} from './MCropEditor'
@@ -23,7 +23,7 @@ import {
     MUploadIcon,
 } from '../../../icons'
 import './MInputFile.css'
-import {useMCommonTexts, formatMText} from '../../../i18n/frameworkTexts'
+import {useMCommonTexts, useMInputFileTexts, formatMText} from '../../../i18n/frameworkTexts'
 
 function formatSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`
@@ -85,8 +85,8 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
         preview = true,
         clearable = false,
         icon,
-        placeholder = 'Drop files here or click to browse',
-        dropText = 'Drop files here',
+        placeholder: placeholderProp,
+        dropText: dropTextProp,
         fullWidth = false,
         crop,
         onClear,
@@ -96,12 +96,19 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
     ref
 ) {
     const texts = useMCommonTexts()
+    const fileTexts = useMInputFileTexts()
+    const placeholder = placeholderProp ?? fileTexts.placeholder
+    const dropText = dropTextProp ?? fileTexts.drop
     const [dragging, setDragging] = useState(false)
     const [files, setFiles] = useState<File[]>([])
     const [fileError, setFileError] = useState('')
     const [cropFile, setCropFile] = useState<File | null>(null)
     const inputRef = useRef<HTMLInputElement>(null)
     const dragCounter = useRef(0)
+    const baseId = useId()
+    const labelId = `${baseId}-label`
+    const acceptId = `${baseId}-accept`
+    const messageId = `${baseId}-message`
 
     const cropOptions: MInputFileCropOptions | null = crop
         ? typeof crop === 'boolean'
@@ -127,25 +134,31 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
 
             if (accept) {
                 const patterns = accept.split(',').map((s) => s.trim().toLowerCase())
-                accepted = accepted.filter((f) => {
+                const matches = (f: File) => {
                     const ext = '.' + f.name.split('.').pop()?.toLowerCase()
                     const mime = f.type.toLowerCase()
                     return patterns.some(
                         (p) => p === ext || p === mime || (p.endsWith('/*') && mime.startsWith(p.slice(0, -1)))
                     )
-                })
+                }
+                // Reject the whole batch with a message instead of dropping files silently.
+                const rejected = accepted.filter((f) => !matches(f))
+                if (rejected.length) {
+                    setFileError(formatMText(fileTexts.type, {name: rejected.map((f) => f.name).join(', ')}))
+                    return
+                }
             }
 
             if (maxSize) {
                 const oversized = accepted.filter((f) => f.size > maxSize)
                 if (oversized.length) {
-                    setFileError(`Max file size: ${formatSize(maxSize)}`)
+                    setFileError(formatMText(fileTexts.maxSize, {size: formatSize(maxSize)}))
                     return
                 }
             }
 
             if (maxFiles && accepted.length > maxFiles) {
-                setFileError(`Max ${maxFiles} file${maxFiles > 1 ? 's' : ''}`)
+                setFileError(formatMText(maxFiles > 1 ? fileTexts.maxFiles : fileTexts.maxFilesOne, {count: maxFiles}))
                 return
             }
 
@@ -159,7 +172,7 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
             setFiles(accepted)
             onChange?.(accepted)
         },
-        [accept, maxSize, maxFiles, onChange, cropOptions]
+        [accept, maxSize, maxFiles, onChange, cropOptions, fileTexts]
     )
 
     const handleCropDone = useCallback(
@@ -224,6 +237,8 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
             if (e.target.files?.length) {
                 processFiles(e.target.files)
             }
+            // Reset so picking the same file again still fires `change`.
+            e.target.value = ''
         },
         [processFiles]
     )
@@ -256,6 +271,8 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
     const displayError = errorText || fileError
     const hasError = error || !!fileError
     const resolvedColorClass = hasError ? 'color-error' : `color-${color}`
+    const hasMessage = (hasError && !!displayError) || (!!helperText && !hasError)
+    const describedBy = [hasMessage && messageId, accept && acceptId].filter(Boolean).join(' ') || undefined
 
     return (
         <div
@@ -272,7 +289,11 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
         >
             {(label || (clearable && files.length > 0 && !disabled)) && (
                 <div className="file header">
-                    {label && <div className="file label">{label}</div>}
+                    {label && (
+                        <div id={labelId} className="file label">
+                            {label}
+                        </div>
+                    )}
                     {clearable && files.length > 0 && !disabled && (
                         <button
                             type="button"
@@ -285,6 +306,20 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
                     )}
                 </div>
             )}
+
+            {/* The native picker lives outside the role="button" zone so it is not a control nested in a
+                control; it stays hidden from assistive tech because the zone is the accessible entry point. */}
+            <input
+                ref={inputRef}
+                type="file"
+                accept={accept}
+                multiple={multiple}
+                disabled={disabled}
+                onChange={handleChange}
+                tabIndex={-1}
+                aria-hidden="true"
+                className="file hidden"
+            />
 
             <div
                 className={cn('file dropzone', dragging && 'dragging', hasError && 'error')}
@@ -301,23 +336,20 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
                         handleClick()
                     }
                 }}
-                aria-label={label || placeholder}
+                aria-label={label ? undefined : placeholder}
+                aria-labelledby={label ? labelId : undefined}
+                aria-describedby={describedBy}
+                aria-disabled={disabled || undefined}
             >
-                <input
-                    ref={inputRef}
-                    type="file"
-                    accept={accept}
-                    multiple={multiple}
-                    onChange={handleChange}
-                    tabIndex={-1}
-                    className="file hidden"
-                />
-
                 <div className="file content">
                     {icon && <div className="file icon">{icon}</div>}
                     {!icon && <MUploadIcon className="file icon default" aria-hidden="true" />}
                     <div className="file text">{dragging ? dropText : placeholder}</div>
-                    {accept && <div className="file accept">{accept}</div>}
+                    {accept && (
+                        <div id={acceptId} className="file accept">
+                            {accept}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -332,8 +364,16 @@ export const MInputFile = forwardRef<HTMLDivElement, MInputFileProps>(function M
                 />
             )}
 
-            {helperText && !hasError && <div className="file helper">{helperText}</div>}
-            {hasError && displayError && <div className="file error">{displayError}</div>}
+            {helperText && !hasError && (
+                <div id={messageId} className="file helper">
+                    {helperText}
+                </div>
+            )}
+            {hasError && displayError && (
+                <div id={messageId} className="file error" role="alert">
+                    {displayError}
+                </div>
+            )}
 
             {preview && files.length > 0 && !cropFile && (
                 <div className="file preview">

@@ -18,7 +18,8 @@ function getTextLineWidth(index: number, lines: number) {
     return '100%'
 }
 
-// Animated placeholder shown while content is loading.
+// Animated placeholder shown while content is loading. Hidden from assistive technology:
+// it carries no content, the loading state belongs on the region that is loading.
 export function MSkeleton({
     variant = 'text',
     width,
@@ -38,6 +39,7 @@ export function MSkeleton({
             <div
                 className={cn('skeleton-group', className)}
                 style={{width: width ?? undefined, gap: gap ?? undefined, ...style}}
+                aria-hidden="true"
                 {...rest}
             >
                 {Array.from({length: lines}, (_, i) => (
@@ -64,6 +66,7 @@ export function MSkeleton({
                 borderRadius: radius ?? undefined,
                 ...style,
             }}
+            aria-hidden="true"
             {...rest}
         />
     )

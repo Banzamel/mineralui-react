@@ -5,8 +5,14 @@ export type MAutocompleteVariant = 'outlined' | 'filled' | 'underlined'
 
 export interface MAutocompleteProps<T = string> {
     options: T[]
-    value?: T | T[]
-    onChange?: (value: T | T[]) => void
+    /** `null` (single) or `[]` (multiple) means "nothing selected". */
+    value?: T | T[] | null
+    /**
+     * Called with the new selection. Clearing emits `null` in single mode and `[]` in
+     * multiple mode. Declared as a method so existing `(value: T | T[]) => void`
+     * handlers stay assignable.
+     */
+    onChange?(value: T | T[] | null): void
     getOptionLabel?: (option: T) => string
     getOptionValue?: (option: T) => string
     filterOptions?: (options: T[], inputValue: string) => T[]

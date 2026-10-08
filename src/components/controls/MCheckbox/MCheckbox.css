@@ -125,6 +125,30 @@
     transition: opacity var(--mineral-transition-fast);
 }
 
+/* Tick drawn as a rotated corner; hidden while indeterminate so the dash wins. The
+   `.box >` prefix outranks the generic `position: relative` rule for box children. */
+.checkbox .box > .check-mark {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    width: 30%;
+    height: 55%;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: translate(-50%, -50%) rotate(45deg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--mineral-transition-fast);
+}
+
+.checkbox .box.color-light .check-mark {
+    border-color: rgba(var(--mineral-dark-color-rgb), 1);
+}
+
+.checkbox .input:checked:not(:indeterminate) ~ .check-mark {
+    opacity: 1;
+}
+
 .checkbox .input:checked ~ .indeterminate-mark {
     opacity: 0;
 }

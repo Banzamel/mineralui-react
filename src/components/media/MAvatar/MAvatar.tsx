@@ -6,6 +6,7 @@ import {cn} from '../../../utils/cn'
 import {useInteractionEffect} from '../../../utils/useInteractionEffect'
 import {renderOverlayBadge} from '../../../utils/overlayBadge'
 import './MAvatar.css'
+import {formatMText, useMCommonTexts, useMMediaTexts} from '../../../i18n/frameworkTexts'
 
 function getFallbackInitials(name?: string, initials?: string) {
     if (initials) return initials.slice(0, 2).toUpperCase()
@@ -44,18 +45,43 @@ export function MAvatar({
     className,
     style,
     onPointerDown,
+    href,
+    target,
+    rel,
     ...rest
 }: MAvatarProps) {
+    const commonTexts = useMCommonTexts()
+    const mediaTexts = useMMediaTexts()
     const fallbackInitials = getFallbackInitials(name, initials)
-    const isInteractive = typeof rest.onClick === 'function' || rest.role === 'button' || rest.tabIndex !== undefined
+    // A clickable avatar is a real control: a link with `href`, otherwise a native button. A hand-made
+    // `role` / `tabIndex` keeps the legacy span so callers' own key handling is not doubled.
+    const manualControl = rest.role !== undefined || rest.tabIndex !== undefined
+    const element: 'a' | 'button' | 'span' =
+        href !== undefined && !skeleton
+            ? 'a'
+            : typeof rest.onClick === 'function' && !manualControl && !skeleton
+              ? 'button'
+              : 'span'
+    const isInteractive =
+        element !== 'span' ||
+        typeof rest.onClick === 'function' ||
+        rest.role === 'button' ||
+        rest.tabIndex !== undefined
     const resolvedBadge = badge !== undefined ? badge : presence !== undefined ? true : undefined
     const resolvedBadgeColor = badgeColor ?? (presence !== undefined ? PRESENCE_BADGE_COLOR[presence] : undefined)
     const resolvedBadgePulsing = badgePulsing ?? (presence !== undefined ? true : false)
-    const {effectClassName, effectLayer, handlePointerDown} = useInteractionEffect<HTMLSpanElement>({
+    const {effectClassName, effectLayer, handlePointerDown} = useInteractionEffect<HTMLElement>({
         effect: clickEffect ?? (isInteractive ? 'ripple' : 'none'),
         disabled: !isInteractive || skeleton,
         color: rippleColor,
     })
+    const baseLabel = alt ?? name ?? mediaTexts.avatar
+    // Presence must not rely on the dot colour alone (WCAG 1.4.1), so it joins the accessible name.
+    const accessibleLabel = skeleton
+        ? commonTexts.loading
+        : presence !== undefined
+          ? formatMText(mediaTexts.avatarPresence, {name: baseLabel, presence: mediaTexts.presence[presence]})
+          : baseLabel
     const inlineStyle: CSSProperties =
         typeof size === 'number'
             ? {
@@ -69,8 +95,17 @@ export function MAvatar({
                   ...(backgroundColor && !skeleton ? {backgroundColor} : {}),
               }
 
+    const Component = element as 'span'
+    const elementProps =
+        element === 'a'
+            ? {href, target, rel: rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined)}
+            : element === 'button'
+              ? {type: 'button' as const}
+              : {}
+
     return (
-        <span
+        <Component
+            {...elementProps}
             className={cn(
                 'avatar',
                 typeof size === 'string' && size,
@@ -82,7 +117,8 @@ export function MAvatar({
                 className
             )}
             style={inlineStyle}
-            aria-label={skeleton ? 'Loading' : (alt ?? name ?? 'MAvatar')}
+            role={isInteractive ? undefined : 'img'}
+            aria-label={accessibleLabel}
             onPointerDown={(event) => {
                 handlePointerDown(event)
                 onPointerDown?.(event)
@@ -91,12 +127,16 @@ export function MAvatar({
             {...rest}
         >
             {effectLayer}
-            {renderOverlayBadge({badge: resolvedBadge, badgeColor: resolvedBadgeColor, badgePulsing: resolvedBadgePulsing})}
+            {renderOverlayBadge({
+                badge: resolvedBadge,
+                badgeColor: resolvedBadgeColor,
+                badgePulsing: resolvedBadgePulsing,
+            })}
             {skeleton ? null : src ? (
                 <img src={src} alt={alt ?? name ?? ''} className={'image'} />
             ) : (
                 <span className={'fallback'}>{fallbackInitials}</span>
             )}
-        </span>
+        </Component>
     )
 }

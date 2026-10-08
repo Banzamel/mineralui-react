@@ -86,6 +86,39 @@ export function isInsideDescendantPopover(id: number, target: Node | null): bool
     return false
 }
 
+/** True when the popover identified by `id` has an open popover nested inside it. */
+function hasDescendant(id: number): boolean {
+    for (const entry of registrations) {
+        if (entry.id === id) continue
+
+        const seen = new Set<number>()
+        let cursor = parentIdOf(entry)
+        while (cursor !== null && !seen.has(cursor)) {
+            if (cursor === id) return true
+            seen.add(cursor)
+            const parent = registrations.find((candidate) => candidate.id === cursor)
+            cursor = parent ? parentIdOf(parent) : null
+        }
+    }
+
+    return false
+}
+
+/**
+ * True when the popover identified by `id` is the top layer: the most recently
+ * opened popover that has no open popover nested inside it. Only the top layer
+ * reacts to Escape, so one key press peels off exactly one layer.
+ */
+export function isTopPopover(id: number): boolean {
+    for (let index = registrations.length - 1; index >= 0; index--) {
+        const entry = registrations[index]
+        if (hasDescendant(entry.id)) continue
+        return entry.id === id
+    }
+
+    return false
+}
+
 /** Test-only helper — the registry is module state that outlives a render. */
 export function __resetPopoverStack(): void {
     registrations.length = 0

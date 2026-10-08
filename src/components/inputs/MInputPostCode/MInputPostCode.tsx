@@ -2,11 +2,12 @@ import {forwardRef, useCallback, useMemo, useState} from 'react'
 import type * as React from 'react'
 import type {MInputPostCodeProps} from './MInputPostCode.types'
 import {MInputGroup} from '../MInputGroup'
+import {useFormatCaret} from '../MInput/useFormatCaret'
 import {cn} from '../../../utils/cn'
 import {formatPostCode, getPostCodeRule, postCodeCountries, validatePostCode} from '../../../utils/postalCodes'
 import type {ValidationResult} from '../../../utils/validators'
 import './MInputPostCode.css'
-import {useMCommonTexts} from '../../../i18n/frameworkTexts'
+import {formatMText, useMCommonTexts, useMInputTexts, useMValidationMessage} from '../../../i18n/frameworkTexts'
 
 // Extend the grouped input with country-aware postal code masking and validation.
 export const MInputPostCode = forwardRef<HTMLInputElement, MInputPostCodeProps>(function MInputPostCode(
@@ -35,11 +36,14 @@ export const MInputPostCode = forwardRef<HTMLInputElement, MInputPostCodeProps>(
     ref
 ) {
     const texts = useMCommonTexts()
+    const inputTexts = useMInputTexts()
+    const captureCaret = useFormatCaret()
     const [internalCountry, setInternalCountry] = useState(defaultCountry.toUpperCase())
     const [internalValue, setInternalValue] = useState(() =>
         formatPostCode(defaultValue?.toString() ?? '', country ?? defaultCountry)
     )
     const [validation, setValidation] = useState<ValidationResult>({valid: true})
+    const translateValidation = useMValidationMessage()
     const [touched, setTouched] = useState(false)
 
     const currentCountry = (country ?? internalCountry).toUpperCase()
@@ -48,17 +52,18 @@ export const MInputPostCode = forwardRef<HTMLInputElement, MInputPostCodeProps>(
 
     const runValidation = useCallback(
         (formattedValue: string, nextCountry: string) => {
-            const result = validatePostCode(formattedValue, nextCountry)
+            const result = translateValidation(validatePostCode(formattedValue, nextCountry))
             setValidation(result)
             onValidationChange?.(result)
             return result
         },
-        [onValidationChange]
+        [onValidationChange, translateValidation]
     )
 
     // Keep the visible postal code aligned with the selected country rule.
     const handleChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement>) => {
+            captureCaret(event)
             const formattedValue = formatPostCode(event.target.value, currentCountry)
 
             if (value === undefined) {
@@ -73,7 +78,7 @@ export const MInputPostCode = forwardRef<HTMLInputElement, MInputPostCodeProps>(
 
             onChange?.(event)
         },
-        [currentCountry, onChange, onValueChange, runValidation, touched, validateOnChange, value]
+        [captureCaret, currentCountry, onChange, onValueChange, runValidation, touched, validateOnChange, value]
     )
 
     // Re-run validation after blur so the visible formatting and error state stay in sync.
@@ -138,8 +143,12 @@ export const MInputPostCode = forwardRef<HTMLInputElement, MInputPostCodeProps>(
             onClear={handleClear}
             error={isError}
             errorText={resolvedErrorText}
-            helperText={resolvedErrorText ? undefined : (helperText ?? `Format: ${currentRule.example}`)}
-            placeholder={selectableCountry ? currentRule.placeholder : (placeholder ?? currentRule.placeholder)}
+            helperText={
+                resolvedErrorText
+                    ? undefined
+                    : (helperText ?? formatMText(inputTexts.formatHint, {example: currentRule.example}))
+            }
+            placeholder={placeholder ?? currentRule.placeholder}
             maxLength={currentRule.maxLength}
             disabled={disabled}
             prepend={

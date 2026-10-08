@@ -88,7 +88,7 @@
         border-color var(--mineral-transition-fast);
 }
 
-.mineral-mini-calendar__day:hover:not(:disabled) {
+.mineral-mini-calendar__day:hover:not(:disabled):not([aria-disabled='true']) {
     background: var(--mineral-option-hover-bg);
 }
 
@@ -113,7 +113,7 @@
 }
 
 .mineral-mini-calendar__day--selected,
-.mineral-mini-calendar__day--selected:hover:not(:disabled) {
+.mineral-mini-calendar__day--selected:hover:not(:disabled):not([aria-disabled='true']) {
     background: var(--mineral-mini-calendar-accent);
     border-color: var(--mineral-mini-calendar-accent);
     color: var(--mineral-mini-calendar-accent-contrast, var(--mineral-primary-contrast));

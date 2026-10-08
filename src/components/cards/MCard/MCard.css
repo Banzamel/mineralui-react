@@ -76,7 +76,8 @@
     padding: var(--mineral-spacing-md);
 }
 
-.theme-light .card {
+.theme-light .card:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .card {
     --card-body-bg: rgba(255, 255, 255, 1);
     --card-chrome-bg: rgba(248, 250, 252, 1);
 }
@@ -95,4 +96,10 @@
 
 .card-skeleton-lines {
     padding: 0 var(--mineral-spacing-md) var(--mineral-spacing-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card.interactive:hover {
+        transform: none;
+    }
 }

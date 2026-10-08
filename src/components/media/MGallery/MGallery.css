@@ -51,6 +51,12 @@
     z-index: 1;
 }
 
+/* The ripple sits above the opaque image, otherwise the wave is hidden behind it. */
+.gallery-trigger > .click-effect-layer {
+    z-index: 2;
+    pointer-events: none;
+}
+
 .gallery-item.rounded,
 .gallery-trigger.rounded {
     border-radius: var(--mineral-radius-md);

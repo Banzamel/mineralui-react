@@ -235,6 +235,26 @@
     padding: 0 4px;
 }
 
+/* ARIA grid wrapper of one month: keeps the panel spacing between weekday names and days. */
+.date-range-calendar .day-table,
+.date-range-picker-popover .date-range-calendar .day-table {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mineral-spacing-xs);
+}
+
+/* Week rows exist for the ARIA grid structure only; the cells stay items of .day-grid. */
+.date-range-calendar .day-row,
+.date-range-picker-popover .date-range-calendar .day-row {
+    display: contents;
+}
+
+.date-range-calendar .day:focus-visible,
+.date-range-picker-popover .date-range-calendar .day:focus-visible {
+    outline: 2px solid rgba(var(--color-rgb), 1);
+    outline-offset: 1px;
+}
+
 .date-range-calendar .day-names,
 .date-range-picker-popover .date-range-calendar .day-names {
     display: grid;
@@ -446,4 +466,11 @@
     .date-range-picker-popover .date-range-calendar .footer-actions {
         justify-content: flex-end;
     }
+}
+
+/* Days of the neighbouring months keep their grid cell but are not drawn (two panels). */
+.date-range-calendar .day.outside,
+.date-range-picker-popover .date-range-calendar .day.outside {
+    visibility: hidden;
+    pointer-events: none;
 }

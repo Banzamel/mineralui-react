@@ -83,3 +83,21 @@
         animation-iteration-count: 1;
     }
 }
+
+.rating-star:focus {
+    outline: none;
+}
+
+.rating-star:focus-visible {
+    outline: 2px solid rgba(var(--color-rgb), 1);
+    outline-offset: 2px;
+    border-radius: var(--mineral-radius-sm);
+}
+
+.rating.read-only .rating-star:hover {
+    transform: none;
+}
+
+.rating.read-only .rating-star:active {
+    animation: none;
+}

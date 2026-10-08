@@ -1,11 +1,16 @@
-import {useState, useRef, useCallback, useMemo, useEffect} from 'react'
+import {useState, useRef, useCallback, useMemo, useEffect, useId} from 'react'
 import type * as React from 'react'
 import type {MDatePickerProps} from './MDatePicker.types'
 import type {MDateFormat} from '../../inputs'
 import {MInput} from '../../inputs'
 import {MPopover} from '../../primitives'
 import {cn} from '../../../utils/cn'
-import {useMDatePickerTexts, useMCommonTexts} from '../../../i18n/frameworkTexts'
+import {
+    useMDatePickerTexts,
+    useMCommonTexts,
+    useMTimePickerTexts,
+    useMValidationMessage,
+} from '../../../i18n/frameworkTexts'
 import {useDocumentLocale} from '../../../utils/locale'
 import type {ValidationResult} from '../../../utils/validators'
 import {parseDateString, validateDate} from '../../../utils/validators'
@@ -29,7 +34,9 @@ import {
     MChevronLeftIcon as ChevronLeftGlyphIcon,
     MChevronRightIcon as ChevronRightGlyphIcon,
 } from '../../../icons'
-import {getMonthMatrix} from '../../../utils/calendarDates'
+import {getMonthMatrix, getWeekdayLabels} from '../../../utils/calendarDates'
+import {useDateGridNav} from '../../../utils/useDateGridNav'
+import {TimeColumnListbox} from '../shared/TimeColumnListbox'
 import './MDatePicker.css'
 
 const DATE_UNAVAILABLE_ERROR = 'Date is unavailable'
@@ -339,8 +346,11 @@ export function MDatePicker({
     const commonTexts = useMCommonTexts()
     const locale = useDocumentLocale(localeOverride)
     const texts = useMDatePickerTexts()
+    const timeTexts = useMTimePickerTexts()
     const {inputFormat, separator} = useMemo(() => normalizeDatePickerFormat(format), [format])
     const [open, setOpen] = useState(false)
+    // Opening from the keyboard moves focus to the day grid (APG date picker dialog); a click keeps it in the field.
+    const [focusOnOpen, setFocusOnOpen] = useState(false)
     const [internalValue, setInternalValue] = useState<Date | null>(() => toDate(defaultValue))
     const [validationState, setValidationState] = useState<ValidationResult>({valid: true})
     const [touched, setTouched] = useState(false)
@@ -386,12 +396,15 @@ export function MDatePicker({
         [disabledDates, maxDate, minDate]
     )
 
+    const translateValidation = useMValidationMessage()
     const emitValidation = useCallback(
         (result: ValidationResult) => {
-            setValidationState(result)
-            onValidationChange?.(result)
+            // Built-in validator messages go through `mineralui.validation.*`; others pass unchanged.
+            const translated = translateValidation(result)
+            setValidationState(translated)
+            onValidationChange?.(translated)
         },
-        [onValidationChange]
+        [onValidationChange, translateValidation]
     )
 
     const commitValue = useCallback(
@@ -573,6 +586,16 @@ export function MDatePicker({
 
     const handleInputKeyDown = useCallback(
         (event: React.KeyboardEvent<HTMLInputElement>) => {
+            // ArrowDown / Alt+ArrowDown opens the calendar and moves focus to the day grid.
+            if (event.key === 'ArrowDown') {
+                event.preventDefault()
+                if (!disabled && !readOnly && !inline) {
+                    setFocusOnOpen(true)
+                    setOpen(true)
+                }
+                return
+            }
+
             if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Enter'].includes(event.key)) {
                 return
             }
@@ -587,7 +610,7 @@ export function MDatePicker({
                 event.preventDefault()
             }
         },
-        [withTime]
+        [disabled, inline, readOnly, withTime]
     )
 
     const handleClear = useCallback(() => {
@@ -605,10 +628,17 @@ export function MDatePicker({
 
             if (disabled || readOnly || inline) return
 
+            // `detail === 0`: activated with Enter / Space rather than a pointer.
+            setFocusOnOpen(event.detail === 0)
             setOpen((current) => !current)
         },
         [disabled, inline, readOnly]
     )
+
+    const handleClosePopover = useCallback(() => {
+        setOpen(false)
+        setFocusOnOpen(false)
+    }, [])
 
     const handleSelectDate = useCallback(
         (date: Date) => {
@@ -723,6 +753,26 @@ export function MDatePicker({
     const today = stripTime(new Date())
     const selectedDate = selectedValue ? stripTime(selectedValue) : currentDateForPanel
 
+    const gridNav = useDateGridNav({
+        viewMonth: viewDate,
+        onViewMonthChange: setViewDate,
+        selectedDate,
+        weekStartsOn: firstDayOfWeek,
+        onSelect: handleSelectDate,
+        isDisabled,
+    })
+    const baseId = useId()
+    const titleId = `${baseId}-title`
+    const weekdayLong = useMemo(() => getWeekdayLabels(locale, firstDayOfWeek, 'long'), [locale, firstDayOfWeek])
+    const dayLabelFormatter = useMemo(
+        () => new Intl.DateTimeFormat(locale, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}),
+        [locale]
+    )
+    const calendarWeeks = useMemo(
+        () => Array.from({length: calendarDays.length / 7}, (_, row) => calendarDays.slice(row * 7, row * 7 + 7)),
+        [calendarDays]
+    )
+
     const renderCalendar = () => (
         <div className="calendar">
             <div className="calendar-header">
@@ -736,7 +786,9 @@ export function MDatePicker({
                 </button>
                 <button
                     type="button"
+                    id={titleId}
                     className="header-title"
+                    aria-live="polite"
                     onClick={() => setViewMode((current) => (current === 'days' ? 'months' : 'days'))}
                 >
                     {monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}
@@ -752,42 +804,63 @@ export function MDatePicker({
             </div>
 
             {viewMode === 'days' ? (
-                <>
-                    <div className="day-names">
-                        {dayNames.map((dayName) => (
-                            <span key={dayName} className="day-name">
+                // APG date grid: one tab stop, arrows / PageUp / PageDown / Home / End move the focused day.
+                <div
+                    ref={gridNav.containerRef as React.RefObject<HTMLDivElement>}
+                    className="day-table"
+                    role="grid"
+                    aria-labelledby={titleId}
+                    onKeyDown={gridNav.onGridKeyDown}
+                >
+                    <div className="day-names" role="row">
+                        {dayNames.map((dayName, index) => (
+                            <span
+                                key={dayName}
+                                className="day-name"
+                                role="columnheader"
+                                aria-label={weekdayLong[index]}
+                            >
                                 {dayName}
                             </span>
                         ))}
                     </div>
 
-                    <div className="day-grid">
-                        {calendarDays.map(({date, currentMonth}, index) => {
-                            const isSelected = selectedDate ? isSameDay(date, selectedDate) : false
-                            const isToday = isSameDay(date, today)
-                            const disabledDay = isDisabled(date)
+                    <div className="day-grid" role="rowgroup">
+                        {calendarWeeks.map((week, row) => (
+                            <div key={row} className="day-row" role="row">
+                                {week.map(({date, currentMonth}, column) => {
+                                    const isSelected = selectedDate ? isSameDay(date, selectedDate) : false
+                                    const isToday = isSameDay(date, today)
+                                    const disabledDay = isDisabled(date)
 
-                            return (
-                                <button
-                                    key={`${date.toISOString()}-${index}`}
-                                    type="button"
-                                    className={cn(
-                                        'day',
-                                        !currentMonth && 'other-month',
-                                        isToday && 'today',
-                                        isSelected && 'selected',
-                                        disabledDay && 'disabled'
-                                    )}
-                                    onClick={() => handleSelectDate(date)}
-                                    disabled={disabledDay}
-                                    tabIndex={-1}
-                                >
-                                    {date.getDate()}
-                                </button>
-                            )
-                        })}
+                                    return (
+                                        <div
+                                            key={`${date.toISOString()}-${row * 7 + column}`}
+                                            {...gridNav.getCellProps(date)}
+                                            role="gridcell"
+                                            className={cn(
+                                                'day',
+                                                !currentMonth && 'other-month',
+                                                isToday && 'today',
+                                                isSelected && 'selected',
+                                                disabledDay && 'disabled'
+                                            )}
+                                            onClick={() => handleSelectDate(date)}
+                                            aria-selected={isSelected}
+                                            // Not native `disabled`: the roving tab stop may land on an
+                                            // unavailable day and must stay focusable.
+                                            aria-disabled={disabledDay || undefined}
+                                            aria-current={isToday ? 'date' : undefined}
+                                            aria-label={dayLabelFormatter.format(date)}
+                                        >
+                                            {date.getDate()}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        ))}
                     </div>
-                </>
+                </div>
             ) : (
                 <div className="month-grid">
                     {monthNames.map((monthName, index) => (
@@ -823,9 +896,10 @@ export function MDatePicker({
 
         return (
             <div className="date-picker-time-panel">
-                <div className="date-picker-time-header">Time</div>
+                <div className="date-picker-time-header">{timeTexts.time}</div>
                 <div className="date-picker-time-columns">
-                    <TimeColumn
+                    <TimeColumnListbox
+                        classNames={TIME_COLUMN_CLASSES}
                         items={hours}
                         selected={timeFormat === '12h' ? displayTime?.hours : currentTimeForPanel?.hours}
                         onSelect={(hoursValue) =>
@@ -837,9 +911,10 @@ export function MDatePicker({
                                 currentTimeForPanel?.seconds ?? 0
                             )
                         }
-                        label="Hr"
+                        label={timeTexts.hours}
                     />
-                    <TimeColumn
+                    <TimeColumnListbox
+                        classNames={TIME_COLUMN_CLASSES}
                         items={minutes}
                         selected={currentTimeForPanel?.minutes}
                         onSelect={(minutesValue) =>
@@ -849,10 +924,11 @@ export function MDatePicker({
                                 currentTimeForPanel?.seconds ?? 0
                             )
                         }
-                        label="Min"
+                        label={timeTexts.minutes}
                     />
                     {showSeconds && (
-                        <TimeColumn
+                        <TimeColumnListbox
+                            classNames={TIME_COLUMN_CLASSES}
                             items={seconds}
                             selected={currentTimeForPanel?.seconds}
                             onSelect={(secondsValue) =>
@@ -862,15 +938,16 @@ export function MDatePicker({
                                     secondsValue
                                 )
                             }
-                            label="Sec"
+                            label={timeTexts.seconds}
                         />
                     )}
                     {timeFormat === '12h' && (
-                        <TimeColumn
+                        <TimeColumnListbox
+                            classNames={TIME_COLUMN_CLASSES}
                             items={['AM', 'PM']}
                             selected={displayTime?.meridiem}
                             onSelect={handleMeridiemChange}
-                            label="AM/PM"
+                            label={timeTexts.meridiem}
                         />
                     )}
                 </div>
@@ -992,8 +1069,12 @@ export function MDatePicker({
                 style={{'--color-rgb': colorRgbVar(color)} as React.CSSProperties}
                 open={open}
                 anchorRef={anchorRef}
-                onClose={() => setOpen(false)}
+                onClose={handleClosePopover}
                 placement="bottom-start"
+                role="dialog"
+                aria-label={label ?? texts.dialogLabel}
+                initialFocus={focusOnOpen ? gridNav.tabStopRef : undefined}
+                closeOnTabOut
             >
                 {renderPopoverContent()}
             </MPopover>
@@ -1001,48 +1082,9 @@ export function MDatePicker({
     )
 }
 
-function TimeColumn<T extends number | Meridiem>({
-    items,
-    selected,
-    onSelect,
-    label,
-}: {
-    items: T[]
-    selected?: T
-    onSelect: (value: T) => void
-    label: string
-}) {
-    const listRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        if (selected === undefined || !listRef.current) return
-
-        const element = listRef.current.querySelector(`[data-value="${selected}"]`) as HTMLElement | null
-
-        if (element) {
-            const list = listRef.current
-            list.scrollTop = element.offsetTop - list.clientHeight / 2 + element.offsetHeight / 2
-        }
-    }, [selected])
-
-    const renderValue = (value: T) => (typeof value === 'number' ? value.toString().padStart(2, '0') : value)
-
-    return (
-        <div className="date-picker-time-column">
-            <div className="date-picker-time-column-label">{label}</div>
-            <div ref={listRef} className="date-picker-time-column-list">
-                {items.map((item) => (
-                    <button
-                        key={item}
-                        type="button"
-                        data-value={item}
-                        className={cn('date-picker-time-column-item', item === selected && 'selected')}
-                        onClick={() => onSelect(item)}
-                    >
-                        {renderValue(item)}
-                    </button>
-                ))}
-            </div>
-        </div>
-    )
+const TIME_COLUMN_CLASSES = {
+    column: 'date-picker-time-column',
+    label: 'date-picker-time-column-label',
+    list: 'date-picker-time-column-list',
+    item: 'date-picker-time-column-item',
 }

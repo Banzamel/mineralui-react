@@ -1,14 +1,16 @@
-import {forwardRef, useCallback, useMemo, useRef, useState} from 'react'
+import {forwardRef, useCallback, useId, useMemo, useRef, useState} from 'react'
 import type * as React from 'react'
 import type {MInputExpDateProps} from './MInputExpDate.types'
 import {cn} from '../../../utils/cn'
 import {useControllableString} from '../../../utils/useControllableString'
 import type {ValidationResult} from '../../../utils/validators'
 import {MCloseIcon, MChevronDownIcon} from '../../../icons'
-import {MDropdownItem, MDropdownMenu} from '../../overlays'
+import {MPopover} from '../../primitives'
+import {useKeyboardNav} from '../../../utils/useKeyboardNav'
 import '../MInput/MInput.css'
+import '../../overlays/MDropdownMenu/MDropdownMenu.css'
 import './MInputExpDate.css'
-import {useMCommonTexts} from '../../../i18n/frameworkTexts'
+import {useMCommonTexts, useMInputTexts} from '../../../i18n/frameworkTexts'
 
 const OK: ValidationResult = {valid: true}
 
@@ -40,6 +42,16 @@ function formatValue(month?: string, year?: string) {
 }
 
 function parseValue(value: string) {
+    // `MM/YYYY`, `/YYYY` (year only) or `MM/` — the slash tells the segments apart,
+    // so a year picked alone is not read back as month `20` + year `27`.
+    const slash = value.indexOf('/')
+    if (slash >= 0) {
+        return {
+            month: stripDigits(value.slice(0, slash)).slice(0, 2),
+            year: stripDigits(value.slice(slash + 1)).slice(0, 4),
+        }
+    }
+
     const digits = stripDigits(value).slice(0, 6)
 
     return {
@@ -104,6 +116,152 @@ function validateExpDate(
     return OK
 }
 
+const MONTH_OPTIONS = Array.from({length: 12}, (_, index) => String(index + 1).padStart(2, '0'))
+
+interface ExpDateSegmentProps {
+    options: string[]
+    value: string
+    placeholder: string
+    /** Accessible name of the picker ("Month" / "Year"). */
+    name: string
+    onSelect: (value: string) => void
+    triggerRef: React.RefObject<HTMLDivElement | null>
+    listRef: React.RefObject<HTMLDivElement | null>
+}
+
+/**
+ * One segment (month or year) of the expiry date: a button that opens an APG single-select
+ * listbox. The markup keeps the original `dropdown menu *` classes so the look does not change.
+ */
+function ExpDateSegment({options, value, placeholder, name, onSelect, triggerRef, listRef}: ExpDateSegmentProps) {
+    const [open, setOpen] = useState(false)
+    const baseId = useId()
+    const listId = `${baseId}-listbox`
+    const nameId = `${baseId}-name`
+    const valueId = `${baseId}-value`
+    const selectedIndex = options.indexOf(value)
+
+    const choose = (option: string) => {
+        onSelect(option)
+        triggerRef.current?.focus()
+        setOpen(false)
+    }
+
+    const nav = useKeyboardNav({
+        itemCount: options.length,
+        onSelect: (index) => choose(options[index]),
+        onClose: () => setOpen(false),
+        isOpen: open,
+        mode: 'roving',
+        selectOnSpace: true,
+        loop: false,
+        getItemLabel: (index) => options[index],
+    })
+
+    const openList = (index: number) => {
+        nav.setActiveIndex(index)
+        setOpen(true)
+    }
+
+    const handleTriggerClick = () => {
+        if (open) {
+            setOpen(false)
+            return
+        }
+        openList(selectedIndex >= 0 ? selectedIndex : 0)
+    }
+
+    const handleTriggerKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (open) return
+        if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            openList(selectedIndex >= 0 ? selectedIndex : 0)
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault()
+            openList(selectedIndex >= 0 ? selectedIndex : options.length - 1)
+        }
+    }
+
+    return (
+        <div className="dropdown menu anchor">
+            <div
+                ref={triggerRef}
+                className="dropdown menu trigger"
+                role="button"
+                tabIndex={0}
+                aria-haspopup="listbox"
+                aria-expanded={open}
+                aria-controls={open ? listId : undefined}
+                aria-labelledby={`${nameId} ${valueId}`}
+                onClick={handleTriggerClick}
+                onKeyDown={handleTriggerKeyDown}
+                onKeyUp={(event) => {
+                    // Firefox activates on Space keyup even when keydown was prevented.
+                    if (event.key === ' ') event.preventDefault()
+                }}
+            >
+                <span className={cn('input-exp-date-trigger', open && 'open', !value && 'placeholder')}>
+                    <span id={nameId} className="input-exp-date-sr-only">
+                        {name}
+                    </span>
+                    <span id={valueId}>{value || placeholder}</span>
+                    <MChevronDownIcon size={16} aria-hidden="true" />
+                </span>
+            </div>
+            <MPopover
+                open={open}
+                anchorRef={triggerRef}
+                onClose={() => setOpen(false)}
+                placement="bottom-start"
+                className="dropdown menu popover input-exp-date-popover"
+                role={null}
+                initialFocus="first"
+                closeOnTabOut
+            >
+                <div
+                    ref={listRef}
+                    id={listId}
+                    className="dropdown menu list"
+                    role="listbox"
+                    aria-labelledby={nameId}
+                    tabIndex={-1}
+                    onKeyDown={nav.onKeyDown}
+                >
+                    {options.map((option, index) => {
+                        const itemProps = nav.getItemProps(index)
+                        const selected = option === value
+                        return (
+                            <button
+                                key={option}
+                                type="button"
+                                id={itemProps.id}
+                                ref={itemProps.ref}
+                                tabIndex={itemProps.tabIndex}
+                                onFocus={itemProps.onFocus}
+                                role="option"
+                                aria-selected={selected}
+                                className={cn(
+                                    'dropdown menu item',
+                                    index === nav.activeIndex && 'active',
+                                    selected && 'selected'
+                                )}
+                                onMouseEnter={() => {
+                                    // Follow the pointer with real focus only while focus is already in the list.
+                                    if (listRef.current?.contains(document.activeElement)) nav.focusItem(index)
+                                    else nav.setActiveIndex(index)
+                                }}
+                                onClick={() => choose(option)}
+                            >
+                                <span className="dropdown menu label">{option}</span>
+                            </button>
+                        )
+                    })}
+                </div>
+            </MPopover>
+        </div>
+    )
+}
+
 export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(function MInputExpDate(
     {
         validateOnBlur = true,
@@ -144,21 +302,26 @@ export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(fu
     ref
 ) {
     const texts = useMCommonTexts()
+    const inputTexts = useMInputTexts()
     const inputRef = useRef<HTMLInputElement>(null)
     const rootRef = useRef<HTMLDivElement>(null)
     const {currentValue, setCurrentValue} = useControllableString(value, defaultValue)
     const [validation, setValidation] = useState<ValidationResult>(OK)
     const [touched, setTouched] = useState(false)
     const [focused, setFocused] = useState(false)
-    const [monthMenuOpen, setMonthMenuOpen] = useState(false)
-    const [yearMenuOpen, setYearMenuOpen] = useState(false)
+    const monthTriggerRef = useRef<HTMLDivElement>(null)
+    const yearTriggerRef = useRef<HTMLDivElement>(null)
+    const monthListRef = useRef<HTMLDivElement>(null)
+    const yearListRef = useRef<HTMLDivElement>(null)
+    const labelId = `${useId()}-label`
 
     const {month, year} = parseValue(currentValue)
     const hasContent = Boolean(month || year)
     const segmentDisabled = disabled || readOnly
     const {resolvedMinYear, resolvedMaxYear} = resolveYearBounds(minYear, maxYear)
     const yearOptions = useMemo(
-        () => Array.from({length: resolvedMaxYear - resolvedMinYear + 1}, (_, index) => resolvedMinYear + index),
+        () =>
+            Array.from({length: resolvedMaxYear - resolvedMinYear + 1}, (_, index) => String(resolvedMinYear + index)),
         [resolvedMaxYear, resolvedMinYear]
     )
 
@@ -199,9 +362,11 @@ export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(fu
         [runValidation, syncValue, touched, validateOnChange]
     )
 
-    const focusHiddenInput = useCallback(() => {
-        const input = (ref as React.RefObject<HTMLInputElement>)?.current ?? inputRef.current
-        input?.focus()
+    // Keyboard focus lands on the month picker; the native input is aria-hidden and only a form carrier.
+    const focusField = useCallback(() => {
+        const target =
+            monthTriggerRef.current ?? (ref as React.RefObject<HTMLInputElement>)?.current ?? inputRef.current
+        target?.focus()
     }, [ref])
 
     const handleRootFocus = useCallback(
@@ -223,7 +388,13 @@ export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(fu
         (event: React.FocusEvent<HTMLDivElement>) => {
             const nextTarget = event.relatedTarget as Node | null
 
-            if (nextTarget && rootRef.current?.contains(nextTarget)) {
+            // The listboxes render in a portal, so moving into them is still "inside" the field.
+            if (
+                nextTarget &&
+                (rootRef.current?.contains(nextTarget) ||
+                    monthListRef.current?.contains(nextTarget) ||
+                    yearListRef.current?.contains(nextTarget))
+            ) {
                 return
             }
 
@@ -241,18 +412,28 @@ export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(fu
 
     const handleSelectMonth = useCallback(
         (nextMonth: string) => {
-            focusHiddenInput()
             updateValue(nextMonth, year)
         },
-        [focusHiddenInput, updateValue, year]
+        [updateValue, year]
     )
 
     const handleSelectYear = useCallback(
         (nextYear: string) => {
-            focusHiddenInput()
             updateValue(month, nextYear)
         },
-        [focusHiddenInput, month, updateValue]
+        [month, updateValue]
+    )
+
+    // A click on the empty part of the field focuses it; clicks on the pickers (including their
+    // portalled listboxes, whose React events bubble here) are handled by the pickers themselves.
+    const handleContainerClick = useCallback(
+        (event: React.MouseEvent<HTMLDivElement>) => {
+            const target = event.target as Node
+            if (!event.currentTarget.contains(target)) return
+            if (target instanceof Element && target.closest('.dropdown.menu.anchor')) return
+            focusField()
+        },
+        [focusField]
     )
 
     const handleClear = useCallback(() => {
@@ -261,8 +442,8 @@ export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(fu
         setValidation(OK)
         onValidationChange?.(OK)
         onClear?.()
-        focusHiddenInput()
-    }, [focusHiddenInput, onClear, onValidationChange, syncValue])
+        focusField()
+    }, [focusField, onClear, onValidationChange, syncValue])
 
     const hasError = error || (touched && !validation.valid)
     const resolvedErrorText = errorText || (touched && !validation.valid ? validation.error : undefined)
@@ -282,8 +463,8 @@ export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(fu
         rounded && 'rounded'
     )
 
-    const monthLabel = month || 'MM'
-    const yearLabel = year || 'YYYY'
+    const monthLabel = month || inputTexts.expMonthPlaceholder
+    const yearLabel = year || inputTexts.expYearPlaceholder
 
     return (
         <div
@@ -295,6 +476,7 @@ export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(fu
         >
             {label && (
                 <label
+                    id={labelId}
                     htmlFor={id}
                     className={cn(
                         'field-label',
@@ -309,7 +491,7 @@ export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(fu
                 </label>
             )}
 
-            <div className={containerClasses} onClick={focusHiddenInput}>
+            <div className={containerClasses} onClick={handleContainerClick}>
                 {startIcon && <span className="start-icon">{startIcon}</span>}
 
                 <input
@@ -329,81 +511,46 @@ export const MInputExpDate = forwardRef<HTMLInputElement, MInputExpDateProps>(fu
                     onBlur={onBlur}
                 />
 
-                <div className="input-exp-date-segments" aria-label={texts.expirationDate}>
+                <div
+                    className="input-exp-date-segments"
+                    role="group"
+                    aria-label={label ? undefined : texts.expirationDate}
+                    aria-labelledby={label ? labelId : undefined}
+                >
                     {segmentDisabled ? (
                         <span className={cn('input-exp-date-trigger', !month && 'placeholder', 'static')}>
                             <span>{monthLabel}</span>
                         </span>
                     ) : (
-                        <MDropdownMenu
-                            trigger={
-                                <span
-                                    className={cn(
-                                        'input-exp-date-trigger',
-                                        monthMenuOpen && 'open',
-                                        !month && 'placeholder'
-                                    )}
-                                    onMouseDown={focusHiddenInput}
-                                >
-                                    <span>{monthLabel}</span>
-                                    <MChevronDownIcon size={16} />
-                                </span>
-                            }
-                            openOn="click"
-                            closeOnSelect
-                            onOpenChange={setMonthMenuOpen}
-                            popoverClassName="input-exp-date-popover"
-                        >
-                            {Array.from({length: 12}, (_, index) => {
-                                const option = String(index + 1).padStart(2, '0')
-
-                                return (
-                                    <MDropdownItem
-                                        key={option}
-                                        label={option}
-                                        active={month === option}
-                                        onClick={() => handleSelectMonth(option)}
-                                    />
-                                )
-                            })}
-                        </MDropdownMenu>
+                        <ExpDateSegment
+                            options={MONTH_OPTIONS}
+                            value={month}
+                            placeholder={inputTexts.expMonthPlaceholder}
+                            name={inputTexts.expMonth}
+                            onSelect={handleSelectMonth}
+                            triggerRef={monthTriggerRef}
+                            listRef={monthListRef}
+                        />
                     )}
 
-                    <span className="input-exp-date-separator">/</span>
+                    <span className="input-exp-date-separator" aria-hidden="true">
+                        /
+                    </span>
 
                     {segmentDisabled ? (
                         <span className={cn('input-exp-date-trigger', !year && 'placeholder', 'static')}>
                             <span>{yearLabel}</span>
                         </span>
                     ) : (
-                        <MDropdownMenu
-                            trigger={
-                                <span
-                                    className={cn(
-                                        'input-exp-date-trigger',
-                                        yearMenuOpen && 'open',
-                                        !year && 'placeholder'
-                                    )}
-                                    onMouseDown={focusHiddenInput}
-                                >
-                                    <span>{yearLabel}</span>
-                                    <MChevronDownIcon size={16} />
-                                </span>
-                            }
-                            openOn="click"
-                            closeOnSelect
-                            onOpenChange={setYearMenuOpen}
-                            popoverClassName="input-exp-date-popover"
-                        >
-                            {yearOptions.map((option) => (
-                                <MDropdownItem
-                                    key={option}
-                                    label={String(option)}
-                                    active={year === String(option)}
-                                    onClick={() => handleSelectYear(String(option))}
-                                />
-                            ))}
-                        </MDropdownMenu>
+                        <ExpDateSegment
+                            options={yearOptions}
+                            value={year}
+                            placeholder={inputTexts.expYearPlaceholder}
+                            name={inputTexts.expYear}
+                            onSelect={handleSelectYear}
+                            triggerRef={yearTriggerRef}
+                            listRef={yearListRef}
+                        />
                     )}
                 </div>
 

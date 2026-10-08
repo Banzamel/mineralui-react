@@ -8,7 +8,21 @@ import {MAvatar} from '../../media'
 import {MRating} from '../../display'
 import {MDropdownItem, MDropdownMenu} from '../../overlays'
 import './ServiceCardsShared.css'
-import {useMCommonTexts, formatMText} from '../../../i18n/frameworkTexts'
+import {useMCardTexts, useMCommonTexts, formatMText} from '../../../i18n/frameworkTexts'
+import {useOptionalMI18n} from '../../../i18n/MI18nProvider'
+
+function pad2(value: number) {
+    return String(value).padStart(2, '0')
+}
+
+// Short month in the active MI18nProvider locale; English without a provider or for an unknown tag.
+function formatShortMonth(date: Date, locale?: string) {
+    try {
+        return date.toLocaleString(locale ?? 'en', {month: 'short'}).toUpperCase()
+    } catch {
+        return date.toLocaleString('en', {month: 'short'}).toUpperCase()
+    }
+}
 
 export function SharedServiceCard({
     variant,
@@ -43,6 +57,9 @@ export function SharedServiceCard({
     ...rest
 }: SharedServiceCardProps) {
     const texts = useMCommonTexts()
+    const favoriteTexts = useMCardTexts()
+    const cardTexts = favoriteTexts.serviceCard
+    const locale = useOptionalMI18n()?.locale
     const [galleryIdx, setGalleryIdx] = useState(0)
     const [isGalleryTransitioning, setIsGalleryTransitioning] = useState(false)
     const [internalQty, setInternalQty] = useState(1)
@@ -101,24 +118,35 @@ export function SharedServiceCard({
 
     const availLabel =
         available === true
-            ? 'Available'
+            ? cardTexts.available
             : available === false
-              ? 'Unavailable'
+              ? cardTexts.unavailable
               : typeof available === 'number'
-                ? `${available} spots`
+                ? formatMText(cardTexts.spots, {count: available})
                 : null
 
-    const parsedDate = date ? (date instanceof Date ? date : new Date(date)) : null
+    const rawDate = date ? (date instanceof Date ? date : new Date(date)) : null
+    const parsedDate = rawDate && !Number.isNaN(rawDate.getTime()) ? rawDate : null
     const dateDay = parsedDate ? parsedDate.getDate() : null
-    const dateMonth = parsedDate ? parsedDate.toLocaleString('en', {month: 'short'}).toUpperCase() : null
+    const dateMonth = parsedDate ? formatShortMonth(parsedDate, locale) : null
+    const dateTime = parsedDate
+        ? `${parsedDate.getFullYear()}-${pad2(parsedDate.getMonth() + 1)}-${pad2(parsedDate.getDate())}`
+        : undefined
+    const ratingLabel =
+        rating !== undefined
+            ? reviewCount !== undefined
+                ? formatMText(cardTexts.ratingWithReviews, {value: rating.toFixed(1), count: reviewCount})
+                : formatMText(cardTexts.rating, {value: rating.toFixed(1)})
+            : undefined
 
     return (
         <div className={cn('card-service', variant, `color-${color}`, className)} {...rest}>
             {images.length > 0 && (
                 <div className="cs-gallery">
+                    {/* Decorative: the title is already the card heading, so it is not read twice. */}
                     <img
                         src={images[galleryIdx]}
-                        alt={title}
+                        alt={''}
                         className={cn('cs-image', isGalleryTransitioning && 'is-transitioning')}
                     />
                     {images.length > 1 && (
@@ -130,6 +158,7 @@ export function SharedServiceCard({
                                     className={cn('cs-dot', i === galleryIdx && 'active')}
                                     onClick={() => changeGallery(i)}
                                     aria-label={formatMText(texts.imageNumber, {index: i + 1})}
+                                    aria-current={i === galleryIdx ? 'true' : undefined}
                                 />
                             ))}
                         </div>
@@ -170,7 +199,9 @@ export function SharedServiceCard({
                                     iconOnly
                                     shape="circle"
                                     onClick={onFavorite}
-                                    aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
+                                    aria-label={
+                                        favorite ? favoriteTexts.removeFromFavorites : favoriteTexts.addToFavorites
+                                    }
                                     className={cn('cs-overlay-btn', favorite && 'cs-fav-active')}
                                 >
                                     {favorite ? <MHeartFillIcon /> : <MHeartIcon />}
@@ -184,10 +215,10 @@ export function SharedServiceCard({
             <div className="cs-body">
                 {variant === 'event' && parsedDate && (
                     <div className="cs-event-header">
-                        <div className="cs-date-block">
+                        <time className="cs-date-block" dateTime={dateTime}>
                             <span className="cs-date-day">{dateDay}</span>
                             <span className="cs-date-month">{dateMonth}</span>
-                        </div>
+                        </time>
                         <div className="cs-event-info">
                             <h3 className="cs-title">{title}</h3>
                             {description && <p className="cs-desc">{description}</p>}
@@ -216,7 +247,7 @@ export function SharedServiceCard({
                 )}
 
                 {rating !== undefined && (
-                    <div className="cs-rating">
+                    <div className="cs-rating" role="img" aria-label={ratingLabel}>
                         <MRating value={Math.round(rating)} size="sm" color="warning" readOnly className="cs-stars" />
                         <span className="cs-rating-value">{rating.toFixed(1)}</span>
                         {reviewCount !== undefined && <span className="cs-review-count">({reviewCount})</span>}
@@ -245,7 +276,14 @@ export function SharedServiceCard({
                             ))}
                         </div>
                         {maxParticipants && (
-                            <span className="cs-spots">
+                            <span
+                                className="cs-spots"
+                                role="img"
+                                aria-label={formatMText(cardTexts.participants, {
+                                    count: participants.length,
+                                    max: maxParticipants,
+                                })}
+                            >
                                 {participants.length}/{maxParticipants}
                             </span>
                         )}
@@ -319,7 +357,7 @@ export function SharedServiceCard({
                             disabled={available === false}
                             className="cs-cart-btn"
                         >
-                            {actionLabel ?? (variant === 'event' ? 'Register' : 'Add to cart')}
+                            {actionLabel ?? (variant === 'event' ? cardTexts.register : cardTexts.addToCart)}
                         </MButton>
                     )}
                 </div>

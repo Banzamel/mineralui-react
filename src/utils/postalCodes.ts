@@ -1,4 +1,5 @@
 import type {ValidationResult} from './validators'
+import {validationFailure} from './validationMessages'
 
 export interface PostCodeRule {
     countryCode: string
@@ -222,7 +223,7 @@ export function validatePostCode(value: string, countryCode: string = 'PL'): Val
     const formatted = rule.format(rule.sanitize(value))
 
     if (!rule.regex.test(formatted)) {
-        return {valid: false, error: rule.message}
+        return validationFailure(`postCode.${rule.countryCode}`, rule.message)
     }
 
     return OK_RESULT

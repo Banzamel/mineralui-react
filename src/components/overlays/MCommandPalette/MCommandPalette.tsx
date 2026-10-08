@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {useEffect, useId, useMemo, useRef, useState} from 'react'
 import type {KeyboardEvent as ReactKeyboardEvent, ReactNode} from 'react'
 import type {MCommandPaletteItem, MCommandPaletteProps} from './MCommandPalette.types'
 import {MButton} from '../../controls'
@@ -12,6 +12,7 @@ import {MLinkIcon, MSearchIcon} from '../../../icons'
 import {MKbd, MHeading, MText} from '../../typography'
 import {cn} from '../../../utils/cn'
 import {useKeyboardNav} from '../../../utils/useKeyboardNav'
+import {formatMText, useMCommandPaletteTexts} from '../../../i18n/frameworkTexts'
 import './MCommandPalette.css'
 
 function normalizeText(value: ReactNode) {
@@ -63,12 +64,12 @@ function filterItems(items: MCommandPaletteItem[], query: string) {
     )
 }
 
-function groupItems(items: MCommandPaletteItem[]) {
+function groupItems(items: MCommandPaletteItem[], generalLabel: string) {
     const groups = new Map<string, {label: ReactNode; items: MCommandPaletteItem[]}>()
 
     items.forEach((item) => {
         const key = normalizeText(item.group) || 'General'
-        const current = groups.get(key) ?? {label: item.group ?? 'General', items: []}
+        const current = groups.get(key) ?? {label: item.group ?? generalLabel, items: []}
         current.items.push(item)
         groups.set(key, current)
     })
@@ -83,22 +84,27 @@ export function MCommandPalette({
     defaultOpen = false,
     onOpenChange,
     onSelect,
-    title = 'Command palette',
+    title: titleProp,
     description,
     trigger,
     shortcut = 'ctrl+k',
-    placeholder = 'Search modules, records and actions...',
-    emptyLabel = 'No matching results.',
+    placeholder: placeholderProp,
+    emptyLabel: emptyLabelProp,
     footer,
     size = 'lg',
     closeOnSelect = true,
 }: MCommandPaletteProps) {
+    const texts = useMCommandPaletteTexts()
+    const title = titleProp ?? texts.title
+    const placeholder = placeholderProp ?? texts.placeholder
+    const emptyLabel = emptyLabelProp ?? texts.empty
     const [internalOpen, setInternalOpen] = useState(defaultOpen)
     const [query, setQuery] = useState('')
-    const [activeItemId, setActiveItemId] = useState<string | null>(null)
     const isControlled = open !== undefined
     const isOpen = isControlled ? open : internalOpen
     const inputRef = useRef<HTMLInputElement>(null)
+    const baseId = useId()
+    const listboxId = `${baseId}-listbox`
 
     function setOpenState(nextOpen: boolean) {
         if (!isControlled) {
@@ -109,7 +115,10 @@ export function MCommandPalette({
     }
 
     const filteredItems = useMemo(() => filterItems(items, query), [items, query])
-    const groupedItems = useMemo(() => groupItems(filteredItems), [filteredItems])
+    const groupedItems = useMemo(
+        () => groupItems(filteredItems, texts.generalGroup),
+        [filteredItems, texts.generalGroup]
+    )
     const flattenedItems = useMemo(() => groupedItems.flatMap((group) => group.items), [groupedItems])
     const featured = useMemo(() => (featuredItems.length ? featuredItems : items.slice(0, 6)), [featuredItems, items])
 
@@ -124,13 +133,16 @@ export function MCommandPalette({
         if (closeOnSelect) {
             setOpenState(false)
             setQuery('')
-            setActiveItemId(null)
+            resetIndex()
         }
     }
 
-    const {activeIndex, setActiveIndex, resetIndex, onKeyDown} = useKeyboardNav({
+    // APG combobox: focus stays in the search field, the highlighted option is exposed
+    // through aria-activedescendant.
+    const {activeIndex, setActiveIndex, resetIndex, onKeyDown, activeDescendantId, getItemProps} = useKeyboardNav({
         itemCount: flattenedItems.length,
         isOpen,
+        mode: 'activedescendant',
         onClose: () => setOpenState(false),
         onSelect: (index) => {
             const item = flattenedItems[index]
@@ -159,25 +171,21 @@ export function MCommandPalette({
     useEffect(() => {
         if (!isOpen) {
             resetIndex()
-            setActiveItemId(null)
             return
         }
 
         queueMicrotask(() => inputRef.current?.focus())
     }, [isOpen, resetIndex])
 
-    useEffect(() => {
-        if (activeIndex < 0 || activeIndex >= flattenedItems.length) {
-            setActiveItemId(null)
-            return
-        }
-
-        setActiveItemId(flattenedItems[activeIndex]?.id ?? null)
-    }, [activeIndex, flattenedItems])
+    const activeItemId = flattenedItems[activeIndex]?.id ?? null
 
     function handleSearchKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
+        // Home / End keep moving the caret inside the text field (APG combobox).
+        if (event.key === 'Home' || event.key === 'End') return
         onKeyDown(event)
     }
+
+    const hasResults = groupedItems.length > 0
 
     return (
         <>
@@ -188,7 +196,7 @@ export function MCommandPalette({
                     color={'primary'}
                     iconOnly
                     startIcon={<MSearchIcon />}
-                    aria-label={typeof title === 'string' ? title : 'Open command palette'}
+                    aria-label={typeof title === 'string' ? title : texts.open}
                     onClick={() => setOpenState(true)}
                 />
             )}
@@ -214,15 +222,26 @@ export function MCommandPalette({
                             placeholder={placeholder}
                             clearable
                             fullWidth
+                            inputProps={{
+                                role: 'combobox',
+                                'aria-label': texts.searchLabel,
+                                'aria-autocomplete': 'list',
+                                'aria-expanded': hasResults,
+                                'aria-controls': hasResults ? listboxId : undefined,
+                                'aria-activedescendant': activeDescendantId,
+                            }}
                         />
+                        <span className="command-palette-sr-only" role="status" aria-live="polite" aria-atomic="true">
+                            {query.trim() ? formatMText(texts.resultsAnnouncement, {count: flattenedItems.length}) : ''}
+                        </span>
                     </div>
 
                     <div className="command-palette-grid">
                         <MCard stretch={false}>
                             <MCardHeader>
-                                <MHeading level={4}>Featured</MHeading>
+                                <MHeading level={4}>{texts.featured}</MHeading>
                                 <MText size={'sm'} tone={'muted'}>
-                                    Quick launch for the most frequent dashboard actions.
+                                    {texts.featuredDescription}
                                 </MText>
                             </MCardHeader>
                             <MCardBody>
@@ -255,55 +274,83 @@ export function MCommandPalette({
 
                         <MCard stretch={false}>
                             <MCardHeader>
-                                <MHeading level={4}>Results</MHeading>
+                                <MHeading level={4}>{texts.results}</MHeading>
                                 <MInline align={'center'} padding={'xs'}>
                                     <MText size={'sm'} tone={'muted'}>
-                                        {flattenedItems.length} ready
+                                        {formatMText(texts.resultsCount, {count: flattenedItems.length})}
                                     </MText>
                                     <MKbd>{shortcut.toUpperCase()}</MKbd>
                                 </MInline>
                             </MCardHeader>
                             <MCardBody>
-                                {groupedItems.length ? (
-                                    <MStack padding={'xs'} className="command-palette-results">
-                                        {groupedItems.map((group) => (
-                                            <MStack key={normalizeText(group.label) || 'general'} padding={'xs'}>
-                                                <MText size={'sm'} tone={'muted'}>
+                                {hasResults ? (
+                                    <MStack
+                                        padding={'xs'}
+                                        className="command-palette-results"
+                                        id={listboxId}
+                                        role="listbox"
+                                        aria-label={texts.results}
+                                    >
+                                        {groupedItems.map((group, groupIndex) => (
+                                            <MStack
+                                                key={normalizeText(group.label) || 'general'}
+                                                padding={'xs'}
+                                                role="group"
+                                                aria-labelledby={`${listboxId}-group-${groupIndex}`}
+                                            >
+                                                <MText
+                                                    size={'sm'}
+                                                    tone={'muted'}
+                                                    id={`${listboxId}-group-${groupIndex}`}
+                                                    role="presentation"
+                                                >
                                                     {group.label}
                                                 </MText>
-                                                {group.items.map((item) => (
-                                                    <button
-                                                        key={item.id}
-                                                        type="button"
-                                                        className={cn(
-                                                            'command-palette-item',
-                                                            activeItemId === item.id && 'active'
-                                                        )}
-                                                        onMouseEnter={() => setActiveItemId(item.id)}
-                                                        onClick={() => executeItem(item)}
-                                                    >
-                                                        <span className="command-palette-item-icon">
-                                                            {item.icon ?? <MLinkIcon />}
-                                                        </span>
-                                                        <span className="command-palette-item-copy">
-                                                            <span className="command-palette-item-title">
-                                                                {item.title}
+                                                {group.items.map((item) => {
+                                                    const index = flattenedItems.indexOf(item)
+                                                    const {id: optionId, ref: optionRef} = getItemProps(index)
+
+                                                    return (
+                                                        <button
+                                                            key={item.id}
+                                                            id={optionId}
+                                                            ref={optionRef}
+                                                            type="button"
+                                                            role="option"
+                                                            aria-selected={activeItemId === item.id}
+                                                            tabIndex={-1}
+                                                            className={cn(
+                                                                'command-palette-item',
+                                                                activeItemId === item.id && 'active'
+                                                            )}
+                                                            // Keep focus in the search field so typing and arrows keep working.
+                                                            onMouseDown={(event) => event.preventDefault()}
+                                                            onMouseEnter={() => setActiveIndex(index)}
+                                                            onClick={() => executeItem(item)}
+                                                        >
+                                                            <span className="command-palette-item-icon">
+                                                                {item.icon ?? <MLinkIcon />}
                                                             </span>
-                                                            {item.description && (
-                                                                <span className="command-palette-item-description">
-                                                                    {item.description}
+                                                            <span className="command-palette-item-copy">
+                                                                <span className="command-palette-item-title">
+                                                                    {item.title}
+                                                                </span>
+                                                                {item.description && (
+                                                                    <span className="command-palette-item-description">
+                                                                        {item.description}
+                                                                    </span>
+                                                                )}
+                                                            </span>
+                                                            {item.badge && (
+                                                                <span className="command-palette-item-badge">
+                                                                    <MBadge color={'primary'} size={'sm'}>
+                                                                        {item.badge}
+                                                                    </MBadge>
                                                                 </span>
                                                             )}
-                                                        </span>
-                                                        {item.badge && (
-                                                            <span className="command-palette-item-badge">
-                                                                <MBadge color={'primary'} size={'sm'}>
-                                                                    {item.badge}
-                                                                </MBadge>
-                                                            </span>
-                                                        )}
-                                                    </button>
-                                                ))}
+                                                        </button>
+                                                    )
+                                                })}
                                             </MStack>
                                         ))}
                                     </MStack>

@@ -155,6 +155,18 @@
         color var(--mineral-transition-fast);
 }
 
+/* Week rows exist for the ARIA grid structure only; the cells stay items of .day-grid. */
+.date-picker .day-row,
+.date-picker-popover .day-row {
+    display: contents;
+}
+
+.date-picker .day:focus-visible,
+.date-picker-popover .day:focus-visible {
+    outline: 2px solid rgba(var(--color-rgb), 1);
+    outline-offset: 1px;
+}
+
 .date-picker .day:hover:not(.disabled):not(.selected),
 .date-picker-popover .day:hover:not(.disabled):not(.selected) {
     background: var(--mineral-option-hover-bg);

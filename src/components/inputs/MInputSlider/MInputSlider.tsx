@@ -1,9 +1,10 @@
-import {useState, useCallback, forwardRef} from 'react'
+import {useState, useCallback, useId, forwardRef} from 'react'
 import type * as React from 'react'
 import type {MInputSliderProps} from './MInputSlider.types'
 import {MSlider} from '../../controls'
 import {cn} from '../../../utils/cn'
 import './MInputSlider.css'
+import {useMInputTexts} from '../../../i18n/frameworkTexts'
 
 function clampValue(val: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, val))
@@ -33,8 +34,13 @@ export const MInputSlider = forwardRef<HTMLDivElement, MInputSliderProps>(functi
     },
     ref
 ) {
+    const texts = useMInputTexts()
+    const labelId = useId()
     const [internalValue, setInternalValue] = useState(min)
     const currentValue = value !== undefined ? value : internalValue
+    // Text the user is typing into the field; null while not editing. Clamping waits
+    // for blur/Enter so intermediate states like `1.` or `5` (on the way to `50`) survive.
+    const [draft, setDraft] = useState<string | null>(null)
 
     const update = useCallback(
         (newVal: number) => {
@@ -50,20 +56,43 @@ export const MInputSlider = forwardRef<HTMLDivElement, MInputSliderProps>(functi
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             const raw = e.target.value
-            if (raw === '' || raw === '-') return
-            const num = parseFloat(raw)
-            if (!isNaN(num)) update(num)
+            setDraft(raw)
+            const num = Number(raw.replace(',', '.'))
+            // Live-follow the slider only with values already inside the range.
+            if (raw.trim() !== '' && !isNaN(num) && num >= min && num <= max) update(num)
         },
-        [update]
+        [min, max, update]
     )
 
+    const commitDraft = useCallback(() => {
+        if (draft === null) return
+        const num = parseFloat(draft.replace(',', '.'))
+        update(isNaN(num) ? currentValue : num)
+        setDraft(null)
+    }, [draft, currentValue, update])
+
     const handleBlur = useCallback(() => {
-        update(currentValue)
-    }, [currentValue, update])
+        if (draft === null) {
+            update(currentValue)
+            return
+        }
+        commitDraft()
+    }, [draft, currentValue, update, commitDraft])
+
+    const handleInputKeyDown = useCallback(
+        (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === 'Enter') commitDraft()
+        },
+        [commitDraft]
+    )
 
     return (
         <div ref={ref} className={cn('slider input', size, disabled && 'disabled', className)} {...rest}>
-            {label && <div className="slider label">{label}</div>}
+            {label && (
+                <div className="slider label" id={labelId}>
+                    {label}
+                </div>
+            )}
             <div className="slider row">
                 <MSlider
                     min={min}
@@ -74,17 +103,20 @@ export const MInputSlider = forwardRef<HTMLDivElement, MInputSliderProps>(functi
                     marks={marks}
                     color={color}
                     disabled={disabled}
+                    aria-labelledby={label ? labelId : undefined}
+                    aria-label={label ? undefined : texts.sliderValue}
                 />
                 {showInput && (
                     <input
                         type="text"
                         inputMode="decimal"
                         className={cn('slider field', `color-${color}`)}
-                        value={currentValue}
+                        value={draft ?? String(currentValue)}
                         onChange={handleInputChange}
                         onBlur={handleBlur}
+                        onKeyDown={handleInputKeyDown}
                         disabled={disabled}
-                        aria-label={label || 'MSlider value'}
+                        aria-label={label || texts.sliderValue}
                     />
                 )}
             </div>

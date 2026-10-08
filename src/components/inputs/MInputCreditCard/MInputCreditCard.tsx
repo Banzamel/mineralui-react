@@ -1,12 +1,14 @@
-import {forwardRef, useCallback, useState} from 'react'
+import {forwardRef, useCallback, useRef, useState} from 'react'
 import type * as React from 'react'
 import type {MInputCreditCardProps} from './MInputCreditCard.types'
 import {MInput} from '../MInput'
+import {useFormatCaret} from '../MInput/useFormatCaret'
 import {cn} from '../../../utils/cn'
 import {detectCardBrand, formatCardNumber, stripCardNumber, validateCardNumber} from '../../../utils/creditCards'
 import type {ValidationResult} from '../../../utils/validators'
 import {MCheckIcon} from '../../../icons'
 import './MInputCreditCard.css'
+import {useMValidationMessage} from '../../../i18n/frameworkTexts'
 
 function CardBrandBadge({value}: {value: string}) {
     const brand = detectCardBrand(value)
@@ -40,22 +42,27 @@ export const MInputCreditCard = forwardRef<HTMLInputElement, MInputCreditCardPro
 ) {
     const [internalValue, setInternalValue] = useState(() => formatCardNumber(defaultValue?.toString() ?? ''))
     const [validation, setValidation] = useState<ValidationResult>({valid: true})
+    const translateValidation = useMValidationMessage()
     const [touched, setTouched] = useState(false)
 
     const currentValue = value !== undefined ? formatCardNumber(value.toString()) : internalValue
+    // Last brand reported to the consumer, so `onCardBrandChange` fires only on a change.
+    const brandRef = useRef(detectCardBrand(currentValue).brand)
+    const captureCaret = useFormatCaret()
     const runValidation = useCallback(
         (formattedValue: string) => {
-            const result = validateCardNumber(formattedValue)
+            const result = translateValidation(validateCardNumber(formattedValue))
             setValidation(result)
             onValidationChange?.(result)
             return result
         },
-        [onValidationChange]
+        [onValidationChange, translateValidation]
     )
 
     // Keep the visible card number grouped while exposing raw digits to the caller.
     const handleChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement>) => {
+            captureCaret(event)
             const formattedValue = formatCardNumber(event.target.value)
             const nextBrand = detectCardBrand(formattedValue)
 
@@ -63,7 +70,10 @@ export const MInputCreditCard = forwardRef<HTMLInputElement, MInputCreditCardPro
                 setInternalValue(formattedValue)
             }
 
-            onCardBrandChange?.(nextBrand.brand)
+            if (nextBrand.brand !== brandRef.current) {
+                brandRef.current = nextBrand.brand
+                onCardBrandChange?.(nextBrand.brand)
+            }
             onValueChange?.(stripCardNumber(formattedValue), formattedValue, nextBrand.brand)
 
             if (validateOnChange && touched) {
@@ -72,7 +82,7 @@ export const MInputCreditCard = forwardRef<HTMLInputElement, MInputCreditCardPro
 
             onChange?.(event)
         },
-        [onCardBrandChange, onChange, onValueChange, runValidation, touched, validateOnChange, value]
+        [captureCaret, onCardBrandChange, onChange, onValueChange, runValidation, touched, validateOnChange, value]
     )
 
     // Validate after the user leaves the field so checksum feedback stays predictable.
@@ -96,8 +106,12 @@ export const MInputCreditCard = forwardRef<HTMLInputElement, MInputCreditCardPro
         setTouched(false)
         onValidationChange?.({valid: true})
         onValueChange?.('', '', 'unknown')
+        if (brandRef.current !== 'unknown') {
+            brandRef.current = 'unknown'
+            onCardBrandChange?.('unknown')
+        }
         onClear?.()
-    }, [onClear, onValidationChange, onValueChange, value])
+    }, [onCardBrandChange, onClear, onValidationChange, onValueChange, value])
 
     const isError = error || (touched && !validation.valid)
     const resolvedErrorText = errorText || (touched && !validation.valid ? validation.error : undefined)

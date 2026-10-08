@@ -127,7 +127,13 @@ export const MInputCurrency = forwardRef<HTMLInputElement, MInputCurrencyProps>(
             const rawCaret = e.target.selectionStart ?? raw.length
             let filtered = ''
             let hasDecimal = false
+            // A thousands separator that is also a decimal candidate (`.` or `,`) is
+            // grouping — skip it so `1.234` + `5` stays `12.345`, not `1,2345`.
+            const groupingChar = thousandSeparator && thousandSeparator !== decimalSeparator ? thousandSeparator : ''
             for (const ch of raw) {
+                if (groupingChar && ch === groupingChar) {
+                    continue
+                }
                 if (ch >= '0' && ch <= '9') {
                     filtered += ch
                 } else if ((ch === ',' || ch === '.') && !hasDecimal && precision > 0) {

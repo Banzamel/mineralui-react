@@ -45,6 +45,12 @@ export interface MTreeViewProps extends Omit<HTMLAttributes<HTMLDivElement>, 'on
     draggable?: boolean
     canDrop?: (draggedNode: MTreeNode, targetNode: MTreeNode) => boolean
     onMove?: (event: MTreeViewMoveEvent) => void
+    /**
+     * Alternative to dragging (WCAG 2.5.7) while `draggable` and `onMove` are set: Ctrl+X cuts the
+     * focused node, Ctrl+V moves it into the focused folder, Escape cancels; the context menu gets
+     * built-in Cut / Move here / Cancel move actions. Default `true`.
+     */
+    keyboardMove?: boolean
     contextMenuItems?: (node: MTreeNode) => MTreeViewContextMenuItem[]
     onContextMenuAction?: (actionId: string, node: MTreeNode) => void
 }

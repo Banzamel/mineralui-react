@@ -53,6 +53,33 @@
     cursor: not-allowed;
 }
 
+/* === Variants (outlined is the base style above) === */
+.input-group .container.field-filled {
+    border: none;
+    border-bottom: 2px solid var(--mineral-border);
+    border-radius: var(--mineral-radius-md) var(--mineral-radius-md) 0 0;
+    background: var(--mineral-surface);
+}
+
+.input-group .container.field-underlined {
+    border: none;
+    border-bottom: 1px solid var(--mineral-border);
+    border-radius: 0;
+    background: transparent;
+}
+
+.input-group .container.field-filled.focused,
+.input-group .container.field-underlined.focused,
+.input-group .container.field-filled.has-error.focused,
+.input-group .container.field-underlined.has-error.focused {
+    border-bottom-color: rgba(var(--color-rgb), 1);
+    box-shadow: none;
+}
+
+.input-group .container.field-underlined.focused {
+    border-bottom-width: 2px;
+}
+
 /* === Addon === */
 .input-group .addon {
     display: flex;
@@ -127,11 +154,21 @@
 
 /* === Sizes === */
 /* Height → min-height for input-group (addons stretch vertically) */
+.input-group .container.field-xs,
 .input-group .container.field-sm,
 .input-group .container.field-md,
-.input-group .container.field-lg {
+.input-group .container.field-lg,
+.input-group .container.field-xl {
     height: auto;
     padding: 0;
+}
+
+.input-group .container.field-xs {
+    min-height: 26px;
+}
+
+.input-group .container.field-xs .addon {
+    padding: 0 var(--mineral-spacing-xs);
 }
 
 .input-group .container.field-sm {
@@ -150,8 +187,13 @@
     min-height: 48px;
 }
 
-.input-group .container.field-lg .addon {
+.input-group .container.field-lg .addon,
+.input-group .container.field-xl .addon {
     padding: 0 var(--mineral-spacing-lg);
+}
+
+.input-group .container.field-xl {
+    min-height: 56px;
 }
 
 /* === Loading spinner === */

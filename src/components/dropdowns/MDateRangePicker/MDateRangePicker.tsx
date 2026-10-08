@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
+import {useCallback, useEffect, useId, useMemo, useRef, useState} from 'react'
 import type * as React from 'react'
 import {MPopover} from '../../primitives'
 import {cn} from '../../../utils/cn'
@@ -18,6 +18,8 @@ import {
 } from '../../../utils/dateUtils'
 import type {MDateRangePickerProps, MDateRangePreset} from './MDateRangePicker.types'
 import {colorRgbVar} from '../../../utils/colorRgbVar'
+import {getWeekdayLabels} from '../../../utils/calendarDates'
+import {useDateGridNav} from '../../../utils/useDateGridNav'
 import './MDateRangePicker.css'
 
 function toDate(value: Date | string | null | undefined): Date | null {
@@ -47,6 +49,15 @@ function formatRangeLabel(start: Date | null, end: Date | null, format: string) 
     }
 
     return ''
+}
+
+// Form value of a calendar day in LOCAL time. `toISOString()` converts to UTC first,
+// which moves local midnight to the previous day east of Greenwich.
+function toLocalIsoDate(date: Date) {
+    const year = date.getFullYear().toString().padStart(4, '0')
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    return `${year}-${month}-${day}`
 }
 
 function startOfMonth(date: Date) {
@@ -173,6 +184,8 @@ export function MDateRangePicker({
     }))
     const [hoveredDate, setHoveredDate] = useState<Date | null>(null)
     const [open, setOpen] = useState(false)
+    // Opening from the keyboard moves focus to the day grid (APG date picker dialog); a click does not.
+    const [focusOnOpen, setFocusOnOpen] = useState(false)
     const triggerRef = useRef<HTMLDivElement>(null)
 
     const selectedRange = controlledRange ?? internalRange
@@ -185,16 +198,22 @@ export function MDateRangePicker({
     const dayNames = getDayNames(locale, firstDayOfWeek)
     const monthNames = getMonthNames(locale)
     const availablePresets = useMemo(() => {
-        if (presets === true || (presetsSidebar && !presets)) {
-            return getDefaultPresets(texts)
-        }
+        const list =
+            presets === true || (presetsSidebar && !presets)
+                ? getDefaultPresets(texts)
+                : Array.isArray(presets)
+                  ? presets
+                  : []
 
-        if (Array.isArray(presets)) {
-            return presets
-        }
+        if (allowSameDay) return list
 
-        return []
-    }, [presets, presetsSidebar, texts])
+        // One-day presets (e.g. "Today") cannot be applied when `allowSameDay` is false.
+        return list.filter((preset) => {
+            const start = toDate(preset.value.start)
+            const end = toDate(preset.value.end)
+            return !(start && end && isSameDay(start, end))
+        })
+    }, [allowSameDay, presets, presetsSidebar, texts])
 
     const [viewDate, setViewDate] = useState(() => {
         const baseDate = startDate ?? new Date()
@@ -269,13 +288,20 @@ export function MDateRangePicker({
     const handleToday = useCallback(() => {
         const today = stripTime(new Date())
         if (isDisabled(today)) return
+        if (!allowSameDay) {
+            // A one-day range is not allowed: start the range today and let the user pick the end.
+            commitRange({start: today, end: null})
+            setViewDate(new Date(today.getFullYear(), today.getMonth(), 1))
+            setHoveredDate(null)
+            return
+        }
         commitRange({start: today, end: today})
         setViewDate(new Date(today.getFullYear(), today.getMonth(), 1))
         setHoveredDate(null)
         if (!inline) {
             setOpen(false)
         }
-    }, [commitRange, inline, isDisabled])
+    }, [allowSameDay, commitRange, inline, isDisabled])
 
     const handlePresetClick = useCallback(
         (preset: MDateRangePreset) => {
@@ -292,6 +318,10 @@ export function MDateRangePicker({
                 return
             }
 
+            if (!allowSameDay && isSameDay(orderedRange.start, orderedRange.end)) {
+                return
+            }
+
             commitRange(orderedRange)
             setViewDate(new Date(orderedRange.start.getFullYear(), orderedRange.start.getMonth(), 1))
             setHoveredDate(null)
@@ -300,13 +330,56 @@ export function MDateRangePicker({
                 setOpen(false)
             }
         },
-        [commitRange, inline, isDisabled]
+        [allowSameDay, commitRange, inline, isDisabled]
     )
 
     const previewEnd = startDate && !endDate ? hoveredDate : null
     const firstMonth = viewDate
     const secondMonth = addMonths(viewDate, 1)
     const today = stripTime(new Date())
+
+    // Both visible months share one roving tab stop; the arrows cross from one panel to the other.
+    const gridNav = useDateGridNav({
+        viewMonth: viewDate,
+        monthsShown: 2,
+        onViewMonthChange: setViewDate,
+        selectedDate: endDate ?? startDate,
+        weekStartsOn: firstDayOfWeek,
+        onSelect: handleDayClick,
+        isDisabled,
+        onFocusDate: (date) => {
+            if (startDate && !endDate) setHoveredDate(date)
+        },
+    })
+    const baseId = useId()
+    const weekdayLong = useMemo(() => getWeekdayLabels(locale, firstDayOfWeek, 'long'), [locale, firstDayOfWeek])
+    const dayLabelFormatter = useMemo(
+        () => new Intl.DateTimeFormat(locale, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}),
+        [locale]
+    )
+
+    const openFromKeyboard = useCallback(() => {
+        if (disabled || readOnly) return
+        setFocusOnOpen(true)
+        setOpen(true)
+    }, [disabled, readOnly])
+
+    // The read-only field opens the calendar with Enter, Space, ArrowDown or Alt+ArrowDown.
+    const handleInputKeyDown = useCallback(
+        (event: React.KeyboardEvent<HTMLInputElement>) => {
+            if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
+                event.preventDefault()
+                openFromKeyboard()
+            }
+        },
+        [openFromKeyboard]
+    )
+
+    const handleClosePopover = useCallback(() => {
+        setOpen(false)
+        setFocusOnOpen(false)
+        setHoveredDate(null)
+    }, [])
 
     const displayValue = useMemo(() => formatRangeLabel(startDate, endDate, format), [endDate, format, startDate])
 
@@ -388,58 +461,103 @@ export function MDateRangePicker({
                 </div>
             )}
 
-            <div className="months">
-                {calendarMonths.map(({monthDate, days}) => (
+            <div ref={gridNav.containerRef as React.RefObject<HTMLDivElement>} className="months">
+                {calendarMonths.map(({monthDate, days}, monthIndex) => (
                     <div key={monthDate.toISOString()} className="month-panel">
-                        <div className="month-title">
+                        <div id={`${baseId}-month-${monthIndex}`} className="month-title" aria-live="polite">
                             {monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
                         </div>
-                        <div className="day-names">
-                            {dayNames.map((dayName) => (
-                                <span key={`${monthDate.toISOString()}-${dayName}`} className="day-name">
-                                    {dayName}
-                                </span>
-                            ))}
-                        </div>
-                        <div className="day-grid">
-                            {days.map(({date, currentMonth}, index) => {
-                                const disabledDay = isDisabled(date)
-                                const selectedStart = startDate ? isSameDay(date, startDate) : false
-                                const selectedEnd = endDate ? isSameDay(date, endDate) : false
-                                const inRange = isBetween(date, startDate, endDate)
-                                const previewRangeData =
-                                    !endDate && startDate && previewEnd ? sortRange(startDate, previewEnd) : null
-                                const previewRange = previewRangeData
-                                    ? isBetween(date, previewRangeData.start, previewRangeData.end)
-                                    : false
-                                const previewEdge = previewRangeData
-                                    ? isSameDay(date, previewRangeData.start) || isSameDay(date, previewRangeData.end)
-                                    : false
-
-                                return (
-                                    <button
-                                        key={`${monthDate.toISOString()}-${index}`}
-                                        type="button"
-                                        className={cn(
-                                            'day',
-                                            !currentMonth && 'other-month',
-                                            isSameDay(date, today) && 'today',
-                                            selectedStart && 'range-start selected',
-                                            selectedEnd && 'range-end selected',
-                                            inRange && 'in-range',
-                                            previewRange && !previewEdge && 'preview-range',
-                                            disabledDay && 'disabled'
-                                        )}
-                                        onClick={() => handleDayClick(date)}
-                                        onMouseEnter={() => startDate && !endDate && setHoveredDate(date)}
-                                        onFocus={() => startDate && !endDate && setHoveredDate(date)}
-                                        disabled={disabledDay}
-                                        tabIndex={-1}
+                        {/* APG date grid per month; one tab stop across both. */}
+                        <div
+                            className="day-table"
+                            role="grid"
+                            aria-labelledby={`${baseId}-month-${monthIndex}`}
+                            onKeyDown={gridNav.onGridKeyDown}
+                        >
+                            <div className="day-names" role="row">
+                                {dayNames.map((dayName, dayIndex) => (
+                                    <span
+                                        key={`${monthDate.toISOString()}-${dayName}`}
+                                        className="day-name"
+                                        role="columnheader"
+                                        aria-label={weekdayLong[dayIndex]}
                                     >
-                                        {date.getDate()}
-                                    </button>
-                                )
-                            })}
+                                        {dayName}
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="day-grid" role="rowgroup">
+                                {Array.from({length: days.length / 7}, (_, row) => (
+                                    <div key={row} className="day-row" role="row">
+                                        {days.slice(row * 7, row * 7 + 7).map(({date, currentMonth}, column) => {
+                                            const index = row * 7 + column
+                                            // Two panels side by side: a neighbouring month's days already
+                                            // appear in the other panel, so drawing them here too would paint
+                                            // the selected range twice. Keep an empty grid cell instead.
+                                            if (!currentMonth) {
+                                                return (
+                                                    <span
+                                                        key={`${monthDate.toISOString()}-${index}`}
+                                                        className="day other-month outside"
+                                                        role="gridcell"
+                                                    />
+                                                )
+                                            }
+
+                                            const disabledDay = isDisabled(date)
+                                            const selectedStart = startDate ? isSameDay(date, startDate) : false
+                                            const selectedEnd = endDate ? isSameDay(date, endDate) : false
+                                            const inRange = isBetween(date, startDate, endDate)
+                                            const previewRangeData =
+                                                !endDate && startDate && previewEnd
+                                                    ? sortRange(startDate, previewEnd)
+                                                    : null
+                                            const previewRange = previewRangeData
+                                                ? isBetween(date, previewRangeData.start, previewRangeData.end)
+                                                : false
+                                            const previewEdge = previewRangeData
+                                                ? isSameDay(date, previewRangeData.start) ||
+                                                  isSameDay(date, previewRangeData.end)
+                                                : false
+
+                                            const cellProps = gridNav.getCellProps(date)
+                                            const isToday = isSameDay(date, today)
+
+                                            return (
+                                                <div
+                                                    key={`${monthDate.toISOString()}-${index}`}
+                                                    {...cellProps}
+                                                    role="gridcell"
+                                                    className={cn(
+                                                        'day',
+                                                        !currentMonth && 'other-month',
+                                                        isToday && 'today',
+                                                        selectedStart && 'range-start selected',
+                                                        selectedEnd && 'range-end selected',
+                                                        inRange && 'in-range',
+                                                        previewRange && !previewEdge && 'preview-range',
+                                                        disabledDay && 'disabled'
+                                                    )}
+                                                    onClick={() => handleDayClick(date)}
+                                                    onMouseEnter={() => startDate && !endDate && setHoveredDate(date)}
+                                                    onFocus={() => {
+                                                        cellProps.onFocus()
+                                                        if (startDate && !endDate) setHoveredDate(date)
+                                                    }}
+                                                    aria-selected={selectedStart || selectedEnd || inRange}
+                                                    // Not native `disabled`: the roving tab stop may land on
+                                                    // an unavailable day and must stay focusable.
+                                                    aria-disabled={disabledDay || undefined}
+                                                    aria-current={isToday ? 'date' : undefined}
+                                                    aria-label={dayLabelFormatter.format(date)}
+                                                >
+                                                    {date.getDate()}
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -530,6 +648,7 @@ export function MDateRangePicker({
                     readOnly
                     id={id}
                     aria-invalid={hasError || undefined}
+                    onKeyDown={handleInputKeyDown}
                 />
                 {clearable && (startDate || endDate) && !disabled && (
                     <button
@@ -545,11 +664,7 @@ export function MDateRangePicker({
             </div>
 
             {name && startDate && endDate && (
-                <input
-                    type="hidden"
-                    name={name}
-                    value={`${startDate.toISOString().split('T')[0]}:${endDate.toISOString().split('T')[0]}`}
-                />
+                <input type="hidden" name={name} value={`${toLocalIsoDate(startDate)}:${toLocalIsoDate(endDate)}`} />
             )}
 
             <MPopover
@@ -557,11 +672,12 @@ export function MDateRangePicker({
                 style={{'--color-rgb': colorRgbVar(color)} as React.CSSProperties}
                 open={open}
                 anchorRef={triggerRef}
-                onClose={() => {
-                    setOpen(false)
-                    setHoveredDate(null)
-                }}
+                onClose={handleClosePopover}
                 placement="bottom-start"
+                role="dialog"
+                aria-label={label ?? texts.dialogLabel}
+                initialFocus={focusOnOpen ? gridNav.tabStopRef : undefined}
+                closeOnTabOut
             >
                 {renderCalendar()}
             </MPopover>

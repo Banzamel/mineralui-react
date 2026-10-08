@@ -52,6 +52,19 @@ body:has(.footer) .toast.container.bottom-center {
     --mineral-toast-bottom-offset: var(--mineral-footer-clearance, 5rem);
 }
 
+/* Visually hidden live regions that announce toasts to screen readers. */
+.toast.container .toast.live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* === Single toast === */
 .toast.item {
     position: relative;

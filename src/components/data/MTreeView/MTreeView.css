@@ -95,6 +95,44 @@
     pointer-events: none;
 }
 
+.tree li[role='treeitem']:focus {
+    outline: none;
+}
+
+.tree li[role='treeitem']:focus-visible > .item {
+    outline: 2px solid var(--tree-color);
+    outline-offset: -2px;
+}
+
+.tree .item.cut {
+    opacity: 0.55;
+    outline: 1px dashed rgba(var(--tree-color-rgb), 0.6);
+    outline-offset: -1px;
+}
+
+.tree .tree-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.tree.menu .action:focus {
+    outline: none;
+}
+
+.tree.menu .action:focus-visible {
+    background: var(--mineral-option-hover-bg);
+    outline: 2px solid var(--mineral-primary);
+    outline-offset: -2px;
+}
+
 .tree .item.draggable {
     cursor: grab;
 }

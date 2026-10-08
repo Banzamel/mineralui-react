@@ -24,6 +24,11 @@ html {
     scroll-behavior: smooth;
 }
 
+/* The native hidden attribute must win over component display rules (e.g. display: flex). */
+[hidden]:not([hidden='until-found']) {
+    display: none !important;
+}
+
 body {
     background: var(--mineral-page-bg);
     color: var(--mineral-page-text);

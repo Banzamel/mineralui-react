@@ -10,6 +10,7 @@ import {MNavs} from '../MNavs'
 import {MButton} from '../../controls/MButton'
 import {MMenuIcon} from '../../../icons'
 import './MNavbar.css'
+import {useMLayoutTexts} from '../../../i18n/frameworkTexts'
 
 type NavLikeElement = ReactElement<{children?: ReactNode; orientation?: 'horizontal' | 'vertical'}>
 
@@ -47,13 +48,14 @@ export function MNavbar({
     mobileMenuContent,
     mobileMenuFooter,
     collapseActions = false,
-    mobileMenuLabel = 'Open navigation',
+    mobileMenuLabel,
     mobileBreakpoint = MShellBreakpoints.compact,
     hidden,
     className,
     children,
     ...rest
 }: MNavbarProps) {
+    const texts = useMLayoutTexts()
     const [open, setOpen] = useState(false)
     const rootRef = useRef<HTMLElement | null>(null)
     const menuId = useId()
@@ -77,9 +79,10 @@ export function MNavbar({
             shape="circle"
             iconOnly
             className="navbar-toggle"
-            aria-label={mobileMenuLabel}
+            aria-label={mobileMenuLabel ?? texts.navbarMenu}
             aria-expanded={open}
-            aria-controls={menuId}
+            // The menu is display: none above the breakpoint, so only point at it below.
+            aria-controls={mobile ? menuId : undefined}
             onClick={handleToggleClick}
         >
             <MMenuIcon />
@@ -140,7 +143,15 @@ export function MNavbar({
         }
 
         function handleKeydown(event: KeyboardEvent) {
-            if (event.key === 'Escape') setOpen(false)
+            if (event.key !== 'Escape') return
+            setOpen(false)
+            // Hand focus back to the burger when it was inside the navbar (e.g. on a
+            // menu link), so keyboard users are not dropped onto <body>.
+            const root = rootRef.current
+            const active = document.activeElement
+            if (root && active instanceof Node && root.contains(active)) {
+                root.querySelector<HTMLElement>('.navbar-toggle')?.focus()
+            }
         }
 
         document.addEventListener('pointerdown', handlePointerDown)
@@ -189,13 +200,24 @@ export function MNavbar({
                 <div className={cn('inner', justify, wrap && 'wrap')}>{renderedChildren}</div>
             </MContainer>
 
-            {mobileMenu === 'drawer' && <div className={cn('mobile-backdrop', open && 'visible')} aria-hidden />}
+            {mobileMenu === 'drawer' && (
+                <div
+                    className={cn('mobile-backdrop', open && 'visible')}
+                    aria-hidden
+                    // The backdrop lives inside the navbar root, so the outside-pointer
+                    // listener ignores it; close explicitly on click.
+                    onClick={() => setOpen(false)}
+                />
+            )}
 
             <div
                 id={menuId}
                 className={cn('mobile-menu', mobileMenu, open && 'open')}
-                role="menu"
+                // APG disclosure: the burger owns aria-expanded / aria-controls and the panel is a
+                // plain container of links, so no role="menu" (which promises menu keyboarding).
                 aria-hidden={!open || undefined}
+                // Keep links in a closed menu out of the tab order, not just hidden from AT.
+                inert={!open}
                 onClick={handleMenuClick}
             >
                 {mobileNavs}

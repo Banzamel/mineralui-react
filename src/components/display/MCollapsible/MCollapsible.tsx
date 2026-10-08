@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useId, useState} from 'react'
 import {MButton} from '../../controls'
 import {MStack} from '../../layout'
 import {cn} from '../../../utils/cn'
@@ -19,6 +19,7 @@ export function MCollapsible({
 }: MCollapsibleProps) {
     const [internalOpen, setInternalOpen] = useState(defaultOpen)
     const open = controlledOpen ?? internalOpen
+    const panelId = useId()
 
     const handleToggle = () => {
         const nextOpen = !open
@@ -43,13 +44,18 @@ export function MCollapsible({
                 color={color}
                 className="trigger"
                 aria-expanded={open}
+                aria-controls={panelId}
                 onClick={handleToggle}
                 endIcon={chevronIcon}
             >
                 {title}
             </MButton>
-            <div className={cn('content-wrap', open && 'open')} aria-hidden={!open}>
-                <MStack className="content">{children}</MStack>
+            {/* A closed panel is inert: its content leaves the Tab order, not just the a11y tree. */}
+            <div id={panelId} className={cn('content-wrap', open && 'open')} aria-hidden={!open} inert={!open}>
+                {/* The clip row carries no padding, so the collapsed 0fr track really is 0px tall. */}
+                <div className="collapsible-clip">
+                    <MStack className="content">{children}</MStack>
+                </div>
             </div>
         </div>
     )

@@ -9,16 +9,7 @@ const INTERACTIVE_SELECTOR = 'button, a, [role="button"]'
 // Sticky side-rail panel: sticks to the viewport at `top`, fills viewport-relative height,
 // scrolls internally with an optional hidden scrollbar and click-and-drag scrolling.
 export const MStickyPanel = forwardRef<HTMLDivElement, MStickyPanelProps>(function MStickyPanel(
-    {
-        children,
-        top = 16,
-        bottomGap = 16,
-        hideScrollbar = true,
-        draggable = true,
-        className,
-        style,
-        ...rest
-    },
+    {children, top = 16, bottomGap = 16, hideScrollbar = true, draggable = true, label, className, style, ...rest},
     forwardedRef
 ) {
     const panelRef = useRef<HTMLDivElement>(null)
@@ -83,6 +74,11 @@ export const MStickyPanel = forwardRef<HTMLDivElement, MStickyPanelProps>(functi
                 className
             )}
             style={mergedStyle}
+            // A scrollable region must be keyboard-focusable even when it holds no
+            // focusable content (axe `scrollable-region-focusable`).
+            tabIndex={0}
+            role={label ? 'region' : undefined}
+            aria-label={label}
             onMouseDown={handleMouseDown}
             {...rest}
         >

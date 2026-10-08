@@ -37,7 +37,14 @@ export function MQuickActions({
             disabled={item.disabled}
             fullWidth={layout === 'grid' ? true : fullWidth}
         >
-            {item.label}
+            {item.description ? (
+                <span className="quick-actions-text">
+                    <span className="quick-actions-label">{item.label}</span>
+                    <span className="quick-actions-description">{item.description}</span>
+                </span>
+            ) : (
+                item.label
+            )}
         </MButton>
     ))
 

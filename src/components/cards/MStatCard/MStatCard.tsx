@@ -35,6 +35,8 @@ export function MCardStat({
     trend,
     trendType,
     color = 'primary',
+    // MCard is unpadded by default; a stat card always needs inner spacing from the border.
+    padded = true,
     className,
     ...rest
 }: MCardStatProps) {
@@ -42,7 +44,7 @@ export function MCardStat({
     const resolvedTrendType = resolveTrendType(trend, trendType)
 
     return (
-        <MCard className={cn('stat-card', `color-${color}`, className)} {...rest}>
+        <MCard className={cn('stat-card', `color-${color}`, className)} padded={padded} {...rest}>
             <MStack spacing={'md'}>
                 <MInline justify={'between'} align={'start'}>
                     <MStack spacing={'xs'}>

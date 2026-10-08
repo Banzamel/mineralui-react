@@ -41,6 +41,7 @@ export const MButton = forwardRef<HTMLElement, MButtonProps>(function MButton(
         disabled = false,
         type = 'button',
         onClick,
+        onClickCapture,
         onPointerDown,
         onKeyDown,
         ...rest
@@ -75,10 +76,12 @@ export const MButton = forwardRef<HTMLElement, MButtonProps>(function MButton(
         <Component
             ref={ref}
             type={isNativeButton ? type : undefined}
-            to={component ? (isDisabled ? undefined : to) : undefined}
-            href={component ? (isDisabled ? undefined : href) : undefined}
-            target={component ? (isDisabled ? undefined : target) : undefined}
-            rel={component ? (isDisabled ? undefined : rel) : undefined}
+            // A disabled link keeps its href so it stays in the accessibility tree and is
+            // announced as disabled (aria-disabled); activation is blocked in the capture phase.
+            to={component ? to : undefined}
+            href={component ? href : undefined}
+            target={component ? target : undefined}
+            rel={component ? rel : undefined}
             className={cn(
                 'button',
                 variant,
@@ -100,6 +103,15 @@ export const MButton = forwardRef<HTMLElement, MButtonProps>(function MButton(
             aria-busy={loading || undefined}
             aria-disabled={!isNativeButton && isDisabled ? true : undefined}
             onClick={handleClick}
+            onClickCapture={(event: MouseEvent<HTMLElement>) => {
+                if (isDisabled && !isNativeButton) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    return
+                }
+
+                onClickCapture?.(event as never)
+            }}
             onPointerDown={(event: PointerEvent<HTMLElement>) => {
                 handlePointerDown(event as never)
                 onPointerDown?.(event as never)

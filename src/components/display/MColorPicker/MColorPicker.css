@@ -156,3 +156,33 @@
     border-color: var(--mineral-text);
     box-shadow: 0 0 0 1px var(--mineral-dark-light);
 }
+
+.color-picker .area:focus,
+.color-picker .hue:focus,
+.color-picker .swatch:focus {
+    outline: none;
+}
+
+.color-picker .area:focus-visible,
+.color-picker .hue:focus-visible,
+.color-picker .swatch:focus-visible {
+    outline: 2px solid rgba(var(--mineral-primary-rgb), 1);
+    outline-offset: 2px;
+}
+
+.color-picker .area:focus-visible .cursor,
+.color-picker .hue:focus-visible .hue-thumb {
+    box-shadow:
+        0 0 0 2px rgba(var(--mineral-primary-rgb), 1),
+        0 0 3px rgba(0, 0, 0, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .color-picker .swatch {
+        transition: none;
+    }
+
+    .color-picker .swatch:hover {
+        transform: none;
+    }
+}

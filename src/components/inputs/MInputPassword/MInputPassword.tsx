@@ -1,10 +1,11 @@
-import {useState, useCallback, useEffect, forwardRef} from 'react'
+import {useState, useCallback, useEffect, useId, forwardRef} from 'react'
 import type * as React from 'react'
 import type {MInputPasswordProps, MPasswordStrength} from './MInputPassword.types'
 import {MInput} from '../MInput'
 import {MEyeIcon, MEyeOffIcon} from '../../../icons'
 import {cn} from '../../../utils/cn'
 import './MInputPassword.css'
+import {formatMText, useMInputTexts} from '../../../i18n/frameworkTexts'
 
 // Approximate password strength with simple UI-focused heuristics.
 function calcStrength(value: string): MPasswordStrength {
@@ -21,18 +22,14 @@ function calcStrength(value: string): MPasswordStrength {
     return 'strong'
 }
 
-const STRENGTH_LABELS: Record<MPasswordStrength, string> = {
-    weak: 'Weak',
-    fair: 'Fair',
-    good: 'Good',
-    strong: 'Strong',
-}
-
 // Extend the base input with password visibility and optional strength feedback.
 export const MInputPassword = forwardRef<HTMLInputElement, MInputPasswordProps>(function MInputPassword(
-    {showToggle = true, showStrength = false, onStrengthChange, value, defaultValue, onChange, className, ...rest},
+    {showToggle = true, showStrength = false, onStrengthChange, value, defaultValue, onChange, className, id, ...rest},
     ref
 ) {
+    const texts = useMInputTexts()
+    const generatedId = useId()
+    const inputId = id ?? generatedId
     const [visible, setVisible] = useState(false)
     const [internalValue, setInternalValue] = useState(defaultValue?.toString() ?? '')
     const currentValue = value !== undefined ? value.toString() : internalValue
@@ -53,13 +50,17 @@ export const MInputPassword = forwardRef<HTMLInputElement, MInputPasswordProps>(
         [onChange, value]
     )
 
+    // APG toggle button: reachable with Tab, constant name, state carried by `aria-pressed`.
     const toggleIcon = showToggle ? (
         <button
             type="button"
             className="password toggle"
+            onMouseDown={(event) => event.preventDefault()}
             onClick={() => setVisible((v) => !v)}
-            tabIndex={-1}
-            aria-label={visible ? 'Hide password' : 'Show password'}
+            aria-label={texts.showPassword}
+            aria-pressed={visible}
+            aria-controls={inputId}
+            disabled={rest.disabled}
         >
             {visible ? <MEyeOffIcon /> : <MEyeIcon />}
         </button>
@@ -70,6 +71,7 @@ export const MInputPassword = forwardRef<HTMLInputElement, MInputPasswordProps>(
             <MInput
                 {...rest}
                 ref={ref}
+                id={inputId}
                 type={visible ? 'text' : 'password'}
                 value={currentValue}
                 onChange={handleChange}
@@ -77,7 +79,7 @@ export const MInputPassword = forwardRef<HTMLInputElement, MInputPasswordProps>(
             />
             {showStrength && currentValue.length > 0 && (
                 <div className="password strength row">
-                    <div className="password strength bar">
+                    <div className="password strength bar" aria-hidden="true">
                         {[0, 1, 2, 3].map((i) => (
                             <div
                                 key={i}
@@ -89,10 +91,18 @@ export const MInputPassword = forwardRef<HTMLInputElement, MInputPasswordProps>(
                             />
                         ))}
                     </div>
-                    <span className={cn('password strength label', `strength-${strength}`)}>
-                        {STRENGTH_LABELS[strength]}
+                    <span className={cn('password strength label', `strength-${strength}`)} aria-hidden="true">
+                        {texts.strength[strength]}
                     </span>
                 </div>
+            )}
+            {showStrength && (
+                // Kept mounted so screen readers pick up every change of the live region.
+                <span className="password strength announcement" role="status" aria-live="polite">
+                    {currentValue.length > 0
+                        ? formatMText(texts.passwordStrength, {strength: texts.strength[strength]})
+                        : ''}
+                </span>
             )}
         </div>
     )

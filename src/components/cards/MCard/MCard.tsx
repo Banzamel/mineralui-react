@@ -5,6 +5,7 @@ import {MSurface} from '../../layout'
 import {MSkeleton} from '../../feedback'
 import {resolveMCardAction} from '../shared'
 import './MCard.css'
+import '../shared/MCardShared.css'
 
 // Compose elevated content blocks that can optionally behave like an interactive surface.
 export function MCard({

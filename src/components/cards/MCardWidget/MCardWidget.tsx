@@ -5,6 +5,8 @@ import {MArrowDownIcon, MArrowUpIcon} from '../../../icons'
 import {useInteractionEffect} from '../../../utils/useInteractionEffect'
 import {resolveMCardAction} from '../shared'
 import './MCardWidget.css'
+import '../shared/MCardShared.css'
+import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
 function resolveTrendType(trend: MCardWidgetProps['trend'], explicit?: MCardWidgetProps['trendType']) {
     if (explicit) return explicit
@@ -40,6 +42,7 @@ export function MCardWidget({
     onPointerDown,
     ...rest
 }: MCardWidgetProps) {
+    const texts = useMCommonTexts()
     const hasTrend = trend !== undefined && trend !== null
     const resolvedTrendType = resolveTrendType(trend, trendType)
     const formattedTrend = formatTrend(trend)
@@ -89,6 +92,11 @@ export function MCardWidget({
                     <span className={cn('cw-trend', resolvedTrendType)}>
                         {resolvedTrendType === 'up' && <MArrowUpIcon size={14} />}
                         {resolvedTrendType === 'down' && <MArrowDownIcon size={14} />}
+                        {resolvedTrendType !== 'neutral' && (
+                            <span className="card-sr-only">
+                                {resolvedTrendType === 'up' ? texts.increase : texts.decrease}{' '}
+                            </span>
+                        )}
                         <span>{formattedTrend}</span>
                     </span>
                 </div>

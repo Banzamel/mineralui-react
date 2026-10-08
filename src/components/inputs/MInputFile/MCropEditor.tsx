@@ -1,9 +1,19 @@
-import {useState, useRef, useCallback, useEffect} from 'react'
+import {useState, useRef, useCallback, useEffect, useId} from 'react'
 import type * as React from 'react'
 import type {MInputFileCropShape} from './MInputFile.types'
 import {MButton, MSlider} from '../../controls'
 import {MZoomInIcon} from '../../../icons'
 import './MCropEditor.css'
+import {useMInputFileTexts} from '../../../i18n/frameworkTexts'
+
+// Zoom range shared by the mouse wheel and the slider.
+const MIN_SCALE = 0.1
+const MAX_SCALE = 5
+// Keyboard pan distance in px (Shift multiplies it) and zoom factor per +/- press.
+const PAN_STEP = 10
+const PAN_STEP_FAST = 50
+const KEY_ZOOM_FACTOR = 1.1
+const CONTAINER_SIZE = 280
 
 interface MCropEditorProps {
     file: File
@@ -15,6 +25,7 @@ interface MCropEditorProps {
 }
 
 export function MCropEditor({file, shape, outputSize, quality, onCrop, onCancel}: MCropEditorProps) {
+    const texts = useMInputFileTexts()
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const containerRef = useRef<HTMLDivElement>(null)
     const imgRef = useRef<HTMLImageElement | null>(null)
@@ -23,6 +34,9 @@ export function MCropEditor({file, shape, outputSize, quality, onCrop, onCancel}
     const [offset, setOffset] = useState({x: 0, y: 0})
     const [dragging, setDragging] = useState(false)
     const dragStart = useRef({x: 0, y: 0, ox: 0, oy: 0})
+    const baseId = useId()
+    const hintId = `${baseId}-hint`
+    const keyboardHintId = `${baseId}-keys`
 
     useEffect(() => {
         const url = URL.createObjectURL(file)
@@ -36,7 +50,7 @@ export function MCropEditor({file, shape, outputSize, quality, onCrop, onCancel}
         img.onload = () => {
             imgRef.current = img
             const minDim = Math.min(img.width, img.height)
-            const containerSize = 280
+            const containerSize = CONTAINER_SIZE
             const initialScale = containerSize / minDim
             setScale(initialScale)
             setOffset({
@@ -72,15 +86,12 @@ export function MCropEditor({file, shape, outputSize, quality, onCrop, onCancel}
         setDragging(false)
     }, [])
 
-    const handleWheel = useCallback(
-        (e: React.WheelEvent) => {
-            e.preventDefault()
-            const containerSize = 280
-            const cx = containerSize / 2
-            const cy = containerSize / 2
-
-            const delta = e.deltaY > 0 ? 0.95 : 1.05
-            const newScale = Math.max(0.1, Math.min(scale * delta, 10))
+    // Zoom around the viewport centre so the visible middle of the image stays put.
+    const zoomTo = useCallback(
+        (requested: number) => {
+            const newScale = Math.max(MIN_SCALE, Math.min(requested, MAX_SCALE))
+            const cx = CONTAINER_SIZE / 2
+            const cy = CONTAINER_SIZE / 2
 
             setOffset({
                 x: cx - (cx - offset.x) * (newScale / scale),
@@ -91,19 +102,41 @@ export function MCropEditor({file, shape, outputSize, quality, onCrop, onCancel}
         [scale, offset]
     )
 
-    const handleSliderChange = useCallback(
-        (newScale: number) => {
-            const containerSize = 280
-            const cx = containerSize / 2
-            const cy = containerSize / 2
-
-            setOffset({
-                x: cx - (cx - offset.x) * (newScale / scale),
-                y: cy - (cy - offset.y) * (newScale / scale),
-            })
-            setScale(newScale)
+    const handleWheel = useCallback(
+        (e: React.WheelEvent) => {
+            e.preventDefault()
+            zoomTo(scale * (e.deltaY > 0 ? 0.95 : 1.05))
         },
-        [scale, offset]
+        [scale, zoomTo]
+    )
+
+    const handleSliderChange = zoomTo
+
+    // Keyboard alternative to dragging and the wheel: arrows pan, + / - zoom.
+    const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent<HTMLDivElement>) => {
+            if (e.altKey || e.ctrlKey || e.metaKey) return
+            const distance = e.shiftKey ? PAN_STEP_FAST : PAN_STEP
+            const pan: Record<string, [number, number]> = {
+                ArrowLeft: [-distance, 0],
+                ArrowRight: [distance, 0],
+                ArrowUp: [0, -distance],
+                ArrowDown: [0, distance],
+            }
+
+            if (pan[e.key]) {
+                e.preventDefault()
+                const [dx, dy] = pan[e.key]
+                setOffset((prev) => ({x: prev.x + dx, y: prev.y + dy}))
+            } else if (e.key === '+' || e.key === '=' || e.key === 'Add') {
+                e.preventDefault()
+                zoomTo(scale * KEY_ZOOM_FACTOR)
+            } else if (e.key === '-' || e.key === '_' || e.key === 'Subtract') {
+                e.preventDefault()
+                zoomTo(scale / KEY_ZOOM_FACTOR)
+            }
+        },
+        [scale, zoomTo]
     )
 
     const exportCrop = useCallback(() => {
@@ -111,7 +144,7 @@ export function MCropEditor({file, shape, outputSize, quality, onCrop, onCancel}
         const canvas = canvasRef.current
         if (!img || !canvas) return
 
-        const containerSize = 280
+        const containerSize = CONTAINER_SIZE
         canvas.width = outputSize
         canvas.height = outputSize
         const ctx = canvas.getContext('2d')
@@ -142,21 +175,28 @@ export function MCropEditor({file, shape, outputSize, quality, onCrop, onCancel}
     }, [file, offset, scale, outputSize, quality, shape, onCrop])
 
     // Convert scale to 0-100 range for MSlider and back
-    const sliderValue = Math.round(((scale - 0.1) / (5 - 0.1)) * 100)
+    const sliderValue = Math.round(((scale - MIN_SCALE) / (MAX_SCALE - MIN_SCALE)) * 100)
 
     const handleSliderValueChange = useCallback(
         (value: number) => {
-            const newScale = 0.1 + (value / 100) * (5 - 0.1)
+            const newScale = MIN_SCALE + (value / 100) * (MAX_SCALE - MIN_SCALE)
             handleSliderChange(newScale)
         },
         [handleSliderChange]
     )
 
+    const [hintBefore, ...hintRest] = texts.cropHint.split('{apply}')
+
     return (
         <div className="crop editor">
-            <div className="crop hint" role="note">
-                Drag the image to reposition, scroll or use the slider to zoom, then click <strong>Apply</strong> to
-                confirm the crop.
+            <div id={hintId} className="crop hint" role="note">
+                {hintBefore}
+                {hintRest.length > 0 && (
+                    <>
+                        <strong>{texts.cropApply}</strong>
+                        {hintRest.join('{apply}')}
+                    </>
+                )}
             </div>
             <div
                 ref={containerRef}
@@ -165,7 +205,15 @@ export function MCropEditor({file, shape, outputSize, quality, onCrop, onCancel}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
                 onWheel={handleWheel}
+                onKeyDown={handleKeyDown}
+                role="application"
+                tabIndex={0}
+                aria-label={texts.cropArea}
+                aria-describedby={`${keyboardHintId} ${hintId}`}
             >
+                <span id={keyboardHintId} className="crop sr-only">
+                    {texts.cropKeyboardHint}
+                </span>
                 {imgSrc && (
                     <img
                         src={imgSrc}
@@ -191,15 +239,16 @@ export function MCropEditor({file, shape, outputSize, quality, onCrop, onCancel}
                     onChange={handleSliderValueChange}
                     color="primary"
                     className="crop zoom slider"
+                    aria-label={texts.cropZoom}
                 />
             </div>
 
             <div className="crop actions">
                 <MButton variant="ghost" size="sm" color="neutral" onClick={onCancel}>
-                    Cancel
+                    {texts.cropCancel}
                 </MButton>
                 <MButton variant="filled" size="sm" color="primary" onClick={exportCrop}>
-                    Apply
+                    {texts.cropApply}
                 </MButton>
             </div>
 

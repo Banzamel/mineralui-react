@@ -4,6 +4,7 @@ import type {MInputSearchProps} from './MInputSearch.types'
 import {MInput} from '../MInput'
 import {useDebouncedCallback} from '../../../utils/useDebounce'
 import {MSearchIcon} from '../../../icons'
+import {useMInputTexts} from '../../../i18n/frameworkTexts'
 
 // Extend the base input with debounced search callbacks and an inline clear action.
 export const MInputSearch = forwardRef<HTMLInputElement, MInputSearchProps>(function MInputSearch(
@@ -16,11 +17,12 @@ export const MInputSearch = forwardRef<HTMLInputElement, MInputSearchProps>(func
         onKeyDown,
         onClear,
         clearable = true,
-        placeholder = 'Search...',
+        placeholder,
         ...rest
     },
     ref
 ) {
+    const texts = useMInputTexts()
     const [internalValue, setInternalValue] = useState(defaultValue?.toString() ?? '')
     const currentValue = value !== undefined ? value.toString() : internalValue
 
@@ -68,7 +70,7 @@ export const MInputSearch = forwardRef<HTMLInputElement, MInputSearchProps>(func
             onKeyDown={handleKeyDown}
             onClear={handleClear}
             clearable={clearable}
-            placeholder={placeholder}
+            placeholder={placeholder ?? texts.searchPlaceholder}
             startIcon={<MSearchIcon />}
         />
     )

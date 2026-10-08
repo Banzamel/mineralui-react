@@ -89,6 +89,7 @@ export const MInputGroup = forwardRef<HTMLInputElement, MInputGroupProps>(functi
         autoFocus = false,
         autoComplete,
         inputMode,
+        variant = 'outlined',
         size = 'md',
         fullWidth = false,
         label,
@@ -192,6 +193,7 @@ export const MInputGroup = forwardRef<HTMLInputElement, MInputGroupProps>(functi
             <div
                 className={cn(
                     'container',
+                    `field-${variant}`,
                     `field-${size}`,
                     focused && 'focused',
                     hasError && 'has-error',
@@ -232,7 +234,7 @@ export const MInputGroup = forwardRef<HTMLInputElement, MInputGroupProps>(functi
                     </span>
                 )}
 
-                {clearable && hasContent && !loading && !disabled && (
+                {clearable && hasContent && !loading && !disabled && !readOnly && (
                     <button
                         type="button"
                         className="clear-btn clear-btn-base"

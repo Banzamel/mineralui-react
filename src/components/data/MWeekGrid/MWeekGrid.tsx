@@ -1,10 +1,11 @@
-import {Fragment, useMemo, type CSSProperties, type KeyboardEvent, type ReactNode} from 'react'
+import {Fragment, useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode} from 'react'
 
 import {MStack} from '../../layout'
 import {MTooltip} from '../../overlays'
 import {MHeading, MSubText, MText} from '../../typography'
 import {cn} from '../../../utils/cn'
 import {formatMText, useMWeekGridTexts} from '../../../i18n/frameworkTexts'
+import {isRtlElement} from '../../../utils/radioGroupKeys'
 
 import type {MWeekGridBand, MWeekGridCell, MWeekGridCellContext, MWeekGridProps} from './MWeekGrid.types'
 
@@ -12,8 +13,6 @@ import './MWeekGrid.css'
 
 const DEFAULT_DAYS = 7
 const DEFAULT_SLOTS = 24
-
-const DEFAULT_DAY_LABELS_FROM_SUNDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const ALL_BANDS: MWeekGridBand[] = [0, 1, 2, 3]
 
@@ -76,7 +75,12 @@ function resolveMax(grid: number[][], max?: number): number {
     return best
 }
 
-function resolveDayLabels(days: number, weekStart: 0 | 1, custom?: string[]): {label: string; calendarDay: number}[] {
+function resolveDayLabels(
+    days: number,
+    weekStart: 0 | 1,
+    defaultLabelsFromSunday: readonly string[],
+    custom?: string[]
+): {label: string; calendarDay: number}[] {
     if (custom && custom.length >= days) {
         return Array.from({length: days}, (_, index) => ({label: custom[index], calendarDay: index}))
     }
@@ -84,7 +88,7 @@ function resolveDayLabels(days: number, weekStart: 0 | 1, custom?: string[]): {l
     if (days === 7) {
         const order = weekStart === 1 ? [1, 2, 3, 4, 5, 6, 0] : [0, 1, 2, 3, 4, 5, 6]
         return order.map((calendarDay) => ({
-            label: DEFAULT_DAY_LABELS_FROM_SUNDAY[calendarDay],
+            label: defaultLabelsFromSunday[calendarDay],
             calendarDay,
         }))
     }
@@ -101,6 +105,43 @@ function resolveSlotLabels(slots: number, custom?: string[]): string[] {
         return Array.from({length: 24}, (_, hour) => hour.toString().padStart(2, '0'))
     }
     return Array.from({length: slots}, (_, slot) => String(slot + 1))
+}
+
+/**
+ * Next cell for an APG grid key, or `null` when the key does not move.
+ * Rows and columns clamp at the edges (no wrapping), as in the APG data grid.
+ */
+function gridKeyTarget(
+    key: string,
+    ctrl: boolean,
+    row: number,
+    col: number,
+    rowCount: number,
+    colCount: number,
+    rtl: boolean
+): {row: number; col: number} | null {
+    const lastRow = rowCount - 1
+    const lastCol = colCount - 1
+    switch (key) {
+        case 'ArrowRight':
+            return {row, col: rtl ? Math.max(col - 1, 0) : Math.min(col + 1, lastCol)}
+        case 'ArrowLeft':
+            return {row, col: rtl ? Math.min(col + 1, lastCol) : Math.max(col - 1, 0)}
+        case 'ArrowDown':
+            return {row: Math.min(row + 1, lastRow), col}
+        case 'ArrowUp':
+            return {row: Math.max(row - 1, 0), col}
+        case 'Home':
+            return ctrl ? {row: 0, col: 0} : {row, col: 0}
+        case 'End':
+            return ctrl ? {row: lastRow, col: lastCol} : {row, col: lastCol}
+        case 'PageUp':
+            return {row: 0, col}
+        case 'PageDown':
+            return {row: lastRow, col}
+        default:
+            return null
+    }
 }
 
 function defaultRenderCell(ctx: MWeekGridCellContext): ReactNode {
@@ -139,16 +180,26 @@ export function MWeekGrid({
     rowLabelWidth = 48,
     cellHeight = 24,
     cellMinWidth = 24,
+    interactive,
     className,
     style,
     ...rest
 }: MWeekGridProps) {
+    // Grid mode: one tab stop and APG grid arrow keys instead of a tab stop per cell.
+    const gridMode = interactive ?? !!onCellClick
+    const legacyButtons = !gridMode && !!onCellClick
+    const [activeCell, setActiveCell] = useState({row: 0, col: 0})
+    const matrixRef = useRef<HTMLDivElement>(null)
+    const titleId = `${useId()}-title`
     const grid = useMemo(() => buildGrid(data, days, slots), [data, days, slots])
     const resolvedMax = useMemo(() => resolveMax(grid, max), [grid, max])
-    const rows = useMemo(() => resolveDayLabels(days, weekStart, dayLabels), [days, weekStart, dayLabels])
     const cols = useMemo(() => resolveSlotLabels(slots, slotLabels), [slots, slotLabels])
     const legendBands = useMemo(() => reachableBands(grid, resolvedMax), [grid, resolvedMax])
     const texts = useMWeekGridTexts()
+    const rows = useMemo(
+        () => resolveDayLabels(days, weekStart, texts.days, dayLabels),
+        [days, weekStart, texts.days, dayLabels]
+    )
     const resolvedBandLabels = bandLabels ?? texts.bands
 
     const matrixStyle: CSSProperties = {
@@ -161,6 +212,37 @@ export function MWeekGrid({
     }
 
     const hasHeader = title != null || description != null || hint != null || peakLabel != null
+    const rowCount = rows.length
+    const colCount = cols.length
+    const active = {
+        row: Math.min(activeCell.row, Math.max(rowCount - 1, 0)),
+        col: Math.min(activeCell.col, Math.max(colCount - 1, 0)),
+    }
+    const labelledByTitle = gridMode && typeof title === 'string' && !rest['aria-label'] && !rest['aria-labelledby']
+
+    function focusCell(row: number, col: number) {
+        setActiveCell({row, col})
+        matrixRef.current?.querySelector<HTMLElement>(`[data-week-grid-cell="${row}-${col}"]`)?.focus()
+    }
+
+    function handleGridKeyDown(
+        event: KeyboardEvent<HTMLDivElement>,
+        row: number,
+        col: number,
+        ctx: MWeekGridCellContext
+    ) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            if (!onCellClick) return
+            event.preventDefault()
+            onCellClick(ctx)
+            return
+        }
+        const rtl = isRtlElement(matrixRef.current)
+        const target = gridKeyTarget(event.key, event.ctrlKey || event.metaKey, row, col, rowCount, colCount, rtl)
+        if (!target) return
+        event.preventDefault()
+        focusCell(target.row, target.col)
+    }
 
     return (
         <div className={cn('mineral-week-grid', className)} style={wrapperStyle} {...rest}>
@@ -169,7 +251,13 @@ export function MWeekGrid({
                     <div className={'mineral-week-grid__title-row'}>
                         <div className={'mineral-week-grid__title-text'}>
                             {title != null &&
-                                (typeof title === 'string' ? <MHeading level={5}>{title}</MHeading> : title)}
+                                (typeof title === 'string' ? (
+                                    <MHeading level={5} id={labelledByTitle ? titleId : undefined}>
+                                        {title}
+                                    </MHeading>
+                                ) : (
+                                    title
+                                ))}
                             {description != null &&
                                 (typeof description === 'string' ? (
                                     <MSubText tone={'muted'}>{description}</MSubText>
@@ -191,19 +279,31 @@ export function MWeekGrid({
                 </MStack>
             )}
 
-            <div className={'mineral-week-grid__matrix'} style={matrixStyle}>
-                <div />
-                {cols.map((label, slot) => (
-                    <div key={`col-${slot}`} className={'mineral-week-grid__col-header'}>
-                        <MSubText size={'xs'} tone={'muted'}>
-                            {label}
-                        </MSubText>
-                    </div>
-                ))}
+            <div
+                ref={matrixRef}
+                className={cn('mineral-week-grid__matrix', gridMode && 'mineral-week-grid__matrix--grid')}
+                style={matrixStyle}
+                role={gridMode ? 'grid' : undefined}
+                aria-labelledby={labelledByTitle ? titleId : undefined}
+            >
+                <GridRow enabled={gridMode}>
+                    <div role={gridMode ? 'columnheader' : undefined} />
+                    {cols.map((label, slot) => (
+                        <div
+                            key={`col-${slot}`}
+                            className={'mineral-week-grid__col-header'}
+                            role={gridMode ? 'columnheader' : undefined}
+                        >
+                            <MSubText size={'xs'} tone={'muted'}>
+                                {label}
+                            </MSubText>
+                        </div>
+                    ))}
+                </GridRow>
 
                 {rows.map(({label: dayLabel, calendarDay}, rowIndex) => (
-                    <Fragment key={`row-${rowIndex}-${calendarDay}`}>
-                        <div className={'mineral-week-grid__row-label'}>
+                    <GridRow enabled={gridMode} key={`row-${rowIndex}-${calendarDay}`}>
+                        <div className={'mineral-week-grid__row-label'} role={gridMode ? 'rowheader' : undefined}>
                             <MSubText size={'xs'} tone={'muted'}>
                                 {dayLabel}
                             </MSubText>
@@ -221,16 +321,21 @@ export function MWeekGrid({
                                 'mineral-week-grid__cell',
                                 `mineral-week-grid__cell--band-${band}`,
                                 onCellClick && 'mineral-week-grid__cell--interactive',
-                                !onCellClick && tooltipContent != null && 'mineral-week-grid__cell--tooltip'
+                                !onCellClick && tooltipContent != null && 'mineral-week-grid__cell--tooltip',
+                                gridMode && 'mineral-week-grid__cell--grid'
                             )
+                            const isActive = active.row === rowIndex && active.col === slot
 
-                            const handleKeyDown = onCellClick
-                                ? (event: KeyboardEvent<HTMLDivElement>) => {
-                                      if (event.key !== 'Enter' && event.key !== ' ') return
-                                      event.preventDefault()
-                                      onCellClick(ctx)
-                                  }
-                                : undefined
+                            const handleKeyDown = gridMode
+                                ? (event: KeyboardEvent<HTMLDivElement>) =>
+                                      handleGridKeyDown(event, rowIndex, slot, ctx)
+                                : onCellClick
+                                  ? (event: KeyboardEvent<HTMLDivElement>) => {
+                                        if (event.key !== 'Enter' && event.key !== ' ') return
+                                        event.preventDefault()
+                                        onCellClick(ctx)
+                                    }
+                                  : undefined
 
                             const cellNode = (
                                 <div
@@ -238,10 +343,12 @@ export function MWeekGrid({
                                     style={{height: cellHeight}}
                                     onClick={onCellClick ? () => onCellClick(ctx) : undefined}
                                     onKeyDown={handleKeyDown}
-                                    role={onCellClick ? 'button' : undefined}
-                                    tabIndex={onCellClick ? 0 : undefined}
+                                    onFocus={gridMode ? () => setActiveCell({row: rowIndex, col: slot}) : undefined}
+                                    data-week-grid-cell={gridMode ? `${rowIndex}-${slot}` : undefined}
+                                    role={gridMode ? 'gridcell' : legacyButtons ? 'button' : undefined}
+                                    tabIndex={gridMode ? (isActive ? 0 : -1) : legacyButtons ? 0 : undefined}
                                     aria-label={
-                                        onCellClick
+                                        gridMode || legacyButtons
                                             ? formatMText(texts.cellLabel, {day: dayLabel, slot: slotLabel, value})
                                             : undefined
                                     }
@@ -260,7 +367,7 @@ export function MWeekGrid({
                                 </MTooltip>
                             )
                         })}
-                    </Fragment>
+                    </GridRow>
                 ))}
             </div>
 
@@ -290,6 +397,16 @@ export function MWeekGrid({
                     </div>
                 </div>
             )}
+        </div>
+    )
+}
+
+/** A `role="row"` wrapper in grid mode (`display: contents`, so the CSS grid is untouched). */
+function GridRow({enabled, children}: {enabled: boolean; children: ReactNode}) {
+    if (!enabled) return <>{children}</>
+    return (
+        <div role={'row'} className={'mineral-week-grid__row'}>
+            {children}
         </div>
     )
 }

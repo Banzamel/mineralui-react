@@ -6,6 +6,7 @@ import {MPortal} from '../../primitives'
 import {MCloseIcon, MChevronLeftIcon, MChevronRightIcon} from '../../../icons'
 import {cn} from '../../../utils/cn'
 import {useModalLayer} from '../../../utils/useModalLayer'
+import {lockBodyScroll} from '../../overlays/scrollLock'
 import './MMediaLightbox.css'
 import {useMCommonTexts} from '../../../i18n/frameworkTexts'
 
@@ -57,12 +58,7 @@ export function MMediaLightbox({open, items, activeIndex, onClose, onActiveIndex
             return
         }
 
-        const previousOverflow = document.body.style.overflow
-        document.body.style.overflow = 'hidden'
-
-        return () => {
-            document.body.style.overflow = previousOverflow
-        }
+        return lockBodyScroll()
     }, [open])
 
     if (!open || !currentItem) {

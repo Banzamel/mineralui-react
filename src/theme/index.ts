@@ -1,5 +1,5 @@
-export {MThemeProvider, useMTheme} from './MThemeProvider'
-export type {MThemeScope, MThemeProviderProps, MThemeContextValue} from './MThemeProvider'
+export {MThemeProvider, useMTheme, getMThemeInitScript, M_THEME_INIT_SCRIPT} from './MThemeProvider'
+export type {MThemeScope, MThemeProviderProps, MThemeContextValue, MThemeInitScriptOptions} from './MThemeProvider'
 export type {
     MTheme,
     MMode,

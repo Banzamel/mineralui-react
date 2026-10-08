@@ -221,6 +221,27 @@
     text-overflow: ellipsis;
 }
 
+/* Collapsed item label — visually hidden, still the row's accessible name */
+.sidebar-item-label-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Keyboard focus indicator for rows and group triggers (they reset outline) */
+.sidebar-item:focus-visible,
+.sidebar-group-header:focus-visible,
+.sidebar-group-icon.collapsed:focus-visible {
+    outline: 2px solid var(--mineral-primary);
+    outline-offset: -2px;
+}
+
 /* Item badge */
 .sidebar-item-badge {
     flex-shrink: 0;
@@ -429,4 +450,44 @@
 
 .sidebar-divider.lg {
     margin: var(--mineral-spacing-md) var(--mineral-spacing-sm);
+}
+
+/* The hamburger stays mounted (hidden) while the drawer is open, so focus can return to it. */
+.sidebar-hamburger[hidden] {
+    display: none;
+}
+
+.sidebar.mobile[role='dialog']:focus {
+    outline: none;
+}
+
+/* Collapsed-rail flyout (disclosure popover with the group's links) */
+.sidebar-flyout {
+    min-width: 180px;
+    max-height: 300px;
+    overflow: auto;
+}
+
+.sidebar-flyout-list {
+    display: flex;
+    flex-direction: column;
+    padding: var(--mineral-spacing-sm) 0;
+}
+
+.sidebar-flyout-title {
+    padding: var(--mineral-spacing-xs) var(--mineral-spacing-md);
+    font-size: var(--mineral-font-size-sm);
+    font-weight: 600;
+    color: var(--mineral-text-secondary);
+}
+
+.sidebar-group-icon.collapsed.open {
+    background: rgba(var(--mineral-primary-rgb), 0.1);
+    color: var(--mineral-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sidebar.mobile {
+        transition: none;
+    }
 }

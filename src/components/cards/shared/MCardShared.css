@@ -1,0 +1,97 @@
+/*
+ * Shared card helpers.
+ *
+ * Accent colour: .card, .card-widget, .card-finance and .card-tile set a default --color-rgb on their
+ * root class, which has the same specificity as the .color-* utilities and loads after them, so the
+ * `color` prop never reached the accent. These two-class rules always win.
+ */
+
+.card.color-primary,
+.card-widget.color-primary,
+.card-finance.color-primary,
+.card-tile.color-primary {
+    --color-rgb: var(--mineral-primary-rgb);
+}
+
+.card.color-neutral,
+.card-widget.color-neutral,
+.card-finance.color-neutral,
+.card-tile.color-neutral {
+    --color-rgb: var(--mineral-neutral-rgb);
+}
+
+.card.color-success,
+.card-widget.color-success,
+.card-finance.color-success,
+.card-tile.color-success {
+    --color-rgb: var(--mineral-success-rgb);
+}
+
+.card.color-error,
+.card-widget.color-error,
+.card-finance.color-error,
+.card-tile.color-error {
+    --color-rgb: var(--mineral-error-rgb);
+}
+
+.card.color-warning,
+.card-widget.color-warning,
+.card-finance.color-warning,
+.card-tile.color-warning {
+    --color-rgb: var(--mineral-warning-rgb);
+}
+
+.card.color-info,
+.card-widget.color-info,
+.card-finance.color-info,
+.card-tile.color-info {
+    --color-rgb: var(--mineral-info-rgb);
+}
+
+.card.color-light,
+.card-widget.color-light,
+.card-finance.color-light,
+.card-tile.color-light {
+    --color-rgb: var(--mineral-light-rgb);
+}
+
+.card.color-dark,
+.card-widget.color-dark,
+.card-finance.color-dark,
+.card-tile.color-dark {
+    --color-rgb: var(--mineral-dark-color-rgb);
+}
+
+.card.color-news,
+.card-widget.color-news,
+.card-finance.color-news,
+.card-tile.color-news {
+    --color-rgb: var(--mineral-news-rgb);
+}
+
+/* Visible keyboard focus for link / button cards. */
+.card.interactive:focus-visible,
+.card-widget.interactive:focus-visible,
+.card-finance.interactive:focus-visible {
+    outline: 2px solid rgba(var(--color-rgb, var(--mineral-primary-rgb)), 0.9);
+    outline-offset: 2px;
+}
+
+.card-payment.interactive:focus-visible {
+    outline: 2px solid rgba(var(--card-payment-rgb, var(--mineral-primary-rgb)), 0.9);
+    outline-offset: 2px;
+}
+
+/* Text for assistive technology only (e.g. the word behind a trend arrow). */
+.card-sr-only {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}

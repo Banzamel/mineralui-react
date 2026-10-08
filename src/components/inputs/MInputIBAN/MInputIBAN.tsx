@@ -2,11 +2,13 @@ import {forwardRef, useCallback, useMemo, useState} from 'react'
 import type * as React from 'react'
 import type {MInputIBANProps} from './MInputIBAN.types'
 import {MInputGroup} from '../MInputGroup'
+import {useFormatCaret} from '../MInput/useFormatCaret'
 import {cn} from '../../../utils/cn'
 import {ibanCountries, getIbanCountryLength, validateIBAN} from '../../../utils/validators'
 import {formatIBAN, unformatIBAN} from '../../../utils/formatters'
 import type {ValidationResult} from '../../../utils/validators'
 import './MInputIBAN.css'
+import {formatMText, useMInputTexts, useMValidationMessage} from '../../../i18n/frameworkTexts'
 
 function normalizeCountryCode(countryCode?: string): string {
     return (
@@ -68,13 +70,16 @@ export const MInputIBAN = forwardRef<HTMLInputElement, MInputIBANProps>(function
     },
     ref
 ) {
+    const texts = useMInputTexts()
+    const captureCaret = useFormatCaret()
     const [internalCountry, setInternalCountry] = useState(normalizeCountryCode(countryCode) || 'PL')
     const currentCountry = normalizeCountryCode(countryCode) || internalCountry
 
     const buildDisplayValue = useCallback(
         (raw: string, country: string): string => {
+            // Letters stay — BBAN parts of e.g. GB, NL or IE IBANs carry a bank code.
             const cleaned = unformatIBAN(raw)
-                .replace(/[^0-9]/g, '')
+                .replace(/[^0-9A-Z]/g, '')
                 .slice(0, getAccountDigitsCap(country))
             if (!cleaned) return ''
             return formatOnChange ? formatIBAN(cleaned) : cleaned
@@ -86,6 +91,7 @@ export const MInputIBAN = forwardRef<HTMLInputElement, MInputIBANProps>(function
         buildDisplayValue(defaultValue?.toString() ?? '', normalizeCountryCode(countryCode) || 'PL')
     )
     const [validation, setValidation] = useState<ValidationResult>({valid: true})
+    const translateValidation = useMValidationMessage()
     const [touched, setTouched] = useState(false)
 
     const currentValue = value !== undefined ? buildDisplayValue(value.toString(), currentCountry) : internalValue
@@ -99,6 +105,7 @@ export const MInputIBAN = forwardRef<HTMLInputElement, MInputIBANProps>(function
     // Keep raw and formatted IBAN values aligned for consumers and display.
     const handleChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
+            captureCaret(e)
             const formatted = buildDisplayValue(e.target.value, currentCountry)
 
             if (value === undefined) {
@@ -112,7 +119,17 @@ export const MInputIBAN = forwardRef<HTMLInputElement, MInputIBANProps>(function
             onValueChange?.(unformatIBAN(formatted), formatted)
             onChange?.(e)
         },
-        [buildDisplayValue, currentCountry, onChange, onValueChange, resetValidation, touched, validation.valid, value]
+        [
+            buildDisplayValue,
+            captureCaret,
+            currentCountry,
+            onChange,
+            onValueChange,
+            resetValidation,
+            touched,
+            validation.valid,
+            value,
+        ]
     )
 
     // Validate the normalized IBAN once the user leaves the field.
@@ -122,14 +139,14 @@ export const MInputIBAN = forwardRef<HTMLInputElement, MInputIBANProps>(function
 
             if (validateOnBlur && currentValue) {
                 const fullIban = `${currentCountry}${unformatIBAN(currentValue)}`
-                const result = validateIBAN(fullIban)
+                const result = translateValidation(validateIBAN(fullIban))
                 setValidation(result)
                 onValidationChange?.(result)
             }
 
             onBlur?.(e)
         },
-        [currentCountry, currentValue, onBlur, onValidationChange, validateOnBlur]
+        [currentCountry, currentValue, onBlur, onValidationChange, validateOnBlur, translateValidation]
     )
 
     // Reset both the displayed value and any error state when the clear button fires.
@@ -160,7 +177,7 @@ export const MInputIBAN = forwardRef<HTMLInputElement, MInputIBANProps>(function
 
             if (touched && reformatted) {
                 const fullIban = `${next}${unformatIBAN(reformatted)}`
-                const result = validateIBAN(fullIban)
+                const result = translateValidation(validateIBAN(fullIban))
                 setValidation(result)
                 onValidationChange?.(result)
             }
@@ -174,6 +191,7 @@ export const MInputIBAN = forwardRef<HTMLInputElement, MInputIBANProps>(function
             onValueChange,
             touched,
             value,
+            translateValidation,
         ]
     )
 
@@ -183,7 +201,8 @@ export const MInputIBAN = forwardRef<HTMLInputElement, MInputIBANProps>(function
     const countryOptions = useMemo(() => ibanCountries, [])
     const resolvedHelperText = resolvedErrorText
         ? undefined
-        : (helperText ?? `Format: ${currentCountry} ${buildIbanPlaceholder(currentCountry)}`)
+        : (helperText ??
+          formatMText(texts.formatHint, {example: `${currentCountry} ${buildIbanPlaceholder(currentCountry)}`}))
 
     return (
         <MInputGroup
@@ -207,7 +226,7 @@ export const MInputIBAN = forwardRef<HTMLInputElement, MInputIBANProps>(function
                         value={currentCountry}
                         onChange={handleCountrySelect}
                         disabled={disabled}
-                        aria-label="IBAN country"
+                        aria-label={texts.ibanCountry}
                     >
                         {countryOptions.map((option) => (
                             <option key={option} value={option}>

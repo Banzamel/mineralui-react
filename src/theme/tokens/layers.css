@@ -47,3 +47,52 @@
     --mineral-tooltip-text: rgba(255, 255, 255, 1);
     --mineral-tooltip-bg: rgba(15, 23, 42, 0.92);
 }
+
+/* Dark scope inside a light page (e.g. MThemeProvider scope="wrapper" mode="dark" under .theme-light).
+   Restores the dark :root values of everything .theme-light overrides.
+   Component CSS that targets the light theme follows the same rule: write it as
+   `.theme-light .x:not(:where(.theme-dark, .theme-dark *)), :where(.theme-dark) .theme-light .x`
+   so it skips dark scopes inside a light page, still reaches light scopes inside a dark one and keeps
+   the specificity of `.theme-light .x` (src/theme/themeScope.test.ts enforces it). */
+.theme-light .theme-dark {
+    --mineral-dark-rgb: 15, 23, 42;
+    --mineral-dark: rgba(var(--mineral-dark-rgb), 1);
+    --mineral-dark-light-rgb: 30, 41, 59;
+    --mineral-dark-light: rgba(var(--mineral-dark-light-rgb), 1);
+    --mineral-surface-rgb: 21, 29, 46;
+    --mineral-surface: rgba(var(--mineral-surface-rgb), 1);
+    --mineral-surface-contrast: rgba(10, 16, 30, 1);
+    --mineral-input-bg: rgba(37, 51, 71, 1);
+    --mineral-page-bg: var(--mineral-dark);
+    --mineral-page-text: var(--mineral-text);
+
+    --mineral-text-rgb: 226, 232, 240;
+    --mineral-text: rgba(var(--mineral-text-rgb), 1);
+    --mineral-text-secondary: rgba(100, 116, 139, 1);
+    --mineral-text-muted: var(--mineral-text-secondary);
+    --mineral-text-heading: rgba(241, 245, 249, 0.96);
+    --mineral-text-inverted: rgba(15, 23, 42, 1);
+
+    --mineral-fcolor-default: var(--mineral-text);
+    --mineral-fcolor-muted: var(--mineral-text-secondary);
+    --mineral-fcolor-heading: var(--mineral-text-heading);
+    --mineral-fcolor-inverted: var(--mineral-text-inverted);
+
+    --mineral-border: rgba(255, 255, 255, 0.15);
+    --mineral-border-hover: rgba(255, 255, 255, 0.25);
+
+    --mineral-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --mineral-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --mineral-shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.35);
+    --mineral-shadow-focus: 0 0 0 3px rgba(var(--mineral-primary-rgb), 0.3);
+    --mineral-popover-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --mineral-shell-shadow: none;
+
+    --mineral-popover-bg: rgba(30, 41, 59, 0.95);
+    --mineral-popover-border: rgba(255, 255, 255, 0.08);
+    --mineral-option-hover-bg: rgba(255, 255, 255, 0.05);
+    --mineral-option-selected-bg: rgba(var(--mineral-primary-rgb), 0.15);
+    --mineral-option-active-bg: rgba(var(--mineral-primary-rgb), 0.25);
+    --mineral-tooltip-text: rgba(255, 255, 255, 1);
+    --mineral-tooltip-bg: rgba(15, 23, 42, 0.92);
+}

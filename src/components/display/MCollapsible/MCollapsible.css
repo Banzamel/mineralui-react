@@ -27,8 +27,12 @@
     opacity: 1;
 }
 
-.collapsible .content-wrap > .content {
+.collapsible .content-wrap > .collapsible-clip {
     overflow: hidden;
+    min-height: 0;
+}
+
+.collapsible .content-wrap > .collapsible-clip > .content {
     padding: var(--mineral-spacing-md);
 }
 

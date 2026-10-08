@@ -1,4 +1,4 @@
-import {forwardRef, useCallback, useRef, useState} from 'react'
+import {forwardRef, useCallback, useId, useRef, useState} from 'react'
 import type * as React from 'react'
 import type {MInputProps} from './MInput.types'
 import {cn} from '../../../utils/cn'
@@ -17,7 +17,7 @@ export const MInput = forwardRef<HTMLInputElement, MInputProps>(function MInput(
         value,
         defaultValue,
         name,
-        id,
+        id: idProp,
         placeholder,
         disabled = false,
         readOnly = false,
@@ -55,10 +55,14 @@ export const MInput = forwardRef<HTMLInputElement, MInputProps>(function MInput(
         style,
         inputClassName,
         labelClassName,
+        inputProps,
     },
     ref
 ) {
     const texts = useMCommonTexts()
+    // Fall back to a generated id so `label[for]` and `aria-describedby` always resolve.
+    const generatedId = useId()
+    const id = idProp ?? generatedId
     const [focused, setFocused] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
     const {effectClassName, effectLayer, handlePointerDown} = useInteractionEffect<HTMLDivElement>({
@@ -182,6 +186,7 @@ export const MInput = forwardRef<HTMLInputElement, MInputProps>(function MInput(
                 {ghostOptions ? (
                     <div className="ghost-text-field">
                         <input
+                            {...inputProps}
                             ref={ref ?? inputRef}
                             type={type}
                             value={currentValue}
@@ -212,6 +217,7 @@ export const MInput = forwardRef<HTMLInputElement, MInputProps>(function MInput(
                     </div>
                 ) : (
                     <input
+                        {...inputProps}
                         ref={ref ?? inputRef}
                         type={type}
                         value={currentValue}
@@ -237,7 +243,7 @@ export const MInput = forwardRef<HTMLInputElement, MInputProps>(function MInput(
 
                 {loading && <MSpinner size="sm" color={color} />}
 
-                {clearable && hasContent && !loading && !disabled && (
+                {clearable && hasContent && !loading && !disabled && !readOnly && (
                     <button
                         type="button"
                         className="clear-btn clear-btn-base"

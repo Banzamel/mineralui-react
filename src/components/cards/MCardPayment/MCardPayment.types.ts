@@ -12,5 +12,9 @@ export interface MCardPaymentProps extends Omit<HTMLAttributes<HTMLDivElement>, 
     brandIcon?: ReactNode
     balance?: string
     balanceLabel?: string
+    /** Caption above the holder name. Defaults to `mineralui.cardPayment.cardHolder` ("Card holder"). */
+    holderLabel?: string
+    /** Caption above the expiry date. Defaults to `mineralui.cardPayment.expirationDate` ("Expiration date"). */
+    expiryLabel?: string
     color?: MColor
 }

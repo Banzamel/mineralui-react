@@ -5,6 +5,7 @@ import {MCard, MCardBody, MCardFooter, MCardHeader} from '../../cards'
 import {MPortal} from '../../primitives'
 import {cn} from '../../../utils/cn'
 import {useModalLayer} from '../../../utils/useModalLayer'
+import {lockBodyScroll} from '../scrollLock'
 import './MModal.css'
 
 const EXIT_DURATION = 540
@@ -52,13 +53,7 @@ export function MModal({
 
     useEffect(() => {
         if (!mounted) return
-
-        const previousOverflow = document.body.style.overflow
-        document.body.style.overflow = 'hidden'
-
-        return () => {
-            document.body.style.overflow = previousOverflow
-        }
+        return lockBodyScroll()
     }, [mounted])
 
     if (!mounted) return null

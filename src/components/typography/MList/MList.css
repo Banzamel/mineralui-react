@@ -1,10 +1,14 @@
 .list {
     margin: 0;
     padding-left: 20px;
-    color: var(--mineral-text-secondary);
     display: flex;
     flex-direction: column;
     gap: var(--mineral-spacing-xs);
+}
+
+/* Base colour only without a `color` prop, so the fcolor-* utility wins whatever the stylesheet order. */
+.list:where(:not([class*='fcolor-'])) {
+    color: var(--mineral-text-secondary);
 }
 
 .list .item {

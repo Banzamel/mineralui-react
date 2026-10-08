@@ -1,8 +1,11 @@
-import {createContext, useContext, useState, useEffect, useCallback, useMemo} from 'react'
+import {createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, useId} from 'react'
 import {cn} from '../../../utils/cn'
 import {MButton} from '../../controls'
 import {MChevronRightIcon, MMenuIcon} from '../../../icons'
-import {MDropdownMenu, MTooltip} from '../../overlays'
+import {MTooltip} from '../../overlays'
+import {MPopover} from '../../primitives/MPopover'
+import {useModalLayer} from '../../../utils/useModalLayer'
+import {isRtlElement} from '../../../utils/radioGroupKeys'
 import {MShellBreakpoints, useMaxWidth} from '../../../theme'
 import type {
     MSidebarProps,
@@ -16,7 +19,7 @@ import type {
     MSidebarMode,
 } from './MSidebar.types'
 import './MSidebar.css'
-import {useMCommonTexts} from '../../../i18n/frameworkTexts'
+import {useMCommonTexts, useMLayoutTexts} from '../../../i18n/frameworkTexts'
 
 const STORAGE_KEY = 'mineralui-sidebar'
 
@@ -103,18 +106,13 @@ export function MSidebar({
     }, [resolvedMode, onModeChange, persist])
 
     const closeMobile = useCallback(() => setMobileOpen(false), [])
+    const asideRef = useRef<HTMLElement | null>(null)
+    const layoutTexts = useMLayoutTexts()
+    const drawerOpen = mobile && mobileOpen
 
-    // Let Escape close the temporary mobile drawer.
-    useEffect(() => {
-        if (!mobileOpen) return
-
-        const handler = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setMobileOpen(false)
-        }
-
-        document.addEventListener('keydown', handler)
-        return () => document.removeEventListener('keydown', handler)
-    }, [mobileOpen])
+    // The open mobile drawer is a modal dialog: focus moves in, Tab cycles inside, Escape
+    // closes it (only when it is the top layer) and focus returns to the hamburger.
+    useModalLayer({active: drawerOpen, containerRef: asideRef, onEscape: closeMobile})
 
     useEffect(() => {
         if (!mobile) {
@@ -145,17 +143,30 @@ export function MSidebar({
 
     return (
         <SidebarCtx.Provider value={ctx}>
-            {mobile && mobileOpen && <div className="sidebar-backdrop" onClick={closeMobile} />}
+            {drawerOpen && <div className="sidebar-backdrop" aria-hidden="true" onClick={closeMobile} />}
 
-            <aside className={sidebarCls} style={style}>
+            <aside
+                ref={asideRef}
+                className={sidebarCls}
+                style={style}
+                {...(drawerOpen
+                    ? {role: 'dialog', 'aria-modal': true, 'aria-label': layoutTexts.sidebarDialogLabel}
+                    : {})}
+                // The closed off-canvas drawer must not leave its links in the Tab order.
+                inert={mobile && !mobileOpen ? true : undefined}
+            >
                 {children}
             </aside>
 
-            {mobile && !mobileOpen && (
+            {mobile && (
+                // Stays mounted (hidden) while the drawer is open so focus can return to it on close.
                 <button
+                    type="button"
                     className={cn('sidebar-hamburger', side)}
                     onClick={() => setMobileOpen(true)}
                     aria-label={texts.openMenu}
+                    aria-haspopup="dialog"
+                    hidden={mobileOpen}
                 >
                     <span className="sidebar-hamburger-icon" aria-hidden="true">
                         <MMenuIcon />
@@ -170,6 +181,7 @@ export function MSidebar({
 export function MSidebarHeader({bordered = false, className, children}: MSidebarHeaderProps) {
     const {mode, mobile, canToggle, toggleMode} = useSidebar()
     const isCollapsed = !mobile && mode === 'collapsed'
+    const layoutTexts = useMLayoutTexts()
 
     return (
         <div className={cn('sidebar-header', bordered && 'bordered', className)}>
@@ -181,7 +193,7 @@ export function MSidebarHeader({bordered = false, className, children}: MSidebar
                     iconOnly
                     size="sm"
                     onClick={toggleMode}
-                    aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                    aria-label={isCollapsed ? layoutTexts.sidebarExpand : layoutTexts.sidebarCollapse}
                     className="sidebar-toggle"
                 >
                     <span className={cn('sidebar-chevron', isCollapsed && 'flipped')}>
@@ -240,7 +252,11 @@ export function MSidebarItem({
             {...linkProps}
         >
             {icon && <span className="sidebar-item-icon">{icon}</span>}
-            {!isCollapsed && (
+            {isCollapsed ? (
+                // Collapsed rows show only the icon; keep the label as the accessible
+                // name (a bare `title` is not reliably announced nor shown on focus).
+                <span className="sidebar-item-label-hidden">{label}</span>
+            ) : (
                 <MTooltip content={tooltipContent} placement="top" className="sidebar-item-label-tooltip">
                     <span className="sidebar-item-label">{label}</span>
                 </MTooltip>
@@ -250,7 +266,121 @@ export function MSidebarItem({
     )
 }
 
-// Group related sidebar items and swap to a dropdown when collapsed.
+// Collapsed rail: the group icon is a disclosure button with a flyout of the group's links.
+// Hover still opens it (as before); click / tap / Enter / Space / ArrowRight toggle it from
+// pointer, touch and keyboard. Escape or Tab-out closes it and focus returns to the button.
+function MSidebarGroupFlyout({
+    label,
+    icon,
+    active,
+    className,
+    ctx,
+    children,
+}: {
+    label: string
+    icon: MSidebarGroupProps['icon']
+    active: boolean
+    className?: string
+    ctx: SidebarContextValue
+    children: MSidebarGroupProps['children']
+}) {
+    const [open, setOpen] = useState(false)
+    const [focusFirst, setFocusFirst] = useState(false)
+    const buttonRef = useRef<HTMLButtonElement | null>(null)
+    const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const flyoutId = useId()
+    const titleId = `${flyoutId}-title`
+
+    useEffect(
+        () => () => {
+            if (hoverTimeout.current) clearTimeout(hoverTimeout.current)
+        },
+        []
+    )
+
+    const openFlyout = (withFocus: boolean) => {
+        if (hoverTimeout.current) clearTimeout(hoverTimeout.current)
+        setFocusFirst(withFocus)
+        setOpen(true)
+    }
+
+    const hoverHandlers = {
+        onMouseEnter: () => {
+            if (!open) openFlyout(false)
+            else if (hoverTimeout.current) clearTimeout(hoverTimeout.current)
+        },
+        onMouseLeave: () => {
+            // Leaving the rail for the flyout (or back) must not flicker the panel.
+            hoverTimeout.current = setTimeout(() => {
+                const flyout = document.getElementById(flyoutId)
+                // Keep a keyboard-opened flyout while focus is inside it.
+                if (flyout && flyout.contains(document.activeElement)) return
+                setOpen(false)
+            }, 150)
+        },
+    }
+
+    return (
+        <div className={cn('sidebar-group', className)} {...hoverHandlers}>
+            <button
+                ref={buttonRef}
+                type="button"
+                className={cn('sidebar-group-icon collapsed', active && 'active', open && 'open')}
+                title={label}
+                aria-label={label}
+                aria-expanded={open}
+                aria-controls={open ? flyoutId : undefined}
+                onClick={(event) => {
+                    if (open) {
+                        setOpen(false)
+                        return
+                    }
+                    // A click synthesised from the keyboard (detail 0) moves focus into the flyout.
+                    openFlyout(event.detail === 0)
+                }}
+                onKeyDown={(event) => {
+                    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+                        const rtl = isRtlElement(event.currentTarget)
+                        const opening = rtl ? 'ArrowLeft' : 'ArrowRight'
+                        if (event.key !== opening) return
+                        event.preventDefault()
+                        openFlyout(true)
+                    }
+                }}
+            >
+                {icon}
+            </button>
+            <MPopover
+                open={open}
+                anchorRef={buttonRef}
+                onClose={() => setOpen(false)}
+                placement="right-start"
+                className="dropdown menu popover sidebar-flyout"
+                role="group"
+                id={flyoutId}
+                aria-labelledby={titleId}
+                initialFocus={focusFirst ? 'first' : undefined}
+                closeOnTabOut
+            >
+                <div
+                    className="dropdown menu list sidebar-flyout-list"
+                    {...hoverHandlers}
+                    onClick={(event) => {
+                        // Following a link closes the flyout (the old closeOnSelect behaviour).
+                        if ((event.target as HTMLElement).closest('a, button')) setOpen(false)
+                    }}
+                >
+                    <div id={titleId} className="sidebar-flyout-title">
+                        {label}
+                    </div>
+                    <SidebarCtx.Provider value={ctx}>{children}</SidebarCtx.Provider>
+                </div>
+            </MPopover>
+        </div>
+    )
+}
+
+// Group related sidebar items and swap to a flyout when collapsed.
 export function MSidebarGroup({
     label,
     icon,
@@ -273,28 +403,25 @@ export function MSidebarGroup({
     }
 
     if (isCollapsed) {
-        const trigger = (
-            <span className={cn('sidebar-group-icon collapsed', active && 'active')} title={label}>
-                {icon}
-            </span>
-        )
-
         return (
-            <div className={cn('sidebar-group', className)}>
-                <MDropdownMenu trigger={trigger} placement="right-start" closeOnSelect openOn="hover">
-                    <SidebarCtx.Provider value={expandedCtx}>{children}</SidebarCtx.Provider>
-                </MDropdownMenu>
-            </div>
+            <MSidebarGroupFlyout label={label} icon={icon} active={active} className={className} ctx={expandedCtx}>
+                {children}
+            </MSidebarGroupFlyout>
         )
     }
 
     return (
         <div className={cn('sidebar-group', className)}>
-            <button className={cn('sidebar-group-header', active && 'active')} onClick={toggle} aria-expanded={open}>
+            <button
+                type="button"
+                className={cn('sidebar-group-header', active && 'active')}
+                onClick={toggle}
+                aria-expanded={collapsible ? open : undefined}
+            >
                 {icon && <span className="sidebar-group-icon">{icon}</span>}
                 <span className="sidebar-group-label">{label}</span>
                 {collapsible && (
-                    <span className={cn('sidebar-group-arrow', open && 'open')}>
+                    <span className={cn('sidebar-group-arrow', open && 'open')} aria-hidden="true">
                         <MChevronRightIcon />
                     </span>
                 )}

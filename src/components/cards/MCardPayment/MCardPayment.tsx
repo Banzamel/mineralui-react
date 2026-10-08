@@ -5,6 +5,8 @@ import {creditCardBrands, detectCardBrand} from '../../../utils/creditCards'
 import {useInteractionEffect} from '../../../utils/useInteractionEffect'
 import {resolveMCardAction} from '../shared'
 import './MCardPayment.css'
+import '../shared/MCardShared.css'
+import {useMCardTexts} from '../../../i18n/frameworkTexts'
 
 function maskNumber(raw: string): string {
     const digits = raw.replace(/\D/g, '')
@@ -26,7 +28,9 @@ export function MCardPayment({
     brand,
     brandIcon,
     balance,
-    balanceLabel = 'Current balance',
+    balanceLabel,
+    holderLabel,
+    expiryLabel,
     color,
     interactive = false,
     clickEffect,
@@ -35,6 +39,7 @@ export function MCardPayment({
     onPointerDown,
     ...rest
 }: MCardPaymentProps) {
+    const texts = useMCardTexts().cardPayment
     const detectedDetails = detectCardBrand(number)
     const detected = brand ?? detectedDetails.brand
     const brandDetails = creditCardBrands.find((rule) => rule.brand === detected) ?? detectedDetails
@@ -81,7 +86,7 @@ export function MCardPayment({
             {effectLayer}
             {balance !== undefined && (
                 <div>
-                    <p className="cp-balance-label">{balanceLabel}</p>
+                    <p className="cp-balance-label">{balanceLabel ?? texts.currentBalance}</p>
                     <p className="cp-balance">{balance}</p>
                 </div>
             )}
@@ -93,11 +98,11 @@ export function MCardPayment({
 
             <div className="cp-details">
                 <div>
-                    <p className="cp-field-label">MCard holder</p>
+                    <p className="cp-field-label">{holderLabel ?? texts.cardHolder}</p>
                     <p className="cp-field-value">{holder}</p>
                 </div>
                 <div>
-                    <p className="cp-field-label">Expiration date</p>
+                    <p className="cp-field-label">{expiryLabel ?? texts.expirationDate}</p>
                     <p className="cp-field-value">{expiry}</p>
                 </div>
             </div>

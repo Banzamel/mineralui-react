@@ -3,6 +3,7 @@ import {cn} from '../../../utils/cn'
 import {MButton} from '../../controls'
 import {MChevronLeftIcon, MChevronRightIcon} from '../../../icons'
 import type {MPaginationProps} from './MPagination.types'
+import {formatMText, useMLayoutTexts} from '../../../i18n/frameworkTexts'
 import './MPagination.css'
 
 function range(start: number, end: number): number[] {
@@ -49,6 +50,7 @@ export function MPagination({
     className,
     ...rest
 }: MPaginationProps) {
+    const texts = useMLayoutTexts()
     const totalPages = Math.max(1, Math.ceil(total / pageSize))
     const currentPage = Math.min(Math.max(1, page), totalPages)
 
@@ -59,24 +61,26 @@ export function MPagination({
 
     if (variant === 'simple') {
         return (
-            <nav aria-label="pagination" className={cn('pagination', className)} {...rest}>
+            <nav aria-label={texts.paginationLabel} className={cn('pagination', className)} {...rest}>
                 <MButton
                     variant="outlined"
                     size="sm"
                     iconOnly
+                    aria-label={texts.previousPage}
                     disabled={currentPage <= 1}
                     onClick={() => onChange(currentPage - 1)}
                     className="nav"
                 >
                     <MChevronLeftIcon />
                 </MButton>
-                <span className="info">
+                <span className="info" aria-live="polite">
                     {currentPage} / {totalPages}
                 </span>
                 <MButton
                     variant="outlined"
                     size="sm"
                     iconOnly
+                    aria-label={texts.nextPage}
                     disabled={currentPage >= totalPages}
                     onClick={() => onChange(currentPage + 1)}
                     className="nav"
@@ -88,11 +92,12 @@ export function MPagination({
     }
 
     return (
-        <nav aria-label="pagination" className={cn('pagination', className)} {...rest}>
+        <nav aria-label={texts.paginationLabel} className={cn('pagination', className)} {...rest}>
             <MButton
                 variant="outlined"
                 size="sm"
                 iconOnly
+                aria-label={texts.previousPage}
                 disabled={currentPage <= 1}
                 onClick={() => onChange(currentPage - 1)}
                 className="nav"
@@ -101,7 +106,7 @@ export function MPagination({
             </MButton>
             {pages.map((p, i) =>
                 p === 'dots' ? (
-                    <span key={`dots-${i}`} className="dots">
+                    <span key={`dots-${i}`} className="dots" aria-hidden="true">
                         &#8230;
                     </span>
                 ) : (
@@ -109,6 +114,8 @@ export function MPagination({
                         key={p}
                         type="button"
                         className={cn('btn', p === currentPage && 'active')}
+                        aria-label={formatMText(texts.pageNumber, {page: p})}
+                        aria-current={p === currentPage ? 'page' : undefined}
                         onClick={() => onChange(p)}
                     >
                         {p}
@@ -119,6 +126,7 @@ export function MPagination({
                 variant="outlined"
                 size="sm"
                 iconOnly
+                aria-label={texts.nextPage}
                 disabled={currentPage >= totalPages}
                 onClick={() => onChange(currentPage + 1)}
                 className="nav"

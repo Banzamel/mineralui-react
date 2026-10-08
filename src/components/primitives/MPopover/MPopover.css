@@ -13,6 +13,11 @@
     animation-fill-mode: forwards;
 }
 
+/* The layer itself only takes focus programmatically (initialFocus fallback); its items show the ring. */
+.popover:focus {
+    outline: none;
+}
+
 .popover.normal {
     transform-origin: top left;
     animation-name: popover-slideDown;

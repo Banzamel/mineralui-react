@@ -30,6 +30,13 @@ export function MProgressBar({
 
     const animate = useCallback((from: number, to: number) => {
         cancelAnimationFrame(rafRef.current)
+
+        // Reduced motion: jump straight to the value instead of counting up.
+        if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            setBarPercent(to)
+            setDisplayPercent(to)
+            return
+        }
         const start = performance.now()
 
         const step = (now: number) => {

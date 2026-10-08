@@ -35,6 +35,8 @@ export interface MNavbarProps extends Omit<HTMLAttributes<HTMLElement>, 'hidden'
      * backward compatibility.
      */
     collapseActions?: boolean
+    /** Accessible name of the burger toggle. Defaults to the `mineralui.navbar.menu`
+     *  i18n key ('Open navigation'). */
     mobileMenuLabel?: string
     mobileBreakpoint?: number
     children?: ReactNode

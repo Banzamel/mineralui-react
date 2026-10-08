@@ -1,7 +1,11 @@
 .subtext {
     display: inline-block;
-    color: var(--mineral-text-secondary);
     line-height: 1.4;
+}
+
+/* Base colour only without a `color` prop, so the fcolor-* utility wins whatever the stylesheet order. */
+.subtext:where(:not([class*='fcolor-'])) {
+    color: var(--mineral-text-secondary);
 }
 
 .subtext.default {

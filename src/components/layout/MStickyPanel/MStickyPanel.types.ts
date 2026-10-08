@@ -20,6 +20,11 @@ export interface MStickyPanelProps extends Omit<HTMLAttributes<HTMLDivElement>, 
      *  action buttons remain clickable. Default true. */
     draggable?: boolean
 
+    /** Accessible name. When set, the panel is exposed as a named `region`
+     *  landmark. The panel is always keyboard-focusable (`tabIndex={0}`) so its
+     *  content can be scrolled from the keyboard; pass `tabIndex={-1}` to opt out. */
+    label?: string
+
     className?: string
     style?: CSSProperties
 }

@@ -13,6 +13,7 @@ import {MSpinner} from '../../feedback'
 import {cn} from '../../../utils/cn'
 import {useInteractionEffect} from '../../../utils/useInteractionEffect'
 import './MSocialButton.css'
+import {formatMText, useMSocialButtonTexts} from '../../../i18n/frameworkTexts'
 
 const socialButtonConfig = {
     google: {
@@ -79,10 +80,15 @@ export const MSocialButton = forwardRef<HTMLButtonElement, MSocialButtonProps>(f
     },
     ref
 ) {
+    const texts = useMSocialButtonTexts()
     const config = socialButtonConfig[platform]
     const Icon = config.Icon
-    const label = children ?? config.label
-    const resolvedAriaLabel = ariaLabel ?? (iconOnly ? config.iconLabel : undefined)
+    const signInLabel = formatMText(texts.signIn, {platform: config.iconLabel})
+    const label = children ?? signInLabel
+    // An icon-only button names the action ("Sign in with Google"), not just the brand (WCAG 2.4.6).
+    const resolvedAriaLabel =
+        ariaLabel ??
+        (iconOnly ? (typeof children === 'string' && children.trim() !== '' ? children : signInLabel) : undefined)
     const resolvedVariant = config.mode === 'google' ? variant : config.mode
     const isDisabled = disabled || loading
     const {effectClassName, effectLayer, handlePointerDown, triggerEffect} = useInteractionEffect<HTMLButtonElement>({

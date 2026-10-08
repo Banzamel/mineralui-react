@@ -40,7 +40,10 @@ export const MInputName = forwardRef<HTMLInputElement, MInputNameProps>(function
                 filtered = filtered.replace(/\d/g, '')
             }
             if (!allowSpecialChars) {
-                filtered = filtered.replace(/[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s'-]/g, '')
+                // Digits are governed by `allowNumbers` alone, so keep them here when allowed.
+                filtered = allowNumbers
+                    ? filtered.replace(/[^a-zA-Z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s'-]/g, '')
+                    : filtered.replace(/[^a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s'-]/g, '')
             }
             if (autoCapitalize) {
                 filtered = capitalizeWords(filtered)

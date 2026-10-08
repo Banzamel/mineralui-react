@@ -98,6 +98,24 @@ export function MMiniCalendar({
         return Boolean(disabledDates?.some((item) => isSameDay(item, date)))
     }
 
+    // A value set from outside (controlled `value`) brings its month into view.
+    const valueKey = value ? getDateKey(value) : null
+    const lastValueKeyRef = useRef(valueKey)
+    useEffect(() => {
+        if (valueKey === lastValueKeyRef.current) {
+            return
+        }
+        lastValueKeyRef.current = valueKey
+        if (!value) {
+            return
+        }
+        setFocusDate(stripTime(value))
+        if (!isSameMonth(value, visibleMonth)) {
+            setVisibleMonth(startOfMonth(value))
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [valueKey])
+
     // Keep the roving focus target inside the displayed month.
     useEffect(() => {
         if (!isSameMonth(focusDate, visibleMonth)) {
@@ -285,10 +303,13 @@ export function MMiniCalendar({
                                             isToday && 'mineral-mini-calendar__day--today',
                                             isSelected && 'mineral-mini-calendar__day--selected',
                                             inRange && 'mineral-mini-calendar__day--in-range',
-                                            disabled && 'mineral-mini-calendar__day--disabled'
+                                            disabled && 'mineral-mini-calendar__day--disabled',
+                                            disabled && 'm-unavailable'
                                         )}
                                         tabIndex={isSameDay(day, focusDate) ? 0 : -1}
-                                        disabled={disabled}
+                                        // Not native `disabled`: the roving tab stop may land on an
+                                        // unavailable day (arrow past min/max) and must stay focusable.
+                                        aria-disabled={disabled || undefined}
                                         aria-current={isToday ? 'date' : undefined}
                                         aria-label={
                                             markerText

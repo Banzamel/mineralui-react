@@ -26,7 +26,10 @@ export function MScrollTop({
     }, [threshold])
 
     const scrollToTop = useCallback(() => {
-        window.scrollTo({top: 0, behavior: smooth ? 'smooth' : 'instant'})
+        // Smooth scrolling is skipped for users who asked the OS to reduce motion.
+        const reduceMotion =
+            typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        window.scrollTo({top: 0, behavior: smooth && !reduceMotion ? 'smooth' : 'instant'})
     }, [smooth])
 
     return (
@@ -39,6 +42,8 @@ export function MScrollTop({
             onClick={scrollToTop}
             aria-label={texts.scrollToTop}
             className={cn('scroll-top', visible && 'visible', className)}
+            // While hidden (opacity 0) the button must leave the Tab order and the accessibility tree.
+            inert={!visible}
         >
             <MArrowUpIcon />
         </MButton>

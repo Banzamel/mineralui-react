@@ -77,6 +77,18 @@
     z-index: 2;
 }
 
+/* Overlay the chevrons on the image edges, vertically centred. The extra .button keeps the
+   offset ahead of MButton's own position / active / disabled transforms. */
+.media-lightbox-frame > .button.media-lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.media-lightbox-frame > .button.media-lightbox-nav:active:not(.disabled) {
+    transform: translateY(calc(-50% + 1px));
+}
+
 .media-lightbox-nav-prev {
     left: clamp(1rem, 2vw, 1.25rem);
     transform: translateY(-50%);

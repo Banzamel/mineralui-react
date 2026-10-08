@@ -14,7 +14,8 @@
     border-radius: var(--mineral-radius-md);
     box-shadow: var(--mineral-popover-shadow);
     white-space: nowrap;
-    pointer-events: none;
+    /* Hoverable (WCAG 1.4.13): the pointer may rest on the bubble without dismissing it. */
+    pointer-events: auto;
 }
 
 /* Directional enter animations */
