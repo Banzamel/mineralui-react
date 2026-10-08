@@ -12,6 +12,7 @@ export function MFooter({
     bordered = true,
     tone = 'surface',
     hidden,
+    hiddenAbove,
     spacing,
     padding,
     fsize,
@@ -62,7 +63,7 @@ export function MFooter({
                 className
             )}
             style={{...utilityStyle, ...style}}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             <MContainer size={container} padded={padded} className="inner" fullWidth>

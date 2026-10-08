@@ -15,6 +15,7 @@ export function MSurface({
     outlined = true,
     padded = true,
     hidden,
+    hiddenAbove,
     spacing,
     padding,
     fsize,
@@ -71,7 +72,7 @@ export function MSurface({
                 className
             )}
             style={{...utilityStyle, ...style}}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {children}

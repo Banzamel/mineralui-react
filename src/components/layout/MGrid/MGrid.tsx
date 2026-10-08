@@ -254,7 +254,7 @@ export function MGrid({
                 className
             )}
             style={{...utilityStyle, ...style}}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {resolvedChildren}

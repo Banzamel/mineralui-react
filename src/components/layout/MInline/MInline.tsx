@@ -12,6 +12,7 @@ export function MInline({
     justify = 'start',
     wrap = 'wrap',
     hidden,
+    hiddenAbove,
     padding,
     fsize,
     mt,
@@ -61,7 +62,7 @@ export function MInline({
                 className
             )}
             style={{...utilityStyle, ...style}}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {children}

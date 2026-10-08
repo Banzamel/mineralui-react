@@ -8,6 +8,7 @@ export function MBadge({
     color = 'primary',
     size = 'md',
     hidden,
+    hiddenAbove,
     pulsing = false,
     rounded = false,
     fullWidth = false,
@@ -27,7 +28,7 @@ export function MBadge({
                 fullWidth && 'full-width',
                 className
             )}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {icon && <span className="badge-icon">{icon}</span>}

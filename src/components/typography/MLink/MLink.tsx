@@ -13,6 +13,7 @@ export const MLink = forwardRef<HTMLElement, MLinkProps>(function MLink(
         tone = 'default',
         underline = 'hover',
         hidden,
+        hiddenAbove,
         current = false,
         block = false,
         disabled = false,
@@ -53,7 +54,7 @@ export const MLink = forwardRef<HTMLElement, MLinkProps>(function MLink(
             aria-current={current ? 'page' : undefined}
             aria-disabled={disabled || undefined}
             onClick={handleClick}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {children}

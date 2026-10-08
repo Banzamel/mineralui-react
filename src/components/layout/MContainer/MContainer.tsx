@@ -9,6 +9,7 @@ export function MContainer({
     size = 'content',
     padded = true,
     hidden,
+    hiddenAbove,
     spacing,
     padding,
     fsize,
@@ -59,7 +60,7 @@ export function MContainer({
                 className
             )}
             style={{...utilityStyle, ...style}}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {children}

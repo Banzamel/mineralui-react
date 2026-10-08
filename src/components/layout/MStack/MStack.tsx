@@ -8,6 +8,7 @@ import './MStack.css'
 export function MStack({
     align = 'stretch',
     hidden,
+    hiddenAbove,
     spacing,
     padding,
     fsize,
@@ -57,7 +58,7 @@ export function MStack({
                 className
             )}
             style={{...utilityStyle, ...style}}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {children}

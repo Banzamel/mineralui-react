@@ -12,6 +12,7 @@ export function MTag({
     variant = 'solid',
     size = 'md',
     hidden,
+    hiddenAbove,
     rounded = false,
     closable = false,
     onClose,
@@ -23,7 +24,7 @@ export function MTag({
     return (
         <span
             className={cn('m-tag', `color-${color}`, variant, size, rounded && 'rounded', className)}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {icon && <span className="m-tag icon">{icon}</span>}

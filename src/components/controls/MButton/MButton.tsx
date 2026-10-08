@@ -21,6 +21,7 @@ export const MButton = forwardRef<HTMLElement, MButtonProps>(function MButton(
         size: sizeProp,
         color: colorProp,
         hidden,
+        hiddenAbove,
         fullWidth = false,
         rounded = false,
         shape,
@@ -123,7 +124,7 @@ export const MButton = forwardRef<HTMLElement, MButtonProps>(function MButton(
 
                 onKeyDown?.(event as never)
             }}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {effectLayer}

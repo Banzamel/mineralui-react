@@ -33,6 +33,7 @@ export function MAvatar({
     size = 'md',
     shape = 'circle',
     hidden,
+    hiddenAbove,
     color,
     badge,
     badgeColor,
@@ -123,7 +124,7 @@ export function MAvatar({
                 handlePointerDown(event)
                 onPointerDown?.(event)
             }}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {effectLayer}

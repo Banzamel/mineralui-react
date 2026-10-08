@@ -62,6 +62,7 @@ export const MSocialButton = forwardRef<HTMLButtonElement, MSocialButtonProps>(f
         iconOnly = false,
         iconShape = 'circle',
         hidden,
+        hiddenAbove,
         fullWidth = false,
         loading = false,
         active = false,
@@ -132,7 +133,7 @@ export const MSocialButton = forwardRef<HTMLButtonElement, MSocialButtonProps>(f
 
                 onKeyDown?.(event)
             }}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {effectLayer}

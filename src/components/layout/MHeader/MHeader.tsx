@@ -13,6 +13,7 @@ export function MHeader({
     tone = 'surface',
     layout = 'split',
     hidden,
+    hiddenAbove,
     className,
     children,
     ...rest
@@ -20,7 +21,7 @@ export function MHeader({
     return (
         <header
             className={cn('header', tone, bordered && 'bordered', sticky && 'sticky', className)}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             <MContainer size={container} padded={padded} className={cn('inner', `layout-${layout}`)}>

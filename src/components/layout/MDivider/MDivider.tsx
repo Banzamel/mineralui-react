@@ -9,6 +9,7 @@ export function MDivider({
     orientation = 'horizontal',
     variant = 'solid',
     hidden,
+    hiddenAbove,
     spacing,
     padding,
     fsize,
@@ -60,7 +61,7 @@ export function MDivider({
                 className
             )}
             style={{...utilityStyle, ...style}}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         />
     )

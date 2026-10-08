@@ -32,6 +32,7 @@ export function MImage({
     width,
     height,
     hidden,
+    hiddenAbove,
     rounded = false,
     bordered = false,
     shadow = false,
@@ -104,7 +105,7 @@ export function MImage({
                 className={cn('image-skeleton', rounded && 'rounded', bordered && 'bordered', className)}
                 style={ratioStyle}
                 aria-label={texts.loading}
-                {...getHiddenProps(hidden)}
+                {...getHiddenProps(hidden, hiddenAbove)}
             />
         )
     }
@@ -165,7 +166,7 @@ export function MImage({
                         onClick={openPreview}
                         onPointerDown={effectLayer ? handlePointerDown : undefined}
                         disabled={!resolvedSrc}
-                        {...getHiddenProps(hidden)}
+                        {...getHiddenProps(hidden, hiddenAbove)}
                         style={ratioStyle}
                     >
                         {effectLayer}
@@ -175,7 +176,7 @@ export function MImage({
                     <span
                         className={wrapperClassName}
                         onPointerDown={effectLayer ? handlePointerDown : undefined}
-                        {...getHiddenProps(hidden)}
+                        {...getHiddenProps(hidden, hiddenAbove)}
                         style={ratioStyle}
                     >
                         {effectLayer}
@@ -201,7 +202,7 @@ export function MImage({
                 style={ratioStyle}
                 onError={handleError}
                 src={resolvedSrc}
-                {...getHiddenProps(hidden)}
+                {...getHiddenProps(hidden, hiddenAbove)}
                 {...rest}
                 alt={alt ?? ''}
             />

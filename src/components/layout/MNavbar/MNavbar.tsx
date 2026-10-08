@@ -51,6 +51,7 @@ export function MNavbar({
     mobileMenuLabel,
     mobileBreakpoint = MShellBreakpoints.compact,
     hidden,
+    hiddenAbove,
     className,
     children,
     ...rest
@@ -193,7 +194,7 @@ export function MNavbar({
                 `mobile-${mobileMenu}`,
                 className
             )}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             <MContainer size={container} padded={padded} className="container">

@@ -12,6 +12,7 @@ export function MText({
     size,
     align = 'left',
     hidden,
+    hiddenAbove,
     color,
     weight = 'normal',
     truncate,
@@ -76,7 +77,7 @@ export function MText({
                 ...(lines ? ({'--line-clamp': lines} as React.CSSProperties) : undefined),
                 ...style,
             }}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {children}

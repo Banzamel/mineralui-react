@@ -14,6 +14,7 @@ export function MBanner({
     icon,
     action,
     hidden,
+    hiddenAbove,
     dismissible = false,
     onDismiss,
     className,
@@ -55,7 +56,11 @@ export function MBanner({
     }
 
     return (
-        <div ref={wrapRef} className={cn('banner-wrap', dismissing && 'dismissing')} {...getHiddenProps(hidden)}>
+        <div
+            ref={wrapRef}
+            className={cn('banner-wrap', dismissing && 'dismissing')}
+            {...getHiddenProps(hidden, hiddenAbove)}
+        >
             <div className={cn('banner', `color-${color}`, variant, className)} {...rest}>
                 {icon && <span className="banner-icon">{icon}</span>}
                 <div className="banner-content">{children}</div>

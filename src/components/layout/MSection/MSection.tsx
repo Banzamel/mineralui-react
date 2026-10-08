@@ -10,6 +10,7 @@ export function MSection({
     spacing = 'lg',
     tone = 'default',
     hidden,
+    hiddenAbove,
     className,
     style,
     children,
@@ -21,7 +22,7 @@ export function MSection({
         <Component
             className={cn('section', spacing, tone, className)}
             style={style}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {children}

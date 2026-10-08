@@ -11,6 +11,7 @@ export function MHeading({
     level = 2,
     tone = 'default',
     hidden,
+    hiddenAbove,
     color,
     truncate,
     className,
@@ -33,7 +34,7 @@ export function MHeading({
                 className
             ),
             style: lines ? ({'--line-clamp': lines, ...style} as CSSProperties) : style,
-            ...getHiddenProps(hidden),
+            ...getHiddenProps(hidden, hiddenAbove),
             ...rest,
         },
         children

@@ -10,6 +10,7 @@ export function MSubText({
     size = 'sm',
     tone = 'muted',
     hidden,
+    hiddenAbove,
     color,
     className,
     children,
@@ -19,7 +20,7 @@ export function MSubText({
     return (
         <Component
             className={cn('subtext', !color && tone, size, ...getAppearanceClassNames({color}), className)}
-            {...getHiddenProps(hidden)}
+            {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
             {children}
