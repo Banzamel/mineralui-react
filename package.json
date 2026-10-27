@@ -1,6 +1,6 @@
 {
     "name": "@banzamel/mineralui",
-    "version": "2.5.3",
+    "version": "2.5.4",
     "description": "Modern React UI component framework with mineral dark aesthetic",
     "type": "module",
     "main": "dist/index.cjs",

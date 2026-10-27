@@ -35,10 +35,6 @@
     background: transparent;
 }
 
-.navbar.default::before {
-    backdrop-filter: none;
-}
-
 .navbar.bordered {
     border-bottom-color: var(--mineral-border);
 }
