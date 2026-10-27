@@ -12,6 +12,10 @@
     color: var(--mineral-text-secondary);
 }
 
+.text.inherit {
+    color: inherit;
+}
+
 .text.accent {
     color: var(--mineral-primary);
     text-shadow: 0 1px 10px rgba(var(--mineral-primary-rgb), 0.5);
@@ -82,4 +86,27 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: var(--line-clamp, 2);
     overflow: hidden;
+}
+
+/* Inside a heading, MText (usually as='span' for a coloured fragment) takes the heading's
+   typography unless a prop asks otherwise; the defaults would reset it to body copy. */
+.heading .text {
+    font-family: inherit;
+    line-height: inherit;
+}
+
+.heading .text:not(.xs, .sm, .md, .lg, .xl) {
+    font-size: inherit;
+}
+
+.heading .text.normal {
+    font-weight: inherit;
+}
+
+.heading .text.default {
+    color: inherit;
+}
+
+.heading .text.left {
+    text-align: inherit;
 }

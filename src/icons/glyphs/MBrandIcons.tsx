@@ -163,22 +163,29 @@ export const MYouTubeColorIcon = makeBrandIcon(
     </>
 )
 
-export const MGitHubIcon = makeBrandIcon(
-    'MGitHubIcon',
+// The cat is cut out of the disc with a mask, so the icon is one shape in currentColor
+// and stays readable on any background (a white cat vanished on color='inherit' over light text).
+export const MGitHubIcon = makeBrandIcon('MGitHubIcon', (uid) => (
     <>
-        <circle cx="12" cy="12" r="8.5" fill="currentColor" stroke="none" />
-        <path
-            d="M8.45 16.95v-1.25c-.95.26-1.58-.21-1.92-.73-.21-.34-.41-.73-.73-.96-.2-.15-.13-.31.14-.3.58.02.97.4 1.28.82.44.57.98.72 1.63.72.14-.57.44-.97.78-1.2-2.23-.26-3.4-1.32-3.4-3.44 0-.94.34-1.72.91-2.34-.1-.35-.23-1.08.1-1.96 0 0 .78-.25 2.5.9a8.7 8.7 0 0 1 4.52 0c1.72-1.15 2.5-.9 2.5-.9.33.88.2 1.61.1 1.96.57.62.91 1.4.91 2.34 0 2.13-1.18 3.19-3.44 3.44.49.34.89 1 .89 2.03v1.87"
-            fill="#fff"
-            stroke="none"
-        />
-        <path
-            d="M9.1 9.2c.38-.72.97-1.02 1.52-1.02.63 0 1.15.3 1.38.83.25-.53.78-.83 1.4-.83.54 0 1.12.3 1.5 1.02"
-            stroke="#fff"
-        />
-        <path d="M9.35 10.95c1.52 1.2 3.78 1.2 5.3 0" stroke="#fff" />
+        <defs>
+            <mask id={`github-cat-${uid}`} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+                <circle cx="12" cy="12" r="8.5" fill="#fff" stroke="none" />
+                <path
+                    d="M8.45 16.95v-1.25c-.95.26-1.58-.21-1.92-.73-.21-.34-.41-.73-.73-.96-.2-.15-.13-.31.14-.3.58.02.97.4 1.28.82.44.57.98.72 1.63.72.14-.57.44-.97.78-1.2-2.23-.26-3.4-1.32-3.4-3.44 0-.94.34-1.72.91-2.34-.1-.35-.23-1.08.1-1.96 0 0 .78-.25 2.5.9a8.7 8.7 0 0 1 4.52 0c1.72-1.15 2.5-.9 2.5-.9.33.88.2 1.61.1 1.96.57.62.91 1.4.91 2.34 0 2.13-1.18 3.19-3.44 3.44.49.34.89 1 .89 2.03v1.87"
+                    fill="#000"
+                    stroke="none"
+                />
+                <path
+                    d="M9.1 9.2c.38-.72.97-1.02 1.52-1.02.63 0 1.15.3 1.38.83.25-.53.78-.83 1.4-.83.54 0 1.12.3 1.5 1.02"
+                    fill="none"
+                    stroke="#000"
+                />
+                <path d="M9.35 10.95c1.52 1.2 3.78 1.2 5.3 0" fill="none" stroke="#000" />
+            </mask>
+        </defs>
+        <circle cx="12" cy="12" r="8.5" fill="currentColor" stroke="none" mask={`url(#github-cat-${uid})`} />
     </>
-)
+))
 
 export const MGitHubColorIcon = makeBrandIcon(
     'MGitHubColorIcon',

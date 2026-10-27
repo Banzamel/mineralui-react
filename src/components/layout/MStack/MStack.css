@@ -5,6 +5,34 @@
     gap: var(--mineral-spacing-md);
 }
 
+.stack.gap-none {
+    gap: 0;
+}
+
+.stack.gap-xs {
+    gap: var(--mineral-spacing-xs);
+}
+
+.stack.gap-sm {
+    gap: var(--mineral-spacing-sm);
+}
+
+.stack.gap-md {
+    gap: var(--mineral-spacing-md);
+}
+
+.stack.gap-lg {
+    gap: var(--mineral-spacing-lg);
+}
+
+.stack.gap-xl {
+    gap: var(--mineral-spacing-xl);
+}
+
+.stack.gap-2xl {
+    gap: var(--mineral-spacing-2xl);
+}
+
 .stack.stretch {
     align-items: stretch;
 }

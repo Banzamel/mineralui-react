@@ -37,8 +37,9 @@ export function MStack({
             className={cn(
                 'stack',
                 align !== 'stretch' && align,
+                // On MStack `spacing` is the gap between children, not the outer margin it means elsewhere.
+                spacing !== undefined && `gap-${spacing}`,
                 ...getLayoutUtilityClassNames({
-                    spacing,
                     padding,
                     fsize,
                     mt,

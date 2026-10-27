@@ -14,20 +14,31 @@ function cssAutoInject(entryNames: string[]): Plugin {
         apply: 'build',
         closeBundle() {
             const distDir = resolve(__dirname, 'dist')
+            const stylesPath = resolve(distDir, 'styles.css')
             let css: string
             try {
-                css = readFileSync(resolve(distDir, 'styles.css'), 'utf-8')
+                css = readFileSync(stylesPath, 'utf-8')
             } catch {
                 return
             }
 
+            // Everything sits in one cascade layer, so any unlayered app style beats the framework
+            // regardless of specificity or injection order. The file is written back so a direct
+            // `@banzamel/mineralui/styles.css` import gets the same layer.
+            if (!css.startsWith('@layer mineral{')) {
+                css = `@layer mineral{${css}}`
+                writeFileSync(stylesPath, css)
+            }
+
             const escaped = css.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$')
 
+            // The style tag goes first in <head>: the first declared layer has the lowest priority,
+            // so app layers (e.g. Tailwind's) still win over `mineral`.
             const runtimes = [
                 {
                     file: 'style-runtime.js',
                     include: (file: string) => `${file}.js`,
-                    prefix: 'import {ensureStyles} from \'./style-runtime.js\'\nensureStyles()\n',
+                    prefix: "import {ensureStyles} from './style-runtime.js'\nensureStyles()\n",
                     code: [
                         'export function ensureStyles(){',
                         'if(typeof document!=="undefined"){',
@@ -35,14 +46,14 @@ function cssAutoInject(entryNames: string[]): Plugin {
                         'if(!s){s=document.createElement("style");',
                         's.id="mineral-ui-styles";',
                         `s.textContent=\`${escaped}\`;`,
-                        'document.head.appendChild(s)}}',
+                        'document.head.insertBefore(s,document.head.firstChild)}}',
                         '}',
                     ].join(''),
                 },
                 {
                     file: 'style-runtime.cjs',
                     include: (file: string) => `${file}.cjs`,
-                    prefix: 'const {ensureStyles}=require(\'./style-runtime.cjs\')\nensureStyles()\n',
+                    prefix: "const {ensureStyles}=require('./style-runtime.cjs')\nensureStyles()\n",
                     code: [
                         'function ensureStyles(){',
                         'if(typeof document!=="undefined"){',
@@ -50,7 +61,7 @@ function cssAutoInject(entryNames: string[]): Plugin {
                         'if(!s){s=document.createElement("style");',
                         's.id="mineral-ui-styles";',
                         `s.textContent=\`${escaped}\`;`,
-                        'document.head.appendChild(s)}}',
+                        'document.head.insertBefore(s,document.head.firstChild)}}',
                         '}',
                         'exports.ensureStyles=ensureStyles',
                     ].join(''),
@@ -91,7 +102,7 @@ function cssAutoInject(entryNames: string[]): Plugin {
                 {
                     file: 'pro-activation-runtime.js',
                     include: (file: string) => `${file}.js`,
-                    prefix: 'import \'./pro-activation-runtime.js\'\n',
+                    prefix: "import './pro-activation-runtime.js'\n",
                     code: [
                         'const activationState={',
                         'activated:false,',
@@ -119,7 +130,7 @@ function cssAutoInject(entryNames: string[]): Plugin {
                 {
                     file: 'pro-activation-runtime.cjs',
                     include: (file: string) => `${file}.cjs`,
-                    prefix: 'require(\'./pro-activation-runtime.cjs\')\n',
+                    prefix: "require('./pro-activation-runtime.cjs')\n",
                     code: [
                         'const activationState={',
                         'activated:false,',

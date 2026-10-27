@@ -17,33 +17,54 @@
     color: var(--mineral-text-secondary);
 }
 
+.heading.inherit {
+    color: inherit;
+}
+
 .heading.accent {
     color: var(--mineral-primary);
     text-shadow: 0 1px 10px rgba(var(--mineral-primary-rgb), 0.5);
 }
 
 .heading.h1 {
-    font-size: 3rem;
+    font-size: var(--mineral-font-size-h1);
 }
 
 .heading.h2 {
-    font-size: 2.25rem;
+    font-size: var(--mineral-font-size-h2);
 }
 
 .heading.h3 {
-    font-size: 1.75rem;
+    font-size: var(--mineral-font-size-h3);
 }
 
 .heading.h4 {
-    font-size: 1.25rem;
+    font-size: var(--mineral-font-size-h4);
 }
 
 .heading.h5 {
-    font-size: 1rem;
+    font-size: var(--mineral-font-size-h5);
 }
 
 .heading.h6 {
-    font-size: 0.875rem;
+    font-size: var(--mineral-font-size-h6);
+}
+
+/* text-align is left unset by default so a heading follows its container. */
+.heading.align-left {
+    text-align: left;
+}
+
+.heading.align-center {
+    text-align: center;
+}
+
+.heading.align-right {
+    text-align: right;
+}
+
+.heading.align-justify {
+    text-align: justify;
 }
 
 /* Single-line ellipsis */

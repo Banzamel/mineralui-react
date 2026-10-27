@@ -1,12 +1,25 @@
 .navbar {
     position: relative;
+    isolation: isolate;
     width: 100%;
     background: rgba(var(--mineral-dark-rgb, 15, 23, 42), 0.82);
-    backdrop-filter: blur(16px);
     border-bottom: 1px solid transparent;
     box-shadow: var(--mineral-shell-shadow);
     font-weight: 500;
     border-radius: 0;
+}
+
+/* The blur sits on a pseudo-element behind the content, not on .navbar itself: backdrop-filter
+   on an ancestor turns off the mobile menu's own backdrop and makes the position: fixed
+   drawer measure itself against the bar instead of the viewport. */
+.navbar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    backdrop-filter: blur(16px);
+    pointer-events: none;
 }
 
 .navbar.surface {
@@ -20,6 +33,10 @@
 
 .navbar.default {
     background: transparent;
+}
+
+.navbar.default::before {
+    backdrop-filter: none;
 }
 
 .navbar.bordered {
@@ -111,7 +128,7 @@
     flex-direction: column;
     gap: var(--mineral-spacing-md);
     padding: var(--mineral-spacing-md);
-    background: rgba(var(--mineral-dark-rgb, 15, 23, 42), 0.96);
+    background: var(--mineral-navbar-menu-bg, rgb(var(--mineral-dark-rgb, 15, 23, 42)));
     backdrop-filter: blur(16px);
     border-top: 1px solid var(--mineral-border);
     max-height: 0;

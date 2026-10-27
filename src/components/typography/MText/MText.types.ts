@@ -2,7 +2,8 @@ import type {HTMLAttributes, ReactNode} from 'react'
 import type {MColor, MHiddenProps} from '../../../theme'
 import type {LayoutUtilityProps} from '../../../utils/layoutProps'
 
-export type MTextTone = 'default' | 'muted' | 'accent'
+/** `inherit` takes the parent's colour (e.g. light text on a dark MSurface). */
+export type MTextTone = 'default' | 'muted' | 'accent' | 'inherit'
 export type MTextSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 export type MTextAlign = 'left' | 'center' | 'right' | 'justify'
 

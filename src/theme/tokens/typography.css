@@ -12,4 +12,20 @@
     --mineral-font-size-lg: 1.125rem;
     --mineral-font-size-xl: 1.25rem;
     --mineral-font-size-2xl: 1.5rem;
+
+    /* Heading scale; the larger levels shrink on phones so titles do not break word by word. */
+    --mineral-font-size-h1: 3rem;
+    --mineral-font-size-h2: 2.25rem;
+    --mineral-font-size-h3: 1.75rem;
+    --mineral-font-size-h4: 1.25rem;
+    --mineral-font-size-h5: 1rem;
+    --mineral-font-size-h6: 0.875rem;
+}
+
+@media (max-width: 640px) {
+    :root {
+        --mineral-font-size-h1: clamp(2.25rem, 9vw, 3rem);
+        --mineral-font-size-h2: clamp(1.75rem, 7vw, 2.25rem);
+        --mineral-font-size-h3: clamp(1.5rem, 6vw, 1.75rem);
+    }
 }
