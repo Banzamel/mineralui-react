@@ -76,6 +76,17 @@
     flex-wrap: wrap;
 }
 
+.navbar .navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--mineral-spacing-md);
+    min-width: 0;
+}
+
+.navbar.mobile-view .navbar-actions {
+    gap: var(--mineral-spacing-xs);
+}
+
 .navbar .navbar-toggle {
     display: none;
 }

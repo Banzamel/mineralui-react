@@ -33,7 +33,7 @@
 }
 
 .code-block-card .code-block-scroll:focus-visible {
-    outline: 2px solid rgba(var(--mineral-primary-rgb), 1);
+    outline: var(--mineral-focus-ring-width) solid var(--mineral-focus-ring-color);
     outline-offset: -2px;
 }
 

@@ -468,6 +468,8 @@ export interface MWeekGridTexts {
     bands: [string, string, string, string]
     /** Accessible name of an interactive cell. Placeholders: `{day}`, `{slot}`, `{value}`. */
     cellLabel: string
+    /** Announced selected area. Placeholders: `{fromDay}`, `{fromSlot}`, `{toDay}`, `{toSlot}`. */
+    rangeLabel: string
     /**
      * Default short day labels, Sunday first
      * (`mineralui.weekGrid.days.sun|mon|tue|wed|thu|fri|sat`).
@@ -492,6 +494,7 @@ export function useMWeekGridTexts(): MWeekGridTexts {
                 t('mineralui.weekGrid.bands.many', 'Many'),
             ],
             cellLabel: t('mineralui.weekGrid.cellLabel', '{day} {slot}: {value}'),
+            rangeLabel: t('mineralui.weekGrid.rangeLabel', '{fromDay} {fromSlot} – {toDay} {toSlot}'),
             days: [
                 t('mineralui.weekGrid.days.sun', 'Sun'),
                 t('mineralui.weekGrid.days.mon', 'Mon'),
@@ -1466,6 +1469,10 @@ export interface MChatTexts {
     statusSent: string
     statusDelivered: string
     statusRead: string
+    /** Attach trigger when `attachAccept` allows more than images. */
+    attachFile: string
+    /** Placeholder: `{name}`. */
+    removeFile: string
     /** Placeholder: `{name}`. */
     typingOne: string
     /** Placeholders: `{first}`, `{second}`. */
@@ -1494,6 +1501,8 @@ export function useMChatTexts(): MChatTexts {
             statusSent: t('mineralui.chat.statusSent', 'sent'),
             statusDelivered: t('mineralui.chat.statusDelivered', 'delivered'),
             statusRead: t('mineralui.chat.statusRead', 'read'),
+            attachFile: t('mineralui.chat.attachFile', 'Attach file'),
+            removeFile: t('mineralui.chat.removeFile', 'Remove {name}'),
             typingOne: t('mineralui.chat.typingOne', '{name} is typing'),
             typingTwo: t('mineralui.chat.typingTwo', '{first} and {second} are typing'),
             typingMany: t('mineralui.chat.typingMany', '{name} and {count} others are typing'),

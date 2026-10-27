@@ -141,7 +141,7 @@
 }
 
 .tabs .tabs-panel:focus-visible {
-    outline: 2px solid var(--mineral-primary);
+    outline: var(--mineral-focus-ring-width) solid var(--mineral-focus-ring-color);
     outline-offset: 2px;
     border-radius: var(--mineral-radius-sm, 4px);
 }

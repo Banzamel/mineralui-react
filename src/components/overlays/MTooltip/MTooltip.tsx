@@ -166,7 +166,8 @@ export function MTooltip({content, placement = 'top', delay = 0, className, chil
             {...rest}
         >
             {describedChild}
-            {visible && (
+            {/* Nothing to say (e.g. a host turns its tooltip off mid-gesture): no empty bubble. */}
+            {visible && content != null && content !== false && (
                 <MPortal>
                     <div
                         ref={bubbleRef}

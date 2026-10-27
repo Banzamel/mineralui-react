@@ -21,6 +21,18 @@ export interface MWeekGridCellContext {
     band: MWeekGridBand
 }
 
+/** Rectangle of cells picked by dragging (or Shift + arrows). */
+export interface MWeekGridRange {
+    /** Calendar day indexes (0 = Sunday, as in `data`), in the visual order of the rows —
+     *  a list, not from/to: with `weekStart={1}` a Friday–Sunday area is `[5, 6, 0]`. */
+    days: number[]
+    /** Slot indexes, ascending. */
+    slots: number[]
+    /** The cell where the gesture started — lets the app choose add or remove
+     *  (e.g. starting on a filled cell clears the area). */
+    origin: MWeekGridCellContext
+}
+
 export interface MWeekGridProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'color' | 'title'> {
     /** Grid data. Accepts either a 2D matrix indexed `[day][slot]` or a sparse
      *  list of `{day, slot, value}` cells. Missing cells fall back to 0. */
@@ -68,6 +80,17 @@ export interface MWeekGridProps extends Omit<HTMLAttributes<HTMLDivElement>, 'ch
      *  Defaults to `true` when `onCellClick` is set. Pass `false` together with
      *  `onCellClick` to keep the previous one-button-per-cell behaviour. */
     interactive?: boolean
+    /** Area selection: press on a cell, drag, release (mouse, pen or touch). `'rect'` (default
+     *  for `true`) spans days × slots, `'row'` stays in the starting day. Day and hour headers
+     *  pick a whole row / column; Shift + arrows extend from the active cell and Enter / Space
+     *  commits; Escape cancels. Turns on `interactive`. */
+    selectable?: boolean | 'rect' | 'row'
+    /** Fires once on release with the final area. A press and release on the same cell is a
+     *  plain click: only `onCellClick` fires, never both. `data` does not change by itself —
+     *  the grid stays controlled. */
+    onSelectRange?: (range: MWeekGridRange) => void
+    /** Live preview while selecting (`null` when it ends or is cancelled), e.g. for a counter. */
+    onSelectingRange?: (range: MWeekGridRange | null) => void
     /** Show the density legend (None / Few / Some / Many) below the grid.
      *  Only bands the data can reach are listed — an integer grid with
      *  `max = 1` shows bands 0 and 3. Default `true`. */

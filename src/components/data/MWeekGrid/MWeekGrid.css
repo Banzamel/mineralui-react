@@ -79,7 +79,7 @@
 }
 
 .mineral-week-grid__cell--interactive:focus-visible {
-    outline: 2px solid var(--mineral-week-grid-color, var(--mineral-warning));
+    outline: var(--mineral-focus-ring-width) solid var(--mineral-focus-ring-color);
     outline-offset: 1px;
 }
 
@@ -92,7 +92,7 @@
 }
 
 .mineral-week-grid__cell--grid:focus-visible {
-    outline: 2px solid var(--mineral-week-grid-color, var(--mineral-warning));
+    outline: var(--mineral-focus-ring-width) solid var(--mineral-focus-ring-color);
     outline-offset: 1px;
 }
 
@@ -127,4 +127,48 @@
     display: inline-block;
     height: 14px;
     width: 14px;
+}
+
+/* Area selection (selectable): no page scroll or text selection while dragging over cells. */
+.mineral-week-grid--selectable .mineral-week-grid__matrix {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.mineral-week-grid--selectable .mineral-week-grid__cell {
+    touch-action: none;
+}
+
+/* Preview of the area: tinted and outlined, data unchanged until release. */
+.mineral-week-grid__cell--selecting {
+    background: color-mix(in srgb, var(--mineral-week-grid-color, var(--mineral-warning)) 40%, transparent);
+    box-shadow: inset 0 0 0 1px var(--mineral-week-grid-color, var(--mineral-warning));
+}
+
+.mineral-week-grid__header-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: var(--mineral-radius-sm);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.mineral-week-grid__header-button:hover {
+    background: color-mix(in srgb, var(--mineral-text) 6%, transparent);
+}
+
+.mineral-week-grid__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
 }

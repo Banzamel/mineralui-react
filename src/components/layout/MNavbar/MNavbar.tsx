@@ -133,6 +133,26 @@ export function MNavbar({
                   })
               })
 
+    // With collapseActions the trailing MInline groups (and the burger) share one wrapper, so
+    // justify='between' keeps them together on the right instead of spreading them over the bar.
+    let barChildren: ReactNode[] = renderedChildren
+    if (collapseActions) {
+        let start = renderedChildren.length
+        while (start > 0) {
+            const child = renderedChildren[start - 1]
+            if (child !== toggleButton && !(isValidElement(child) && child.type === MInline)) break
+            start -= 1
+        }
+        if (renderedChildren.length - start > 1) {
+            barChildren = [
+                ...renderedChildren.slice(0, start),
+                <div key="mnavbar-actions" className="navbar-actions">
+                    {renderedChildren.slice(start)}
+                </div>,
+            ]
+        }
+    }
+
     useEffect(() => {
         if (!open) return
 
@@ -198,7 +218,7 @@ export function MNavbar({
             {...rest}
         >
             <MContainer size={container} padded={padded} className="container">
-                <div className={cn('inner', justify, wrap && 'wrap')}>{renderedChildren}</div>
+                <div className={cn('inner', justify, wrap && 'wrap')}>{barChildren}</div>
             </MContainer>
 
             {mobileMenu === 'drawer' && (

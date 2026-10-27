@@ -163,7 +163,7 @@
 
 .date-picker .day:focus-visible,
 .date-picker-popover .day:focus-visible {
-    outline: 2px solid rgba(var(--color-rgb), 1);
+    outline: var(--mineral-focus-ring-width) solid var(--mineral-focus-ring-color);
     outline-offset: 1px;
 }
 

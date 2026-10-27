@@ -31,8 +31,9 @@ export interface MNavbarProps extends Omit<HTMLAttributes<HTMLElement>, 'hidden'
      * preceding `MInline` (typically primary actions like Inbox / UserMenu) or
      * sits on its own when no other inline exists. Earlier inline groups are
      * left untouched, so split your actions into two `MInline`s — primary first
-     * (kept on the bar) and secondary last (collapsed). Default: `false` for
-     * backward compatibility.
+     * (kept on the bar) and secondary last (collapsed). The trailing `MInline`s and
+     * the burger share one wrapper (`.navbar-actions`), so on desktop they stay
+     * together at the end of the bar. Default: `false` for backward compatibility.
      */
     collapseActions?: boolean
     /** Accessible name of the burger toggle. Defaults to the `mineralui.navbar.menu`

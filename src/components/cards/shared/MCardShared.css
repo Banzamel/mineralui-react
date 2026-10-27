@@ -73,12 +73,12 @@
 .card.interactive:focus-visible,
 .card-widget.interactive:focus-visible,
 .card-finance.interactive:focus-visible {
-    outline: 2px solid rgba(var(--color-rgb, var(--mineral-primary-rgb)), 0.9);
+    outline: var(--mineral-focus-ring-width) solid var(--mineral-focus-ring-color);
     outline-offset: 2px;
 }
 
 .card-payment.interactive:focus-visible {
-    outline: 2px solid rgba(var(--card-payment-rgb, var(--mineral-primary-rgb)), 0.9);
+    outline: var(--mineral-focus-ring-width) solid var(--mineral-focus-ring-color);
     outline-offset: 2px;
 }
 
