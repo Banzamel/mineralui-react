@@ -27,6 +27,7 @@ export function MTag({
             {...getHiddenProps(hidden, hiddenAbove)}
             {...rest}
         >
+            {variant === 'dot' && <span className="marker" aria-hidden="true" />}
             {icon && <span className="m-tag icon">{icon}</span>}
             <span className="m-tag label">{label}</span>
             {closable && (

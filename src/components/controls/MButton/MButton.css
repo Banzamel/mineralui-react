@@ -128,6 +128,23 @@
     padding: 0;
 }
 
+/* iconPosition="top" (2.7.0): startIcon stacked above the label; height follows the content. */
+.button.icon-top {
+    flex-direction: column;
+    gap: var(--mineral-spacing-xs);
+    padding-top: var(--mineral-spacing-sm);
+    padding-bottom: var(--mineral-spacing-sm);
+    text-align: center;
+}
+
+.button.icon-top .icon.start {
+    font-size: 1.35em;
+}
+
+.button.icon-top .content {
+    justify-content: center;
+}
+
 .button.filled {
     background-color: rgba(var(--color-rgb), 1);
     background-image: var(--mineral-gleam-gradient);

@@ -13,7 +13,14 @@ export type {MCardOfferProps} from './MCardOffer'
 export {MCardCourse} from './MCardCourse'
 export type {MCardCourseProps} from './MCardCourse'
 export {MCardTile} from './MCardTile'
-export type {MCardTileProps, MCardTileMenuItem, MCardTileOverlayPosition} from './MCardTile'
+export type {
+    MCardTileProps,
+    MCardTileMenuItem,
+    MCardTileOverlayPosition,
+    MCardTileVariant,
+    MCardTileRatio,
+    MCardTileRibbon,
+} from './MCardTile'
 export {MCardProduct} from './MCardProduct'
 export type {MCardProductProps} from './MCardProduct'
 export {MCardEvent} from './MCardEvent'

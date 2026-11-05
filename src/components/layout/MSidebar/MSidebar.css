@@ -19,6 +19,20 @@
     z-index: 10;
 }
 
+/* Right-docked sidebar: the frame faces the main column */
+.sidebar.right {
+    border-right: none;
+    border-left: 1px solid var(--mineral-border);
+}
+
+.sidebar.right .sidebar-chevron {
+    transform: rotate(180deg);
+}
+
+.sidebar.right .sidebar-chevron.flipped {
+    transform: none;
+}
+
 .sidebar.collapsed {
     width: var(--sidebar-collapsed-width);
     min-width: var(--sidebar-collapsed-width);
@@ -390,7 +404,8 @@
 /* Hamburger — mobile trigger */
 .sidebar-hamburger {
     position: fixed;
-    top: calc(var(--mineral-navbar-height) + var(--mineral-spacing-md));
+    /* Fallback resolved here (not on :root), so a local --mineral-navbar-height override still applies. */
+    top: var(--mineral-sidebar-hamburger-top, calc(var(--mineral-navbar-height) + var(--mineral-spacing-md)));
     z-index: calc(var(--mineral-z-popover) + 1);
     display: flex;
     align-items: center;

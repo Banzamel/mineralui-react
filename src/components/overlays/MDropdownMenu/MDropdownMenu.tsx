@@ -76,6 +76,8 @@ export function MDropdownMenu({
     isolateClick = false,
     className,
     style,
+    triggerClassName,
+    triggerStyle,
     popoverClassName,
     popoverStyle,
     children,
@@ -284,7 +286,8 @@ export function MDropdownMenu({
                 onClick={openOn === 'click' ? handleTriggerClick : undefined}
                 onKeyDown={handleTriggerKeyDown}
                 onKeyUp={handleTriggerKeyUp}
-                className="dropdown menu trigger"
+                className={cn('dropdown menu trigger', triggerClassName)}
+                style={triggerStyle}
                 {...(nativeTrigger
                     ? {}
                     : {

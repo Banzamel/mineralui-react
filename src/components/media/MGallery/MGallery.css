@@ -94,3 +94,34 @@
     font-weight: 500;
     pointer-events: none;
 }
+
+/* ratio / fit (2.7.0). The square cover thumbnail above stays the default. */
+.gallery.ratio-auto .gallery-image {
+    height: auto;
+    aspect-ratio: auto;
+}
+
+.gallery.ratio-16-9 .gallery-image {
+    aspect-ratio: 16 / 9;
+}
+
+.gallery.ratio-9-16 .gallery-image {
+    aspect-ratio: 9 / 16;
+}
+
+.gallery.ratio-4-3 .gallery-image {
+    aspect-ratio: 4 / 3;
+}
+
+.gallery.ratio-3-2 .gallery-image {
+    aspect-ratio: 3 / 2;
+}
+
+.gallery.ratio-auto {
+    align-items: start;
+}
+
+.gallery.fit-contain .gallery-image {
+    object-fit: contain;
+    background: rgba(var(--mineral-text-rgb), 0.04);
+}

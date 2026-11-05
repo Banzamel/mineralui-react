@@ -7,8 +7,11 @@ import {MPopover} from '../../primitives/MPopover'
 import {useModalLayer} from '../../../utils/useModalLayer'
 import {isRtlElement} from '../../../utils/radioGroupKeys'
 import {MShellBreakpoints, useMaxWidth} from '../../../theme'
+import {useAppShellPlacement, isDevelopment} from '../MAppShell/appShellContext'
+import {removeSidebar, upsertSidebar, useRegisteredSidebar} from './sidebarRegistry'
 import type {
     MSidebarProps,
+    MSidebarToggleProps,
     MSidebarHeaderProps,
     MSidebarBodyProps,
     MSidebarNavProps,
@@ -24,6 +27,7 @@ import {useMCommonTexts, useMLayoutTexts} from '../../../i18n/frameworkTexts'
 const STORAGE_KEY = 'mineralui-sidebar'
 
 interface SidebarContextValue {
+    side: 'left' | 'right'
     mode: MSidebarMode
     mobile: boolean
     mobileOpen: boolean
@@ -32,6 +36,7 @@ interface SidebarContextValue {
 }
 
 const SidebarCtx = createContext<SidebarContextValue>({
+    side: 'left',
     mode: 'expanded',
     mobile: false,
     mobileOpen: false,
@@ -53,6 +58,7 @@ export function MSidebar({
     side = 'left',
     tone = 'subtle',
     bordered = true,
+    hamburger = 'floating',
     mobileBreakpoint = MShellBreakpoints.mobile,
     compactBreakpoint = MShellBreakpoints.compact,
     className,
@@ -120,11 +126,29 @@ export function MSidebar({
         }
     }, [mobile])
 
+    // Let MSidebarToggle (rendered anywhere, e.g. in MNavbar) open this drawer.
+    const [registryToken] = useState(() => ({}))
+    useEffect(() => {
+        upsertSidebar(registryToken, {side, mobile, open: drawerOpen, setOpen: setMobileOpen})
+    }, [registryToken, side, mobile, drawerOpen])
+    useEffect(() => () => removeSidebar(registryToken), [registryToken])
+
+    const placement = useAppShellPlacement()
+    useEffect(() => {
+        if (placement === 'content' && isDevelopment()) {
+            console.warn(
+                '[MineralUI] MSidebar is rendered inside MAppShell but not as its direct child, so it is laid ' +
+                    'out inside the main column instead of being docked. Pass it via ' +
+                    '`<MAppShell sidebar={...}>` (or `aside` for the right side), or make MSidebar a direct child.'
+            )
+        }
+    }, [placement])
+
     const canToggle = !mobile && !compact && modeProp === 'auto'
 
     const ctx = useMemo<SidebarContextValue>(
-        () => ({mode: resolvedMode, mobile, mobileOpen, canToggle, toggleMode}),
-        [resolvedMode, mobile, mobileOpen, canToggle, toggleMode]
+        () => ({side, mode: resolvedMode, mobile, mobileOpen, canToggle, toggleMode}),
+        [side, resolvedMode, mobile, mobileOpen, canToggle, toggleMode]
     )
 
     const isCollapsed = !mobile && resolvedMode === 'collapsed'
@@ -158,7 +182,7 @@ export function MSidebar({
                 {children}
             </aside>
 
-            {mobile && (
+            {mobile && hamburger !== 'none' && (
                 // Stays mounted (hidden) while the drawer is open so focus can return to it on close.
                 <button
                     type="button"
@@ -285,6 +309,7 @@ function MSidebarGroupFlyout({
     children: MSidebarGroupProps['children']
 }) {
     const [open, setOpen] = useState(false)
+    const rightRail = ctx.side === 'right'
     const [focusFirst, setFocusFirst] = useState(false)
     const buttonRef = useRef<HTMLButtonElement | null>(null)
     const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -340,8 +365,9 @@ function MSidebarGroupFlyout({
                 }}
                 onKeyDown={(event) => {
                     if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
-                        const rtl = isRtlElement(event.currentTarget)
-                        const opening = rtl ? 'ArrowLeft' : 'ArrowRight'
+                        // The flyout opens towards the content: away from the rail's edge.
+                        const towardsLeft = isRtlElement(event.currentTarget) !== rightRail
+                        const opening = towardsLeft ? 'ArrowLeft' : 'ArrowRight'
                         if (event.key !== opening) return
                         event.preventDefault()
                         openFlyout(true)
@@ -354,7 +380,7 @@ function MSidebarGroupFlyout({
                 open={open}
                 anchorRef={buttonRef}
                 onClose={() => setOpen(false)}
-                placement="right-start"
+                placement={rightRail ? 'left-start' : 'right-start'}
                 className="dropdown menu popover sidebar-flyout"
                 role="group"
                 id={flyoutId}
@@ -439,4 +465,41 @@ export function MSidebarFooter({bordered = false, className, children}: MSidebar
 // Render a spacing-aware divider between sidebar regions.
 export function MSidebarDivider({className, spacing = 'md'}: MSidebarDividerProps) {
     return <hr className={cn('sidebar-divider', spacing, className)} />
+}
+
+// Hamburger button that opens a sidebar's mobile drawer from anywhere (MNavbar, a page header).
+// Renders nothing while the target sidebar is not in its mobile (drawer) layout.
+export function MSidebarToggle({
+    side,
+    variant = 'ghost',
+    color = 'neutral',
+    children,
+    onClick,
+    'aria-label': ariaLabel,
+    className,
+    ...rest
+}: MSidebarToggleProps) {
+    const texts = useMCommonTexts()
+    const target = useRegisteredSidebar(side)
+
+    if (!target || !target.mobile) return null
+
+    return (
+        <MButton
+            variant={variant}
+            color={color}
+            iconOnly
+            className={cn('sidebar-open-toggle', className)}
+            aria-label={ariaLabel ?? texts.openMenu}
+            aria-haspopup="dialog"
+            aria-expanded={target.open}
+            onClick={(event) => {
+                onClick?.(event)
+                if (!event.defaultPrevented) target.setOpen(!target.open)
+            }}
+            {...rest}
+        >
+            {children ?? <MMenuIcon />}
+        </MButton>
+    )
 }

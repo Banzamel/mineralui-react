@@ -6,7 +6,7 @@ export * from './theme'
 
 // I18n
 export {MI18nProvider, useMI18n, useMValidationMessage} from './i18n'
-export type {MI18nProviderProps, MI18nContextValue} from './i18n'
+export type {MI18nProviderProps, MI18nContextValue, MI18nTranslate, MI18nVars} from './i18n'
 
 // Icons
 export * from './icons.entry'

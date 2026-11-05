@@ -11,6 +11,8 @@ import {useMCommonTexts, formatMText} from '../../../i18n/frameworkTexts'
 export function MGallery({
     items,
     columns = 3,
+    ratio = '1:1',
+    fit = 'cover',
     rounded = true,
     preview = false,
     hoverEffect = 'zoom',
@@ -23,7 +25,16 @@ export function MGallery({
 
     return (
         <>
-            <div className={cn('gallery', `columns-${columns}`, className)} {...rest}>
+            <div
+                className={cn(
+                    'gallery',
+                    `columns-${columns}`,
+                    ratio !== '1:1' && `ratio-${ratio.replace(':', '-')}`,
+                    fit !== 'cover' && `fit-${fit}`,
+                    className
+                )}
+                {...rest}
+            >
                 {items.map((item, i) => (
                     <GalleryFigure
                         key={i}

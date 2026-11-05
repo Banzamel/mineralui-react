@@ -41,6 +41,45 @@
     }
 }
 
+/* Responsive object (`columns={{base: 1, md: 2, xl: 4}}`): the component writes every
+   `--grid-cols-*` step (cascade resolved in TSX) and these mobile-first `min-width` rules
+   pick them up — same breakpoints as MCardGrid / MBreakpoints (640 / 768 / 1024 / 1280 / 1536).
+   No built-in 1024/720 steps here; `--grid-columns` keeps minItemWidth working. */
+.grid.columns-responsive {
+    --grid-columns: var(--grid-cols-base, 1);
+    grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+    .grid.columns-responsive {
+        --grid-columns: var(--grid-cols-sm, 1);
+    }
+}
+
+@media (min-width: 768px) {
+    .grid.columns-responsive {
+        --grid-columns: var(--grid-cols-md, 1);
+    }
+}
+
+@media (min-width: 1024px) {
+    .grid.columns-responsive {
+        --grid-columns: var(--grid-cols-lg, 1);
+    }
+}
+
+@media (min-width: 1280px) {
+    .grid.columns-responsive {
+        --grid-columns: var(--grid-cols-xl, 1);
+    }
+}
+
+@media (min-width: 1536px) {
+    .grid.columns-responsive {
+        --grid-columns: var(--grid-cols-xxl, 1);
+    }
+}
+
 /* minItemWidth: auto-fill columns no narrower than --grid-min-item-width (capped by the
    container) and never more than --grid-columns. Declared last so it wins over the
    fixed-column rules above; the responsive caps still apply through --grid-columns. */

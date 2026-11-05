@@ -59,6 +59,21 @@
     color: rgba(var(--color-rgb), 1);
 }
 
+.m-tag.dot {
+    background: transparent;
+    border: 1px solid var(--mineral-border);
+    color: var(--mineral-text);
+}
+
+/* Not a `.m-tag` element on purpose: that rule would reset --color-rgb to primary. */
+.m-tag.dot > .marker {
+    flex-shrink: 0;
+    width: 0.5em;
+    height: 0.5em;
+    border-radius: 50%;
+    background: rgba(var(--color-rgb), 1);
+}
+
 .m-tag.icon {
     display: inline-flex;
     align-items: center;

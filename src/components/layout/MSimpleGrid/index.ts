@@ -1,2 +1,2 @@
 export {MSimpleGrid} from './MSimpleGrid'
-export type {MSimpleGridProps, MSimpleGridColumns} from './MSimpleGrid.types'
+export type {MSimpleGridProps, MSimpleGridColumns, MSimpleGridResponsiveColumns} from './MSimpleGrid.types'

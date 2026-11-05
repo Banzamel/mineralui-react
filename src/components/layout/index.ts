@@ -35,6 +35,7 @@ export {
     MSidebarGroup,
     MSidebarFooter,
     MSidebarDivider,
+    MSidebarToggle,
 } from './MSidebar'
 export type {
     MSidebarProps,
@@ -45,6 +46,7 @@ export type {
     MSidebarGroupProps,
     MSidebarFooterProps,
     MSidebarDividerProps,
+    MSidebarToggleProps,
     MSidebarMode,
 } from './MSidebar'
 export {MBreadcrumb} from './MBreadcrumb'

@@ -3,6 +3,12 @@
     --mineral-navbar-height: 72px;
     --mineral-sidebar-width: 240px;
     --mineral-sidebar-collapsed-width: 64px;
+    /* Floating mobile hamburger of MSidebar. Its top is --mineral-sidebar-hamburger-top, left unset
+       on purpose: unset means calc(var(--mineral-navbar-height) + var(--mineral-spacing-md)),
+       resolved on the button so local --mineral-navbar-height overrides keep working.
+       The offset is the space it takes at the screen edge (44px button + gap), for content that
+       must not slide under it (e.g. padding-inline-start on a mobile header). */
+    --mineral-sidebar-hamburger-offset: calc(44px + var(--mineral-spacing-sm));
     --mineral-content-max-width: 1120px;
     --mineral-breakpoint-sm: 640px;
     --mineral-breakpoint-md: 768px;

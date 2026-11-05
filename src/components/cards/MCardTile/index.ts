@@ -1,2 +1,9 @@
 export {MCardTile} from './MCardTile'
-export type {MCardTileProps, MCardTileMenuItem, MCardTileOverlayPosition} from './MCardTile.types'
+export type {
+    MCardTileProps,
+    MCardTileMenuItem,
+    MCardTileOverlayPosition,
+    MCardTileVariant,
+    MCardTileRatio,
+    MCardTileRibbon,
+} from './MCardTile.types'

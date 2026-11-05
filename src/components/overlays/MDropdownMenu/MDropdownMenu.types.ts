@@ -12,8 +12,14 @@ export interface MDropdownMenuProps {
      *  clickable parent (Link, MCard with component={Link}, MDataTable row,
      *  etc.) does not trigger the parent's navigation/click handler. */
     isolateClick?: boolean
+    /** Class on the outer `.dropdown.menu.anchor` wrapper. */
     className?: string
+    /** Style on the outer `.dropdown.menu.anchor` wrapper. */
     style?: CSSProperties
+    /** Class on the inner `.dropdown.menu.trigger` wrapper around `trigger` (since 2.7.0). */
+    triggerClassName?: string
+    /** Style on the inner `.dropdown.menu.trigger` wrapper around `trigger` (since 2.7.0). */
+    triggerStyle?: CSSProperties
     popoverClassName?: string
     popoverStyle?: CSSProperties
     children: ReactNode

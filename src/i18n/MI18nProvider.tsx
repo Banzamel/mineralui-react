@@ -16,6 +16,13 @@ const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffec
 
 type Dict = Record<string, unknown>
 
+// Replace `{name}` placeholders; a placeholder without a value is left untouched.
+function interpolate(text: string, vars: MI18nVars): string {
+    return text.replace(/\{(\w+)\}/g, (match, name: string) =>
+        Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : match
+    )
+}
+
 // Read the saved locale, but fall back cleanly in SSR or blocked storage.
 function readStored(fallback: string): string {
     try {
@@ -32,12 +39,24 @@ function getByPath(obj: unknown, path: string): unknown {
         .reduce<unknown>((cur, key) => (cur != null && typeof cur === 'object' ? (cur as Dict)[key] : undefined), obj)
 }
 
+/** Values interpolated into `{name}` placeholders by `t()` (since 2.7.0). */
+export type MI18nVars = Record<string, string | number>
+
+/**
+ * Translate a dot-path key.
+ *  - `t(key)` / `t(key, 'Fallback')` — as before: the fallback (or the key) when missing.
+ *  - `t(key, {name: 'Ada'})` — interpolates `{name}` in the resolved text.
+ *  - `t(key, 'Hi {name}', {name: 'Ada'})` — fallback and values together.
+ * Placeholders are replaced only when values are passed; unknown placeholders stay as-is.
+ */
+export type MI18nTranslate = (key: string, fallbackOrVars?: string | MI18nVars, vars?: MI18nVars) => string
+
 export interface MI18nContextValue<T extends Dict = Dict> {
     locale: string
     setLocale: (next: string) => void
     toggleLocale: () => void
     dict: T
-    t: (key: string, fallback?: string) => string
+    t: MI18nTranslate
 }
 
 const I18nContext = createContext<MI18nContextValue | null>(null)
@@ -102,19 +121,26 @@ export function MI18nProvider<T extends Dict = Dict>({
 
     const dict = (locales[locale] ?? locales[fallback] ?? {}) as T
 
-    const t = useCallback(
-        (key: string, fb?: string): string => {
-            const val = getByPath(dict, key)
-            if (typeof val === 'string') return val
+    const t = useCallback<MI18nTranslate>(
+        (key, fallbackOrVars, varsArg) => {
+            const fb = typeof fallbackOrVars === 'string' ? fallbackOrVars : undefined
+            const vars = fallbackOrVars != null && typeof fallbackOrVars === 'object' ? fallbackOrVars : varsArg
+            const resolve = (): string => {
+                const val = getByPath(dict, key)
+                if (typeof val === 'string') return val
 
-            const docsVal =
-                dict != null && typeof dict === 'object' && typeof (dict as Dict).docsTranslations === 'object'
-                    ? ((dict as Dict).docsTranslations as Dict)[key]
-                    : undefined
+                const docsVal =
+                    dict != null && typeof dict === 'object' && typeof (dict as Dict).docsTranslations === 'object'
+                        ? ((dict as Dict).docsTranslations as Dict)[key]
+                        : undefined
 
-            if (typeof docsVal === 'string') return docsVal
+                if (typeof docsVal === 'string') return docsVal
 
-            return fb ?? key
+                return fb ?? key
+            }
+
+            const text = resolve()
+            return vars ? interpolate(text, vars) : text
         },
         [dict]
     )

@@ -1,5 +1,5 @@
 export {MButton} from './MButton'
-export type {MButtonProps, MButtonVariant, MButtonShape} from './MButton'
+export type {MButtonProps, MButtonVariant, MButtonShape, MButtonIconPosition} from './MButton'
 export {MButtonGroup} from './MButtonGroup'
 export type {MButtonGroupProps, MButtonGroupOrientation} from './MButtonGroup'
 export {MCheckbox} from './MCheckbox'

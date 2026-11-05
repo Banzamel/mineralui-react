@@ -1,6 +1,6 @@
-import {useEffect, useRef} from 'react'
-import type {MouseEvent} from 'react'
-import type {MCardTileProps} from './MCardTile.types'
+import {isValidElement, useEffect, useRef} from 'react'
+import type {MouseEvent, ReactNode} from 'react'
+import type {MCardTileProps, MCardTileRibbon} from './MCardTile.types'
 import {cn} from '../../../utils/cn'
 import {useInteractionEffect} from '../../../utils/useInteractionEffect'
 import {MEllipsisVerticalIcon, MHeartFillIcon, MHeartIcon} from '../../../icons'
@@ -10,6 +10,10 @@ import {resolveMCardAction} from '../shared'
 import './MCardTile.css'
 import '../shared/MCardShared.css'
 import {useMCardTexts, useMCommonTexts} from '../../../i18n/frameworkTexts'
+
+function isRibbonDescriptor(ribbon: unknown): ribbon is MCardTileRibbon {
+    return ribbon != null && typeof ribbon === 'object' && !isValidElement(ribbon) && 'label' in ribbon
+}
 
 // Tile card: whole surface acts as a link/button, media can fill the card with text overlay.
 // Media can be an image URL, a video URL, an MIllustration element, or a live camera stream.
@@ -36,6 +40,10 @@ export function MCardTile({
     favorite,
     onFavorite,
     menuItems,
+    variant = 'default',
+    ratio,
+    badge,
+    ribbon,
     className,
     ...rest
 }: MCardTileProps) {
@@ -118,7 +126,10 @@ export function MCardTile({
         }
 
         return (
-            <div className={cn('tile-media', fillMedia && 'fill')}>
+            <div
+                className={cn('tile-media', fillMedia && 'fill')}
+                style={ratio ? {aspectRatio: ratio.replace(':', ' / ')} : undefined}
+            >
                 {image && <img src={image} alt={title} className="tile-image" />}
                 {video && (
                     <video src={video} className="tile-video" autoPlay muted loop playsInline aria-label={title} />
@@ -128,7 +139,32 @@ export function MCardTile({
                 )}
                 {illustration && <div className="tile-illustration">{illustration}</div>}
                 {fillMedia && <div className={cn('tile-scrim', `scrim-${overlayPosition}`)} />}
+                {renderDecorations()}
             </div>
+        )
+    }
+
+    // Ribbon + badge live inside the media frame (clipped by its radius), or on the card itself without media.
+    function renderDecorations(): ReactNode {
+        if (ribbon == null && badge == null) {
+            return null
+        }
+
+        const ribbonDescriptor = isRibbonDescriptor(ribbon) ? ribbon : null
+        const ribbonLabel = ribbonDescriptor ? ribbonDescriptor.label : ribbon
+        const badgeIsText = typeof badge === 'string' || typeof badge === 'number'
+
+        return (
+            <>
+                {ribbonLabel != null && ribbonLabel !== false && (
+                    <span className={cn('tile-ribbon', ribbonDescriptor?.color && `color-${ribbonDescriptor.color}`)}>
+                        {ribbonLabel as ReactNode}
+                    </span>
+                )}
+                {badge != null && badge !== false && (
+                    <span className={cn('tile-badge', badgeIsText && 'text')}>{badge}</span>
+                )}
+            </>
         )
     }
 
@@ -151,6 +187,7 @@ export function MCardTile({
             className={cn(
                 'card-tile',
                 `color-${color}`,
+                variant === 'media' && 'variant-media',
                 fillMedia && 'media-fill',
                 isInteractive && 'interactive',
                 effectClassName,
@@ -176,6 +213,7 @@ export function MCardTile({
             )}
 
             {renderMedia()}
+            {!hasMedia && renderDecorations()}
             {renderBody()}
 
             {hasActions && (

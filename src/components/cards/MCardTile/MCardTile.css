@@ -203,8 +203,112 @@
     color: #e74c3c;
 }
 
+/* Ribbon + badge (2.7.0, any variant). */
+.card-tile .tile-ribbon {
+    position: absolute;
+    top: 14px;
+    left: -36px;
+    z-index: 2;
+    width: 124px;
+    padding: 3px 0;
+    transform: rotate(-45deg);
+    background: rgba(var(--color-rgb), 1);
+    color: #fff;
+    font-size: var(--mineral-font-size-xs);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0.04em;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: var(--mineral-shadow-sm);
+    pointer-events: none;
+}
+
+.card-tile .tile-ribbon.color-light {
+    color: var(--mineral-dark-color);
+}
+
+.card-tile .tile-badge {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    pointer-events: none;
+}
+
+.card-tile .tile-badge.text {
+    padding: 2px 8px;
+    border-radius: var(--mineral-radius-full);
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: var(--mineral-font-size-xs);
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+/* variant="media" (2.7.0): no frame / padding; the media carries the card, caption below. */
+.card-tile.variant-media {
+    border: none;
+    border-radius: var(--mineral-radius-lg);
+    background: transparent;
+}
+
+.card-tile.variant-media .tile-media {
+    border-radius: var(--mineral-radius-lg);
+}
+
+.card-tile.variant-media .tile-media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 2px transparent;
+    transition: box-shadow var(--mineral-transition-fast);
+    pointer-events: none;
+}
+
+.card-tile.variant-media .tile-image,
+.card-tile.variant-media .tile-video {
+    transition: transform var(--mineral-transition-base);
+}
+
+.card-tile.variant-media .tile-body {
+    gap: var(--mineral-spacing-xs);
+    padding: var(--mineral-spacing-sm) 0 0;
+}
+
+.card-tile.variant-media.media-fill .tile-body.overlay {
+    padding: var(--mineral-spacing-lg);
+}
+
+.card-tile.variant-media.interactive:hover {
+    transform: none;
+}
+
+.card-tile.variant-media.interactive:hover .tile-media::after,
+.card-tile.variant-media.interactive:focus-within .tile-media::after {
+    box-shadow: inset 0 0 0 2px rgba(var(--color-rgb), 1);
+}
+
+.card-tile.variant-media.interactive:hover .tile-image,
+.card-tile.variant-media.interactive:hover .tile-video {
+    transform: scale(1.04);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .card-tile.interactive:hover {
+        transform: none;
+    }
+
+    .card-tile.variant-media.interactive:hover .tile-image,
+    .card-tile.variant-media.interactive:hover .tile-video {
         transform: none;
     }
 }

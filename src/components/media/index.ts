@@ -1,7 +1,7 @@
 export {MImage} from './MImage'
 export type {MImageProps, MImageFit, MImageRatio} from './MImage'
 export {MGallery} from './MGallery'
-export type {MGalleryProps, MGalleryItem, MGalleryColumns} from './MGallery'
+export type {MGalleryProps, MGalleryItem, MGalleryColumns, MGalleryRatio, MGalleryFit} from './MGallery'
 export type {MMediaHoverEffect} from './mediaInteraction'
 export {MCarousel} from './MCarousel'
 export type {MCarouselProps, MCarouselTransition} from './MCarousel'

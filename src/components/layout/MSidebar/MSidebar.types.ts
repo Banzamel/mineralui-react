@@ -1,5 +1,6 @@
 import type {ReactNode, ElementType, CSSProperties} from 'react'
 import type {MColor} from '../../../theme'
+import type {MButtonProps} from '../../controls'
 
 export type MSidebarMode = 'expanded' | 'collapsed'
 
@@ -11,11 +12,27 @@ export interface MSidebarProps {
     side?: 'left' | 'right'
     tone?: 'default' | 'subtle' | 'surface' | 'inverse'
     bordered?: boolean
+    /**
+     * Mobile drawer trigger. `'floating'` (default) renders the fixed hamburger tab at the
+     * screen edge (top: `--mineral-sidebar-hamburger-top`). `'none'` renders no trigger —
+     * place an `MSidebarToggle` in your MNavbar / header instead.
+     */
+    hamburger?: 'floating' | 'none'
     mobileBreakpoint?: number
     compactBreakpoint?: number
     className?: string
     style?: CSSProperties
     children: ReactNode
+}
+
+export interface MSidebarToggleProps extends Omit<MButtonProps, 'iconOnly'> {
+    /**
+     * Which sidebar to open. Defaults to the first mounted left sidebar, otherwise the first
+     * mounted one.
+     */
+    side?: 'left' | 'right'
+    /** Custom icon; defaults to the menu (hamburger) icon. */
+    children?: ReactNode
 }
 
 export interface MSidebarHeaderProps {

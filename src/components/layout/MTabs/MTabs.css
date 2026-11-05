@@ -1,6 +1,12 @@
 .tabs {
     display: grid;
     gap: var(--mineral-spacing-md);
+    min-width: 0;
+}
+
+/* One shrinkable track: a long tab strip scrolls inside .tabs-list instead of widening the page. */
+.tabs.horizontal {
+    grid-template-columns: minmax(0, 1fr);
 }
 
 .tabs.horizontal .tabs-list {
