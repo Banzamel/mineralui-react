@@ -654,6 +654,8 @@ export interface MTimelineBoardTexts {
     /** Announced after a keyboard drop. Placeholders: `{title}`, `{row}`, `{when}`. */
     moved: string
     moveCancelled: string
+    /** Accessible name of the event details popover (dialog). */
+    eventDetails: string
 }
 
 /**
@@ -686,6 +688,7 @@ export function useMTimelineBoardTexts(): MTimelineBoardTexts {
             movePosition: t('mineralui.timelineBoard.movePosition', '{title}: {row}, {when}'),
             moved: t('mineralui.timelineBoard.moved', '{title} moved to {row}, {when}'),
             moveCancelled: t('mineralui.timelineBoard.moveCancelled', 'Move cancelled'),
+            eventDetails: t('mineralui.timelineBoard.eventDetails', 'Event details'),
         }),
         [t]
     )

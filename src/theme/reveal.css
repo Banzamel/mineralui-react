@@ -12,5 +12,7 @@
 
 .reveal.revealed {
     opacity: 1;
-    transform: translate(0, 0);
+    /* `none` (not translate(0, 0)) so a settled reveal is not a containing block for position: fixed descendants;
+       transitions interpolate translate() <-> none smoothly, so the animation is unchanged */
+    transform: none;
 }

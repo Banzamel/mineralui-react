@@ -79,7 +79,9 @@
     left: 0;
 }
 
-.sidebar.mobile-open {
+/* `.mobile.mobile-open` (3 classes) must outrank `.mobile.right` (3 classes) — declared after it, so it wins */
+.sidebar.mobile-open,
+.sidebar.mobile.mobile-open {
     transform: translateX(0);
 }
 
