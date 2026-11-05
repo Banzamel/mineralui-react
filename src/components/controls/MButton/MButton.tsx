@@ -87,7 +87,8 @@ export const MButton = forwardRef<HTMLElement, MButtonProps>(function MButton(
             className={cn(
                 'button',
                 variant,
-                size,
+                // '2xl' is not a valid bare CSS class token start, so it maps to `xxl`.
+                size === '2xl' ? 'xxl' : size,
                 `color-${color}`,
                 fullWidth && 'full-width',
                 rounded && 'rounded',

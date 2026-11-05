@@ -3,6 +3,8 @@ import type {MColor} from '../../../theme'
 import type {MButtonProps} from '../../controls'
 
 export type MSidebarMode = 'expanded' | 'collapsed'
+/** How the active row is marked: `'background'` (tinted row, default) or `'bar'` (2.8.0). */
+export type MSidebarIndicator = 'background' | 'bar'
 
 export interface MSidebarProps {
     mode?: 'expanded' | 'collapsed' | 'auto'
@@ -12,6 +14,13 @@ export interface MSidebarProps {
     side?: 'left' | 'right'
     tone?: 'default' | 'subtle' | 'surface' | 'inverse'
     bordered?: boolean
+    /**
+     * Active-row marker. `'background'` (default) keeps the tinted row. `'bar'` (2.8.0) adds a
+     * 4px accent bar on the row edge that faces the screen edge (left for `side="left"`, right
+     * for `side="right"`) — the launcher / icon-rail look. Row size and icon size can be tuned
+     * with `--mineral-sidebar-item-size` / `--mineral-sidebar-icon-size` (unset = today's sizes).
+     */
+    indicator?: MSidebarIndicator
     /**
      * Mobile drawer trigger. `'floating'` (default) renders the fixed hamburger tab at the
      * screen edge (top: `--mineral-sidebar-hamburger-top`). `'none'` renders no trigger —

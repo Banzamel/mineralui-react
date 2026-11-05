@@ -1,0 +1,92 @@
+/* MFloatingPanel (2.8.0) — non-modal panel floating over a scene. */
+.floating-panel {
+    position: absolute;
+    top: var(--floating-panel-offset);
+    z-index: var(--mineral-floating-panel-z, 20);
+    display: flex;
+    flex-direction: column;
+    width: min(var(--floating-panel-width), calc(100% - 2 * var(--floating-panel-offset)));
+    max-height: calc(100% - 2 * var(--floating-panel-offset));
+    border: 1px solid var(--mineral-border);
+    border-radius: var(--mineral-radius-lg);
+    background: var(--mineral-surface);
+    box-shadow: var(--mineral-shadow-lg);
+    color: var(--mineral-text);
+    overflow: hidden;
+}
+
+.floating-panel.fixed {
+    position: fixed;
+    width: min(var(--floating-panel-width), calc(100vw - 2 * var(--floating-panel-offset)));
+    max-height: calc(100vh - 2 * var(--floating-panel-offset));
+}
+
+.floating-panel.left {
+    left: var(--floating-panel-offset);
+}
+
+.floating-panel.right {
+    right: var(--floating-panel-offset);
+}
+
+.floating-panel.blurred {
+    background: color-mix(in srgb, var(--mineral-surface) 78%, transparent);
+    backdrop-filter: blur(var(--floating-panel-blur));
+    -webkit-backdrop-filter: blur(var(--floating-panel-blur));
+}
+
+.floating-panel.collapsed {
+    width: auto;
+}
+
+.floating-panel-header {
+    display: flex;
+    align-items: center;
+    gap: var(--mineral-spacing-sm);
+    padding: var(--mineral-spacing-sm) var(--mineral-spacing-sm) var(--mineral-spacing-sm) var(--mineral-spacing-md);
+    flex-shrink: 0;
+}
+
+.floating-panel.collapsed .floating-panel-header {
+    padding: var(--mineral-spacing-xs);
+}
+
+.floating-panel-title {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.floating-panel-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mineral-spacing-xs);
+}
+
+.floating-panel-toggle {
+    margin-left: auto;
+}
+
+/* The toggle sits on the edge the panel hides towards. */
+.floating-panel.right .floating-panel-toggle {
+    order: -1;
+    margin-left: 0;
+}
+
+.floating-panel-content {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: var(--mineral-spacing-md);
+}
+
+.floating-panel-header + .floating-panel-content {
+    padding-top: 0;
+}
+
+.floating-panel-content[hidden] {
+    display: none;
+}

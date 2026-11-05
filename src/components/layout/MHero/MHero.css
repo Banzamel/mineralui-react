@@ -1,0 +1,145 @@
+/* MHero (2.8.0) — all rules are scoped to .mineral-hero; nothing global. */
+.mineral-hero {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: var(--hero-min-height);
+    padding: var(--mineral-spacing-2xl, 48px) var(--mineral-spacing-xl, 32px);
+    border-radius: var(--mineral-radius-lg);
+    overflow: hidden;
+    color: var(--mineral-text);
+}
+
+.mineral-hero.align-start {
+    justify-content: flex-start;
+}
+
+.mineral-hero.align-end {
+    justify-content: flex-end;
+}
+
+.mineral-hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: var(--mineral-spacing-md);
+    max-width: 640px;
+}
+
+/* Gradient (no image, or tilt) */
+.mineral-hero.gradient {
+    background-color: var(--mineral-surface);
+    background-image: var(
+        --mineral-hero-gradient,
+        radial-gradient(120% 90% at 0% 0%, rgba(var(--color-rgb), 0.28) 0%, transparent 60%),
+        radial-gradient(90% 80% at 100% 100%, rgba(var(--color-rgb), 0.16) 0%, transparent 65%)
+    );
+    border: 1px solid var(--mineral-border);
+}
+
+/* Full-bleed background image */
+.mineral-hero.background {
+    background: var(--mineral-dark);
+    color: rgba(255, 255, 255, 1);
+}
+
+.mineral-hero-media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.mineral-hero-media > img,
+.mineral-hero-media > .mineral-hero-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mineral-hero.fit-contain .mineral-hero-media > img,
+.mineral-hero.fit-contain .mineral-hero-media > .mineral-hero-image {
+    object-fit: contain;
+}
+
+/* Scrims */
+.mineral-hero[class*='scrim-']::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.mineral-hero.scrim-left::before {
+    background: linear-gradient(90deg, rgba(2, 6, 23, 0.78) 0%, rgba(2, 6, 23, 0.35) 55%, transparent 100%);
+}
+
+.mineral-hero.scrim-bottom::before {
+    background: linear-gradient(0deg, rgba(2, 6, 23, 0.82) 0%, rgba(2, 6, 23, 0.3) 50%, transparent 100%);
+}
+
+.mineral-hero.scrim-both::before {
+    background:
+        linear-gradient(90deg, rgba(2, 6, 23, 0.7) 0%, transparent 70%),
+        linear-gradient(0deg, rgba(2, 6, 23, 0.7) 0%, transparent 60%);
+}
+
+/* Tilted screenshot */
+.mineral-hero.tilt {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: var(--mineral-spacing-xl, 32px);
+}
+
+.mineral-hero.tilt.align-start {
+    align-items: start;
+}
+
+.mineral-hero.tilt.align-end {
+    align-items: end;
+}
+
+.mineral-hero-shot {
+    position: relative;
+    z-index: 2;
+    perspective: 1600px;
+    min-width: 0;
+}
+
+.mineral-hero-shot-frame {
+    transform: rotateY(-14deg) rotateX(6deg) rotateZ(1deg);
+    transform-origin: left center;
+    border: 1px solid var(--mineral-border);
+    border-radius: var(--mineral-radius-lg);
+    overflow: hidden;
+    box-shadow:
+        0 30px 60px rgba(2, 6, 23, 0.28),
+        0 0 0 1px rgba(var(--color-rgb), 0.12);
+    background: var(--mineral-surface);
+}
+
+.mineral-hero-shot-frame > img,
+.mineral-hero-shot-frame > .mineral-hero-image {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+@media (max-width: 768px) {
+    .mineral-hero {
+        padding: var(--mineral-spacing-xl, 32px) var(--mineral-spacing-lg);
+    }
+
+    .mineral-hero.tilt {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .mineral-hero-shot-frame {
+        transform: none;
+    }
+}

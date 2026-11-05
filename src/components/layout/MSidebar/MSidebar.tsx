@@ -58,6 +58,7 @@ export function MSidebar({
     side = 'left',
     tone = 'subtle',
     bordered = true,
+    indicator = 'background',
     hamburger = 'floating',
     mobileBreakpoint = MShellBreakpoints.mobile,
     compactBreakpoint = MShellBreakpoints.compact,
@@ -160,6 +161,7 @@ export function MSidebar({
         isCollapsed && 'collapsed',
         compact && 'compact',
         bordered && 'bordered',
+        indicator === 'bar' && 'indicator-bar',
         mobile && 'mobile',
         mobile && mobileOpen && 'mobile-open',
         className

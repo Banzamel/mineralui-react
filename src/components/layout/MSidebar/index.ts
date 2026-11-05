@@ -20,4 +20,5 @@ export type {
     MSidebarDividerProps,
     MSidebarToggleProps,
     MSidebarMode,
+    MSidebarIndicator,
 } from './MSidebar.types'

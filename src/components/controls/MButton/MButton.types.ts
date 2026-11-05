@@ -2,7 +2,16 @@ import type {ButtonHTMLAttributes, CSSProperties, ElementType, ReactNode} from '
 import type {MColor, MHiddenProps, MSize} from '../../../theme'
 import type {MClickEffect} from '../../../utils/useInteractionEffect'
 
-export type MButtonVariant = 'filled' | 'secondary' | 'outlined' | 'ghost' | 'link' | 'icon'
+/**
+ * `'gradient'` (2.8.0) is a hero CTA fill: `--mineral-button-gradient` when set, otherwise a
+ * gradient from the button colour towards the news accent. Every other variant is unchanged.
+ */
+export type MButtonVariant = 'filled' | 'secondary' | 'outlined' | 'ghost' | 'link' | 'icon' | 'gradient'
+/**
+ * Button-only size scale. `'2xl'` (2.8.0) is a large landing-page CTA; the shared `MSize`
+ * used by every other component is intentionally not widened.
+ */
+export type MButtonSize = MSize | '2xl'
 export type MButtonShape = 'default' | 'circle'
 /** Where `startIcon` sits: `'start'` (inline, before the label) or `'top'` (stacked above it). */
 export type MButtonIconPosition = 'start' | 'top'
@@ -14,7 +23,7 @@ export interface MButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElemen
     target?: string
     rel?: string
     variant?: MButtonVariant
-    size?: MSize
+    size?: MButtonSize
     color?: MColor
     fullWidth?: boolean
     rounded?: boolean

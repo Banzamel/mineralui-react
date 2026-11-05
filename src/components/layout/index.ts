@@ -12,6 +12,8 @@ export {MTabs} from './MTabs'
 export type {MTabsProps, MTabsItem, MTabsVariant, MTabsSize} from './MTabs'
 export {MSection} from './MSection'
 export type {MSectionProps, MSectionSpacing, MSectionTone} from './MSection'
+export {MHero} from './MHero'
+export type {MHeroProps, MHeroImageFit, MHeroScrim, MHeroAlign} from './MHero'
 export {MStack} from './MStack'
 export type {MStackProps, MStackAlign} from './MStack'
 export {MInline} from './MInline'
@@ -48,6 +50,7 @@ export type {
     MSidebarDividerProps,
     MSidebarToggleProps,
     MSidebarMode,
+    MSidebarIndicator,
 } from './MSidebar'
 export {MBreadcrumb} from './MBreadcrumb'
 export type {MBreadcrumbProps, MBreadcrumbItem} from './MBreadcrumb'
@@ -59,3 +62,5 @@ export {MCanvasGrid} from './MCanvasGrid'
 export type {MCanvasGridProps, MCanvasGridItem, MCanvasGridPosition, MCanvasGridGuides} from './MCanvasGrid'
 export {MStickyPanel} from './MStickyPanel'
 export type {MStickyPanelProps} from './MStickyPanel'
+export {MFloatingPanel} from './MFloatingPanel'
+export type {MFloatingPanelProps, MFloatingPanelSide, MFloatingPanelPosition} from './MFloatingPanel'

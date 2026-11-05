@@ -1663,3 +1663,46 @@ export function useMCommandPaletteTexts(): MCommandPaletteTexts {
         [t]
     )
 }
+
+export interface MLanguageSwitchTexts {
+    /** Accessible name of the switch (radiogroup / menu). */
+    label: string
+    /** Accessible name of the single-button variant. Placeholder: `{language}` (current language). */
+    change: string
+}
+
+/** MLanguageSwitch texts. Resolution per key: `mineralui.languageSwitch.<key>` → built-in English default. */
+export function useMLanguageSwitchTexts(): MLanguageSwitchTexts {
+    const t = useTranslate()
+
+    return useMemo(
+        () => ({
+            label: t('mineralui.languageSwitch.label', 'Language'),
+            change: t('mineralui.languageSwitch.change', 'Change language (current: {language})'),
+        }),
+        [t]
+    )
+}
+
+export interface MFloatingPanelTexts {
+    /** Toggle name while the panel is open. */
+    collapse: string
+    /** Toggle name while the panel is collapsed. */
+    expand: string
+    /** Accessible name of the panel region when neither `title` (string) nor `aria-label` is set. */
+    label: string
+}
+
+/** MFloatingPanel texts. Resolution per key: `mineralui.floatingPanel.<key>` → built-in English default. */
+export function useMFloatingPanelTexts(): MFloatingPanelTexts {
+    const t = useTranslate()
+
+    return useMemo(
+        () => ({
+            collapse: t('mineralui.floatingPanel.collapse', 'Hide panel'),
+            expand: t('mineralui.floatingPanel.expand', 'Show panel'),
+            label: t('mineralui.floatingPanel.label', 'Panel'),
+        }),
+        [t]
+    )
+}

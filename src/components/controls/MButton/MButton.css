@@ -89,6 +89,13 @@
     font-size: var(--mineral-font-size-lg);
 }
 
+.button.xxl {
+    min-height: 64px;
+    padding: 0 32px;
+    font-size: var(--mineral-font-size-xl);
+    border-radius: var(--mineral-radius-lg);
+}
+
 .button.full-width {
     width: 100%;
 }
@@ -128,6 +135,11 @@
     padding: 0;
 }
 
+.button.icon-only.xxl {
+    width: 64px;
+    padding: 0;
+}
+
 /* iconPosition="top" (2.7.0): startIcon stacked above the label; height follows the content. */
 .button.icon-top {
     flex-direction: column;
@@ -157,6 +169,27 @@
     background: rgba(var(--color-rgb), 0.88);
     border-color: rgba(var(--color-rgb), 0.88);
     box-shadow: var(--mineral-control-shadow);
+}
+
+/*
+ * variant="gradient" (2.8.0): opt-in CTA fill. `--mineral-button-gradient` overrides the
+ * background, `--mineral-button-glow` adds an optional halo (no glow unless set).
+ */
+.button.gradient {
+    background-color: rgba(var(--color-rgb), 1);
+    background-image: var(
+        --mineral-button-gradient,
+        linear-gradient(135deg, rgba(var(--color-rgb), 1) 0%, rgba(var(--mineral-news-rgb), 1) 100%)
+    );
+    border-color: transparent;
+    color: rgba(255, 255, 255, 1);
+    box-shadow: var(--mineral-button-glow, none);
+    --click-effect-color: rgba(255, 255, 255, 0.28);
+}
+
+.button.gradient:hover:not(.disabled) {
+    filter: brightness(1.06);
+    box-shadow: var(--mineral-button-glow, var(--mineral-control-shadow));
 }
 
 .button.secondary {

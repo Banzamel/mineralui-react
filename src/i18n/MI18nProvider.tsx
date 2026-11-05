@@ -53,6 +53,8 @@ export type MI18nTranslate = (key: string, fallbackOrVars?: string | MI18nVars, 
 
 export interface MI18nContextValue<T extends Dict = Dict> {
     locale: string
+    /** Keys of the provider's `locales` map, in declaration order (since 2.8.0). */
+    availableLocales: string[]
     setLocale: (next: string) => void
     toggleLocale: () => void
     dict: T
@@ -148,12 +150,13 @@ export function MI18nProvider<T extends Dict = Dict>({
     const ctx = useMemo<MI18nContextValue<T>>(
         () => ({
             locale,
+            availableLocales: keys,
             setLocale,
             toggleLocale,
             dict,
             t,
         }),
-        [locale, setLocale, toggleLocale, dict, t]
+        [locale, keys, setLocale, toggleLocale, dict, t]
     )
 
     return <I18nContext.Provider value={ctx as MI18nContextValue}>{children}</I18nContext.Provider>
