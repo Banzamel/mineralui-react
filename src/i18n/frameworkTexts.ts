@@ -656,6 +656,8 @@ export interface MTimelineBoardTexts {
     moveCancelled: string
     /** Accessible name of the event details popover (dialog). */
     eventDetails: string
+    /** Accessible name of the event actions menu button in the details popover (since 2.8.2). */
+    eventActions: string
 }
 
 /**
@@ -689,6 +691,7 @@ export function useMTimelineBoardTexts(): MTimelineBoardTexts {
             moved: t('mineralui.timelineBoard.moved', '{title} moved to {row}, {when}'),
             moveCancelled: t('mineralui.timelineBoard.moveCancelled', 'Move cancelled'),
             eventDetails: t('mineralui.timelineBoard.eventDetails', 'Event details'),
+            eventActions: t('mineralui.timelineBoard.eventActions', 'Event actions'),
         }),
         [t]
     )
