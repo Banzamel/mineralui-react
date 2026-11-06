@@ -12,7 +12,7 @@ export function MSurface({
     target,
     rel,
     tone = 'default',
-    outlined = true,
+    outlined = tone !== 'brand',
     padded = true,
     hidden,
     hiddenAbove,

@@ -192,8 +192,10 @@
     overflow: hidden;
 }
 
+/* 2.9.2: --mineral-sidebar-item-hover-bg (takes a gradient) and -text cover every row, tone by tone. */
 .sidebar-item:hover {
-    background: rgba(var(--mineral-primary-rgb), 0.1);
+    background: var(--mineral-sidebar-item-hover-bg, rgba(var(--mineral-primary-rgb), 0.1));
+    color: var(--mineral-sidebar-item-hover-text, inherit);
     opacity: 1;
 }
 
@@ -302,7 +304,7 @@
 }
 
 .sidebar-nav > .sidebar-item:hover {
-    color: var(--mineral-sidebar-text, var(--mineral-text));
+    color: var(--mineral-sidebar-item-hover-text, var(--mineral-sidebar-text, var(--mineral-text)));
 }
 
 .sidebar-nav > .sidebar-item.active {
@@ -334,7 +336,8 @@
 }
 
 .sidebar-group-header:hover {
-    color: var(--mineral-sidebar-text, var(--mineral-text));
+    background: var(--mineral-sidebar-item-hover-bg, none);
+    color: var(--mineral-sidebar-item-hover-text, var(--mineral-sidebar-text, var(--mineral-text)));
 }
 
 .sidebar-group-header.active {
@@ -373,8 +376,8 @@
 }
 
 .sidebar-group-icon.collapsed:hover {
-    background: rgba(var(--mineral-primary-rgb), 0.1);
-    color: var(--mineral-sidebar-text, var(--mineral-text));
+    background: var(--mineral-sidebar-item-hover-bg, rgba(var(--mineral-primary-rgb), 0.1));
+    color: var(--mineral-sidebar-item-hover-text, var(--mineral-sidebar-text, var(--mineral-text)));
 }
 
 .sidebar-group-label {
@@ -536,8 +539,8 @@
 }
 
 .sidebar-group-icon.collapsed.open {
-    background: rgba(var(--mineral-primary-rgb), 0.1);
-    color: var(--mineral-sidebar-text, var(--mineral-text));
+    background: var(--mineral-sidebar-item-hover-bg, rgba(var(--mineral-primary-rgb), 0.1));
+    color: var(--mineral-sidebar-item-hover-text, var(--mineral-sidebar-text, var(--mineral-text)));
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -15,3 +15,8 @@ export interface MCardProps
 export interface MCardSectionProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode
 }
+
+export interface MCardHeaderProps extends MCardSectionProps {
+    /** Trailing slot: lays the header out as a row, with the children left and this on the right */
+    action?: ReactNode
+}

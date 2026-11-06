@@ -1,4 +1,6 @@
 .tabs {
+    /* 2.9.2: --mineral-tabs-accent-rgb. Unset, this helper is invalid and each reader falls back to primary. */
+    --tabs-accent: rgba(var(--mineral-tabs-accent-rgb), 1);
     display: grid;
     gap: var(--mineral-spacing-md);
     min-width: 0;
@@ -44,7 +46,7 @@
 }
 
 .tabs .tabs-trigger {
-    --click-effect-color: rgba(var(--mineral-primary-rgb), 0.18);
+    --click-effect-color: rgba(var(--mineral-tabs-accent-rgb, var(--mineral-primary-rgb)), 0.18);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -76,7 +78,7 @@
 .tabs .tabs-trigger:hover,
 .tabs .tabs-trigger:focus-visible,
 .tabs .tabs-trigger.active {
-    color: var(--mineral-primary);
+    color: var(--tabs-accent, var(--mineral-primary));
 }
 
 .tabs.underline.horizontal .tabs-trigger {
@@ -85,7 +87,7 @@
 }
 
 .tabs.underline.horizontal .tabs-trigger.active {
-    border-bottom-color: var(--mineral-primary);
+    border-bottom-color: var(--tabs-accent, var(--mineral-primary));
 }
 
 .tabs.underline.vertical .tabs-trigger {
@@ -93,8 +95,8 @@
 }
 
 .tabs.underline.vertical .tabs-trigger.active {
-    border-left-color: var(--mineral-primary);
-    background: rgba(var(--mineral-primary-rgb), 0.08);
+    border-left-color: var(--tabs-accent, var(--mineral-primary));
+    background: rgba(var(--mineral-tabs-accent-rgb, var(--mineral-primary-rgb)), 0.08);
 }
 
 .tabs.pills .tabs-list {
@@ -113,8 +115,8 @@
 }
 
 .tabs.pills .tabs-trigger.active {
-    background: rgba(var(--mineral-primary-rgb), 0.1);
-    border-color: rgba(var(--mineral-primary-rgb), 0.32);
+    background: rgba(var(--mineral-tabs-accent-rgb, var(--mineral-primary-rgb)), 0.1);
+    border-color: rgba(var(--mineral-tabs-accent-rgb, var(--mineral-primary-rgb)), 0.32);
 }
 
 .tabs.xs .tabs-trigger {
@@ -187,7 +189,7 @@
     }
 
     .tabs.underline.vertical .tabs-trigger.active {
-        border-bottom-color: var(--mineral-primary);
+        border-bottom-color: var(--tabs-accent, var(--mineral-primary));
         background: transparent;
     }
 }

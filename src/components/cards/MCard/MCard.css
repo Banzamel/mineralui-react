@@ -64,6 +64,26 @@
     font-weight: 500;
 }
 
+/* 2.9.2: `action` on MCardHeader; without the prop the header stays a plain block. */
+.header.has-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--mineral-spacing-sm);
+}
+
+.header.has-action > .header-content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.header.has-action > .header-action {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: var(--mineral-spacing-xs);
+}
+
 .card > .body {
     display: flex;
     flex: 1 1 auto;

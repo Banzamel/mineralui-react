@@ -1,4 +1,4 @@
-import type {MCardProps, MCardSectionProps} from './MCard.types'
+import type {MCardHeaderProps, MCardProps, MCardSectionProps} from './MCard.types'
 import {cn} from '../../../utils/cn'
 import {useInteractionEffect} from '../../../utils/useInteractionEffect'
 import {MSurface} from '../../layout'
@@ -98,10 +98,17 @@ export function MCard({
 }
 
 // Render the top section of a card.
-export function MCardHeader({className, children, ...rest}: MCardSectionProps) {
+export function MCardHeader({action, className, children, ...rest}: MCardHeaderProps) {
     return (
-        <div className={cn('header', className)} {...rest}>
-            {children}
+        <div className={cn('header', Boolean(action) && 'has-action', className)} {...rest}>
+            {action ? (
+                <>
+                    <div className="header-content">{children}</div>
+                    <div className="header-action">{action}</div>
+                </>
+            ) : (
+                children
+            )}
         </div>
     )
 }

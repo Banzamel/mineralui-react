@@ -96,6 +96,15 @@ button.surface {
         0 0 0 calc(var(--mineral-focus-ring-offset) + var(--mineral-focus-ring-width)) var(--mineral-focus-ring-color);
     --mineral-stat-icon-bg: rgba(var(--surface-brand-on-rgb), 0.18);
     --mineral-stat-icon-color: rgba(var(--surface-brand-on-rgb), 1);
+    /* 2.9.2: field and option fills, or a light theme keeps white fields under the on-colour text. */
+    --mineral-neutral-rgb: var(--surface-brand-on-rgb);
+    --mineral-input-bg: rgba(var(--surface-brand-on-rgb), 0.14);
+    --mineral-option-hover-bg: rgba(var(--surface-brand-on-rgb), 0.12);
+    --mineral-option-selected-bg: rgba(var(--surface-brand-on-rgb), 0.2);
+    --mineral-option-active-bg: rgba(var(--surface-brand-on-rgb), 0.28);
+    /* Unset token: this helper is invalid and the hover rule falls back to the on-colour fill. */
+    --surface-brand-action-hover-bg:
+        linear-gradient(color-mix(in srgb, currentColor 12%, transparent) 0 0), var(--mineral-surface-brand-action-bg);
     background: var(--mineral-surface-brand-bg, rgba(var(--surface-brand-rgb), 1));
 }
 
@@ -103,9 +112,22 @@ button.surface {
     --color-rgb: var(--surface-brand-on-rgb);
 }
 
+/*
+ * 2.9.2: --mineral-surface-brand-action-bg (takes a gradient) and -text set the main action per theme.
+ * The fill reaches under a transparent border, because a border colour cannot follow a gradient.
+ */
 .surface.brand .button.filled {
     --click-effect-color: rgba(var(--surface-brand-rgb), 0.28);
-    color: rgba(var(--surface-brand-rgb), 1);
+    background: var(--mineral-surface-brand-action-bg, var(--mineral-gleam-gradient) rgba(var(--color-rgb), 1));
+    background-origin: border-box;
+    border-color: transparent;
+    color: var(--mineral-surface-brand-action-text, rgba(var(--surface-brand-rgb), 1));
+}
+
+.surface.brand .button.filled:hover:not(.disabled) {
+    background: var(--surface-brand-action-hover-bg, rgba(var(--color-rgb), 0.88));
+    background-origin: border-box;
+    border-color: transparent;
 }
 
 .surface.brand .button.secondary {
@@ -116,8 +138,13 @@ button.surface {
     background: rgba(var(--surface-brand-on-rgb), 0.2);
 }
 
+/*
+ * 2.9.2: outranks `.badge.color-*` by specificity, so the file order does not matter, and it stops the
+ * badge reading the global --mineral-badge-text-* tokens, which are picked for the page, not this fill.
+ */
 .surface.brand .badge {
-    color: var(--badge-text, rgba(var(--surface-brand-on-rgb), 1));
+    --badge-text: rgba(var(--surface-brand-on-rgb), 1);
+    color: var(--badge-text);
 }
 
 .surface.brand .avatar {
@@ -126,6 +153,68 @@ button.surface {
 
 .surface.brand svg {
     color: inherit;
+}
+
+/*
+ * 2.9.2: form fields. Popovers are portaled out of this scope and keep the theme; only the `inline`
+ * calendars render here, so their selected day gets the fill back as its text. Field colours would
+ * otherwise be the brand colour on itself: focus rings, labels, icons, ticks.
+ */
+.surface.brand
+    :is(
+        .input,
+        .input-group,
+        .textarea,
+        .select,
+        .autocomplete,
+        .date-picker,
+        .date-range-picker,
+        .time.picker,
+        .otp.input,
+        .file.input,
+        .credit-card.input,
+        .slider,
+        .checkbox .box,
+        .radio .circle,
+        .toggle .track
+    ) {
+    --color-rgb: var(--surface-brand-on-rgb);
+}
+
+.surface.brand .field-filled,
+.surface.brand .input-group .container.field-filled,
+.surface.brand .select .trigger.field-outlined.focused {
+    background: var(--mineral-input-bg);
+}
+
+.surface.brand .date-picker .day.selected,
+.surface.brand .date-range-calendar .day.range-start,
+.surface.brand .date-range-calendar .day.range-end,
+.surface.brand .date-range-calendar .day.selected {
+    color: rgba(var(--surface-brand-rgb), 1) !important;
+}
+
+.surface.brand .date-picker .date-picker-time-column-item.selected {
+    color: rgba(var(--surface-brand-rgb), 1);
+}
+
+/* Native option lists are painted opaque by the browser, so a translucent fill would land on white. */
+.surface.brand .country-select option {
+    background: rgba(var(--surface-brand-rgb), 1);
+}
+
+/* White ticks and knobs are drawn for a coloured fill; here the fill is the on-colour. */
+.surface.brand .checkbox .box > .check-mark,
+.surface.brand .checkbox .box.color-light .check-mark {
+    border-color: rgba(var(--surface-brand-rgb), 1);
+}
+
+.surface.brand .checkbox .indeterminate-mark {
+    background: rgba(var(--surface-brand-rgb), 1);
+}
+
+.surface.brand .toggle .track:has(.input:checked) .knob {
+    background: rgba(var(--surface-brand-rgb), 1);
 }
 
 /* A nested surface keeps its shape but not its light-theme white, which would hide the on-colour text. */

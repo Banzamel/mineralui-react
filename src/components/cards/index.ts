@@ -1,7 +1,7 @@
 export type {MCardActionProps} from './shared'
 export {resolveMCardAction} from './shared'
 export {MCard, MCardHeader, MCardBody, MCardFooter} from './MCard'
-export type {MCardProps} from './MCard'
+export type {MCardHeaderProps, MCardProps} from './MCard'
 export {MCardActionArea} from './MCardActionArea'
 export type {MCardActionAreaProps} from './MCardActionArea'
 export {MCardPayment} from './MCardPayment'
@@ -30,7 +30,13 @@ export type {MCardWidgetProps, MCardWidgetTrendType} from './MCardWidget'
 export {MCardStat} from './MStatCard'
 export type {MCardStatProps, MCardStatTrendType} from './MStatCard'
 export {MCardGrid} from './MCardGrid'
-export type {MCardGridProps, MCardGridFilterKey, MCardGridSortKey, MCardGridSort, MCardGridResponsiveColumns} from './MCardGrid'
+export type {
+    MCardGridProps,
+    MCardGridFilterKey,
+    MCardGridSortKey,
+    MCardGridSort,
+    MCardGridResponsiveColumns,
+} from './MCardGrid'
 export {MCardDaySchedule} from './MCardDaySchedule'
 export type {
     MCardDayScheduleProps,

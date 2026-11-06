@@ -106,7 +106,11 @@
     overflow-x: auto;
     border: 1px solid var(--mineral-border);
     border-radius: var(--mineral-radius-lg);
-    background: color-mix(in srgb, var(--mineral-surface) 88%, var(--mineral-dark-light) 12%);
+    /* 2.9.2: shorthand, so --mineral-table-body-bg may be a gradient. */
+    background: var(
+        --mineral-table-body-bg,
+        color-mix(in srgb, var(--mineral-surface) 88%, var(--mineral-dark-light) 12%)
+    );
 }
 
 /* Loading scrim: sits over the table body so the previous rows stay visible
@@ -248,7 +252,7 @@
 
 .theme-light .data-table:not(:where(.theme-dark, .theme-dark *)) .scroll,
 :where(.theme-dark) .theme-light .data-table .scroll {
-    background: rgba(255, 255, 255, 0.98);
+    background: var(--mineral-table-body-bg, rgba(255, 255, 255, 0.98));
 }
 
 .theme-light .data-table:not(:where(.theme-dark, .theme-dark *)) .head,
