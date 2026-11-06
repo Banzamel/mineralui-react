@@ -3,6 +3,7 @@
     --click-effect-color: rgba(var(--color-rgb), 0.16);
     --card-body-bg: color-mix(in srgb, var(--mineral-surface) 92%, white 8%);
     --card-chrome-bg: color-mix(in srgb, var(--mineral-surface) 78%, black 22%);
+    --card-gleam: linear-gradient(135deg, rgba(var(--color-rgb), var(--mineral-gleam-intensity)) 0%, transparent 60%);
     display: flex;
     flex-direction: column;
     position: relative;
@@ -12,12 +13,10 @@
     max-width: 100%;
     box-sizing: border-box;
     border-radius: var(--mineral-radius-lg);
-    background-color: var(--card-body-bg);
-    background-image: linear-gradient(
-        135deg,
-        rgba(var(--color-rgb), var(--mineral-gleam-intensity)) 0%,
-        transparent 60%
-    );
+    border: var(--mineral-card-border, none);
+    box-shadow: var(--mineral-card-shadow, none);
+    /* 2.9.0: shorthand, so the token may be a gradient; the fallback restores colour + gleam. */
+    background: var(--mineral-card-bg, var(--card-gleam) var(--card-body-bg));
 }
 
 .card.no-stretch {
@@ -43,6 +42,12 @@
 .card.interactive:hover {
     transform: translateY(-2px);
     border-color: rgba(var(--color-rgb), 0.45);
+}
+
+/* 2.9.0: zero specificity, so MCardHeader's own classes (code block, sheet) keep priority. */
+:where(.card > .header) {
+    min-height: var(--mineral-card-header-min-height, auto);
+    background: var(--mineral-card-header-bg, transparent);
 }
 
 .card > .header,
@@ -80,6 +85,63 @@
 :where(.theme-dark) .theme-light .card {
     --card-body-bg: rgba(255, 255, 255, 1);
     --card-chrome-bg: rgba(248, 250, 252, 1);
+}
+
+/*
+ * 2.9.0: the `.surface.*` tones outrank `.card`, so the card tokens are read at the same specificity
+ * (this file loads after MSurface.css). Each fallback restates what its tone paints, plus the gleam.
+ */
+.card.default {
+    background: var(--mineral-card-bg, var(--card-gleam) var(--mineral-surface));
+}
+
+.card.subtle {
+    background: var(
+        --mineral-card-bg,
+        var(--card-gleam) color-mix(in srgb, var(--mineral-surface) 78%, var(--mineral-page-bg) 22%)
+    );
+}
+
+.card.raised {
+    background: var(--mineral-card-bg, var(--card-gleam) color-mix(in srgb, var(--mineral-surface) 94%, white 6%));
+    box-shadow: var(--mineral-card-shadow, var(--mineral-shadow-md));
+}
+
+.card.inverse {
+    background: var(--mineral-card-bg, var(--card-gleam) var(--mineral-surface-contrast));
+}
+
+.card.outlined {
+    border: var(--mineral-card-border, 1px solid var(--mineral-border));
+}
+
+button.card {
+    border: var(--mineral-card-border, none);
+}
+
+button.card.outlined {
+    border: var(--mineral-card-border, 1px solid var(--mineral-border));
+}
+
+.theme-light .card.default:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .card.default {
+    background: var(--mineral-card-bg, var(--card-gleam) rgba(255, 255, 255, 1));
+}
+
+.theme-light .card.subtle:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .card.subtle {
+    background: var(--mineral-card-bg, var(--card-gleam) rgba(248, 250, 252, 1));
+}
+
+.theme-light .card.raised:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .card.raised {
+    background: var(--mineral-card-bg, var(--card-gleam) rgba(255, 255, 255, 1));
+    box-shadow: var(--mineral-card-shadow, var(--mineral-shadow-md));
+}
+
+.theme-light .card.inverse:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .card.inverse {
+    background: var(--mineral-card-bg, var(--card-gleam) rgba(226, 232, 240, 1));
 }
 
 /* Card skeleton overlay */

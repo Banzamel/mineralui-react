@@ -37,6 +37,12 @@
     flex: 1 1 0;
 }
 
+/* 2.9.0: triggers keep their width and one line, so a long strip scrolls instead of squeezing labels. */
+.tabs.horizontal:not(.full-width) .tabs-trigger {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
 .tabs .tabs-trigger {
     --click-effect-color: rgba(var(--mineral-primary-rgb), 0.18);
     display: inline-flex;

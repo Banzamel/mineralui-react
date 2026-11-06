@@ -15,7 +15,6 @@
         width var(--mineral-transition-base),
         min-width var(--mineral-transition-base);
     border-right: 1px solid var(--mineral-border);
-    background-image: var(--mineral-gleam);
     z-index: 10;
 }
 
@@ -38,25 +37,28 @@
     min-width: var(--sidebar-collapsed-width);
 }
 
-/* Tones */
+/* Tones. 2.9.0: shorthand, so --mineral-sidebar-bg may be a gradient; the fallback keeps the gleam. */
 .sidebar.default {
-    background-color: var(--mineral-page-bg);
-    color: var(--mineral-text);
+    background: var(--mineral-sidebar-bg, var(--mineral-gleam) var(--mineral-page-bg));
+    color: var(--mineral-sidebar-text, var(--mineral-text));
 }
 
 .sidebar.subtle {
-    background-color: color-mix(in oklch, var(--mineral-page-bg), var(--mineral-surface) 48%);
-    color: var(--mineral-text);
+    background: var(
+        --mineral-sidebar-bg,
+        var(--mineral-gleam) color-mix(in oklch, var(--mineral-page-bg), var(--mineral-surface) 48%)
+    );
+    color: var(--mineral-sidebar-text, var(--mineral-text));
 }
 
 .sidebar.surface {
-    background-color: var(--mineral-surface);
-    color: var(--mineral-text);
+    background: var(--mineral-sidebar-bg, var(--mineral-gleam) var(--mineral-surface));
+    color: var(--mineral-sidebar-text, var(--mineral-text));
 }
 
 .sidebar.inverse {
-    background-color: var(--mineral-page-text);
-    color: var(--mineral-page-bg);
+    background: var(--mineral-sidebar-bg, var(--mineral-gleam) var(--mineral-page-text));
+    color: var(--mineral-sidebar-text, var(--mineral-page-bg));
 }
 
 /* Mobile */
@@ -196,14 +198,14 @@
 }
 
 .sidebar-item.active {
-    background: rgba(var(--mineral-primary-rgb), 0.15);
-    color: var(--mineral-primary);
+    background: var(--mineral-sidebar-item-active-bg, rgba(var(--mineral-primary-rgb), 0.15));
+    color: var(--mineral-sidebar-item-active-text, var(--mineral-primary));
     font-weight: 600;
     opacity: 1;
 }
 
 .sidebar-item.active:hover {
-    background: rgba(var(--mineral-primary-rgb), 0.2);
+    background: var(--mineral-sidebar-item-active-bg, rgba(var(--mineral-primary-rgb), 0.2));
 }
 
 .sidebar-item.disabled {
@@ -296,15 +298,15 @@
     font-weight: 600;
     letter-spacing: 0.02em;
     opacity: 1;
-    color: var(--mineral-text-secondary);
+    color: var(--mineral-sidebar-text, var(--mineral-text-secondary));
 }
 
 .sidebar-nav > .sidebar-item:hover {
-    color: var(--mineral-text);
+    color: var(--mineral-sidebar-text, var(--mineral-text));
 }
 
 .sidebar-nav > .sidebar-item.active {
-    color: var(--mineral-primary);
+    color: var(--mineral-sidebar-item-active-text, var(--mineral-primary));
 }
 
 /* Group */
@@ -324,7 +326,7 @@
     text-align: left;
     font-family: var(--mineral-font-family-sans), sans-serif;
     font-size: var(--mineral-font-size-md);
-    color: var(--mineral-text-secondary);
+    color: var(--mineral-sidebar-text, var(--mineral-text-secondary));
     font-weight: 600;
     letter-spacing: 0.02em;
     cursor: pointer;
@@ -332,11 +334,11 @@
 }
 
 .sidebar-group-header:hover {
-    color: var(--mineral-text);
+    color: var(--mineral-sidebar-text, var(--mineral-text));
 }
 
 .sidebar-group-header.active {
-    color: var(--mineral-primary);
+    color: var(--mineral-sidebar-item-active-text, var(--mineral-primary));
 }
 
 .sidebar-group-icon {
@@ -352,7 +354,7 @@
     min-height: var(--mineral-sidebar-item-size, auto);
     padding: var(--mineral-spacing-sm);
     font-size: var(--mineral-sidebar-icon-size, 1.25em);
-    color: var(--mineral-text-secondary);
+    color: var(--mineral-sidebar-text, var(--mineral-text-secondary));
     background: none;
     border: none;
     border-radius: var(--mineral-radius-md);
@@ -363,12 +365,16 @@
 }
 
 .sidebar-group-icon.active {
-    color: var(--mineral-primary);
+    color: var(--mineral-sidebar-item-active-text, var(--mineral-primary));
+}
+
+.sidebar-group-icon.collapsed.active {
+    background: var(--mineral-sidebar-item-active-bg, none);
 }
 
 .sidebar-group-icon.collapsed:hover {
     background: rgba(var(--mineral-primary-rgb), 0.1);
-    color: var(--mineral-text);
+    color: var(--mineral-sidebar-text, var(--mineral-text));
 }
 
 .sidebar-group-label {
@@ -407,6 +413,10 @@
 }
 
 /* Toggle button */
+.sidebar .button.sidebar-toggle {
+    color: var(--mineral-sidebar-text, rgba(var(--color-rgb), 1));
+}
+
 .sidebar-toggle {
     flex-shrink: 0;
     min-width: 28px;
@@ -527,7 +537,7 @@
 
 .sidebar-group-icon.collapsed.open {
     background: rgba(var(--mineral-primary-rgb), 0.1);
-    color: var(--mineral-text);
+    color: var(--mineral-sidebar-text, var(--mineral-text));
 }
 
 @media (prefers-reduced-motion: reduce) {

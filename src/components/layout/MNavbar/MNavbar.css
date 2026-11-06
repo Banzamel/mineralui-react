@@ -2,9 +2,10 @@
     position: relative;
     isolation: isolate;
     width: 100%;
-    background: rgba(var(--mineral-dark-rgb, 15, 23, 42), 0.82);
+    background: var(--mineral-navbar-bg, rgba(var(--mineral-dark-rgb, 15, 23, 42), 0.82));
     border-bottom: 1px solid transparent;
-    box-shadow: var(--mineral-shell-shadow);
+    box-shadow: var(--mineral-navbar-shadow, var(--mineral-shell-shadow));
+    color: var(--mineral-navbar-text, inherit);
     font-weight: 500;
     border-radius: 0;
 }
@@ -23,16 +24,18 @@
 }
 
 .navbar.surface {
-    background: rgba(var(--mineral-dark-light-rgb, 30, 41, 59), 0.88);
+    background: var(--mineral-navbar-bg, rgba(var(--mineral-dark-light-rgb, 30, 41, 59), 0.88));
+    /* Two classes: wins over the global .surface and over .navbar in any load order. */
+    color: var(--mineral-navbar-text, var(--mineral-text));
     border-radius: 0;
 }
 
 .navbar.subtle {
-    background: rgba(var(--mineral-surface-rgb, 21, 29, 46), 0.72);
+    background: var(--mineral-navbar-bg, rgba(var(--mineral-surface-rgb, 21, 29, 46), 0.72));
 }
 
 .navbar.default {
-    background: transparent;
+    background: var(--mineral-navbar-bg, transparent);
 }
 
 .navbar.bordered {
@@ -85,6 +88,21 @@
 
 .navbar.mobile-view .navbar-actions {
     gap: var(--mineral-spacing-xs);
+}
+
+/* 2.9.0: bar links and the toggle set their own colour, so --mineral-navbar-text has to reach them here. */
+.navbar .inner .navs .link.default {
+    color: var(--mineral-navbar-text, var(--mineral-text));
+}
+
+.navbar .inner .navs .link.default.current,
+.navbar .inner .navs .link.default:hover,
+.navbar .inner .navs .link.default:focus-visible {
+    color: var(--mineral-navbar-text, var(--mineral-primary));
+}
+
+.navbar .button.navbar-toggle {
+    color: var(--mineral-navbar-text, rgba(var(--color-rgb), 1));
 }
 
 .navbar .navbar-toggle {

@@ -161,7 +161,7 @@
     background-color: rgba(var(--color-rgb), 1);
     background-image: var(--mineral-gleam-gradient);
     border-color: rgba(var(--color-rgb), 1);
-    color: rgba(255, 255, 255, 1);
+    color: var(--mineral-filled-text, rgba(255, 255, 255, 1));
     --click-effect-color: rgba(255, 255, 255, 0.28);
 }
 

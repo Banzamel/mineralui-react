@@ -14,7 +14,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--mineral-spacing-xs);
-    font-size: clamp(1.5rem, 1.6vw, 2rem);
+    font-size: var(--mineral-stat-value-size, clamp(1.5rem, 1.6vw, 2rem));
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.01em;
@@ -29,8 +29,8 @@
     width: 2.75rem;
     height: 2.75rem;
     border-radius: var(--mineral-radius-full);
-    background-color: rgba(var(--color-rgb), 0.14);
-    color: rgba(var(--color-rgb), 1);
+    background: var(--mineral-stat-icon-bg, rgba(var(--color-rgb), 0.14));
+    color: var(--mineral-stat-icon-color, rgba(var(--color-rgb), 1));
 }
 
 .stat-card-trend {

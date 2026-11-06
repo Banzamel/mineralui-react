@@ -1,4 +1,4 @@
-import {useId, useMemo, useRef, useState} from 'react'
+import {useEffect, useId, useMemo, useRef, useState} from 'react'
 import type {KeyboardEvent} from 'react'
 import type {MTabsItem, MTabsProps} from './MTabs.types'
 import {cn} from '../../../utils/cn'
@@ -102,6 +102,20 @@ export function MTabs({
         else tabRefs.current.delete(itemValue)
     }
 
+    // 2.9.0: bring the active tab into view by moving the list only; scrollIntoView would also move the page.
+    const listRef = useRef<HTMLDivElement>(null)
+    const activeTabValue = activeItem?.value
+    useEffect(() => {
+        const list = listRef.current
+        const tab = activeTabValue === undefined ? undefined : tabRefs.current.get(activeTabValue)
+        if (!list || !tab || orientation !== 'horizontal' || list.scrollWidth <= list.clientWidth) return
+
+        const listBox = list.getBoundingClientRect()
+        const tabBox = tab.getBoundingClientRect()
+        if (tabBox.left < listBox.left) list.scrollLeft -= listBox.left - tabBox.left
+        else if (tabBox.right > listBox.right) list.scrollLeft += tabBox.right - listBox.right
+    }, [activeTabValue, orientation])
+
     // APG tabs with automatic activation: arrows along the orientation only (wrapping, flipped in
     // RTL for horizontal lists), Home / End jump to the ends, and focus follows the selection.
     function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -127,7 +141,13 @@ export function MTabs({
 
     return (
         <div className={cn('tabs', variant, orientation, size, fullWidth && 'full-width', className)} {...rest}>
-            <div className="tabs-list" role="tablist" aria-orientation={orientation} onKeyDown={handleKeyDown}>
+            <div
+                ref={listRef}
+                className="tabs-list"
+                role="tablist"
+                aria-orientation={orientation}
+                onKeyDown={handleKeyDown}
+            >
                 {items.map((item) => {
                     const isActive = item.value === activeItem?.value
                     const tabId = `${baseId}-${item.value}-tab`

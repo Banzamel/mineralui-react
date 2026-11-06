@@ -6,6 +6,18 @@
     position: relative;
 }
 
+/* 2.9.0: only with timelineMaxHeight; the inline max-height carries the actual limit. */
+.day-schedule-card-timeline.scrollable {
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.day-schedule-card-timeline.scrollable:focus-visible {
+    outline: var(--mineral-focus-ring-width) solid var(--mineral-focus-ring-color);
+    outline-offset: -2px;
+    border-radius: var(--mineral-radius-sm, 4px);
+}
+
 .day-schedule-card-entry {
     position: relative;
     gap: var(--mineral-spacing-sm);

@@ -7,13 +7,51 @@
     border-radius: var(--mineral-radius-md);
     font-weight: 700;
     white-space: nowrap;
-    background-color: rgba(var(--color-rgb), 0.14);
+    background-color: rgba(var(--color-rgb), var(--mineral-badge-bg-opacity, 0.14));
     background-image: linear-gradient(
         135deg,
         rgba(var(--color-rgb), var(--mineral-gleam-intensity)) 0%,
         transparent 60%
     );
-    color: var(--mineral-primary-dark);
+    /* Every colour shares this text colour; only the tint above follows --color-rgb. */
+    color: var(--badge-text, var(--mineral-primary-dark));
+}
+
+/* 2.9.0: per-colour text tokens; unset leaves --badge-text invalid, so the fallback above applies. */
+.badge.color-primary {
+    --badge-text: var(--mineral-badge-text-primary);
+}
+
+.badge.color-neutral {
+    --badge-text: var(--mineral-badge-text-neutral);
+}
+
+.badge.color-success {
+    --badge-text: var(--mineral-badge-text-success);
+}
+
+.badge.color-error {
+    --badge-text: var(--mineral-badge-text-error);
+}
+
+.badge.color-warning {
+    --badge-text: var(--mineral-badge-text-warning);
+}
+
+.badge.color-info {
+    --badge-text: var(--mineral-badge-text-info);
+}
+
+.badge.color-light {
+    --badge-text: var(--mineral-badge-text-light);
+}
+
+.badge.color-dark {
+    --badge-text: var(--mineral-badge-text-dark);
+}
+
+.badge.color-news {
+    --badge-text: var(--mineral-badge-text-news);
 }
 
 .badge.rounded {

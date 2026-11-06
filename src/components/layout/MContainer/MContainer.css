@@ -9,7 +9,7 @@
 }
 
 .container.wide {
-    max-width: 1360px;
+    max-width: var(--mineral-container-wide, 1360px);
 }
 
 .container.full {

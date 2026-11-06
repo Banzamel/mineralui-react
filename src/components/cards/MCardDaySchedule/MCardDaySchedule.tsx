@@ -1,19 +1,23 @@
+import {useId} from 'react'
 import type {MCardDayScheduleProps} from './MCardDaySchedule.types'
 import {MCard, MCardBody, MCardFooter, MCardHeader} from '../MCard'
 import {MDetailList} from '../../display'
 import {MGrid, MInline, MStack, MTabs} from '../../layout'
 import {MHeading, MText} from '../../typography'
 import {tintCardChildren} from '../shared'
+import {cn} from '../../../utils/cn'
 import './MCardDaySchedule.css'
 import {useMCardTexts} from '../../../i18n/frameworkTexts'
 
 export function MCardDaySchedule({
     title: titleProp,
+    titleLevel = 4,
     description,
     color = 'primary',
     workdayStart,
     workdayEnd,
     timeline,
+    timelineMaxHeight,
     summary,
     tabs = [],
     footer,
@@ -29,11 +33,25 @@ export function MCardDaySchedule({
 
     const populatedTabs = tabs.filter((tab) => tab.items.length > 0)
 
+    // A height-limited timeline is a focusable, named scroll region, so keyboard users can reach it.
+    const headingId = useId()
+    const timelineScrolls = timelineMaxHeight !== undefined
+    const timelineScrollProps = timelineScrolls
+        ? {
+              style: {maxHeight: timelineMaxHeight},
+              role: 'region',
+              tabIndex: 0,
+              'aria-labelledby': headingId,
+          }
+        : undefined
+
     return (
         <MCard color={color} {...rest}>
             <MCardHeader>
                 <MStack>
-                    <MHeading level={4}>{title}</MHeading>
+                    <MHeading level={titleLevel} id={timelineScrolls ? headingId : undefined}>
+                        {title}
+                    </MHeading>
                     {(description || workdayLabel) && (
                         <MText size={'sm'} tone={'muted'}>
                             {description}
@@ -47,7 +65,10 @@ export function MCardDaySchedule({
                 <MGrid type={'row'} align={'start'}>
                     <MGrid type={'col'} xl={7} sm={12}>
                         {timeline.length ? (
-                            <MStack className="day-schedule-card-timeline">
+                            <MStack
+                                className={cn('day-schedule-card-timeline', timelineScrolls && 'scrollable')}
+                                {...timelineScrollProps}
+                            >
                                 {timeline.map((item) => (
                                     <MInline key={item.id} align={'start'} className="day-schedule-card-entry">
                                         <span className="day-schedule-card-time">{item.time}</span>
