@@ -3,8 +3,8 @@ import {createContext, useContext} from 'react'
 /**
  * Where an element sits relative to the nearest MAppShell:
  * - `none` — not inside an MAppShell,
- * - `docked` — in a sidebar slot (a direct MSidebar child or the `sidebar` / `aside` prop),
- * - `content` — inside `.app-main`, where a sidebar cannot dock.
+ * - `docked` — in a sidebar or bottom bar slot (a direct child or the `sidebar` / `aside` / `bottomNav` prop),
+ * - `content` — inside `.app-main`, where neither can dock.
  */
 export type MAppShellPlacement = 'none' | 'docked' | 'content'
 

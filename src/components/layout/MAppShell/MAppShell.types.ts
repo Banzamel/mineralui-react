@@ -9,6 +9,11 @@ export interface MAppShellProps extends HTMLAttributes<HTMLDivElement> {
     sidebar?: ReactNode
     /** Sidebar slot docked after the main column (right side in LTR). */
     aside?: ReactNode
+    /**
+     * Slot for an `MBottomNav` wrapped in your own component. Like a direct `MBottomNav` child, it renders
+     * outside the main column, where a transformed ancestor (e.g. a running `MReveal`) cannot capture it.
+     */
+    bottomNav?: ReactNode
     children?: ReactNode
 }
 

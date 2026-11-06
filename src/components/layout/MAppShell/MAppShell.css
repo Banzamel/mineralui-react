@@ -8,6 +8,8 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    /* 2.9.1: MBottomNav writes its rendered height on .app-shell; without a bar nothing sets the token. */
+    padding-bottom: var(--mineral-bottom-nav-height, 0px);
 }
 
 .app-body {

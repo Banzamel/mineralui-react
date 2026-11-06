@@ -56,25 +56,39 @@ export function MReveal({
             return () => window.cancelAnimationFrame(frame)
         }
 
-        const observer = new IntersectionObserver(
-            (entries) => {
+        // 2.9.1: an element taller than 5 viewports can never show 20% of itself, so it also reveals once
+        // it fills half the viewport. A segment at least half the viewport tall always covers the centre
+        // line, and an element crossing that line shows at least that much (or all of itself), so a
+        // zero-height root at the centre tests this at any height. The browser re-evaluates both observers
+        // on every layout, which covers elements that grow after mount.
+        const inView = {ratio: false, centerLine: false}
+        const observers: IntersectionObserver[] = []
+        const stopObserving = () => observers.forEach((observer) => observer.disconnect())
+
+        const watch = (key: keyof typeof inView, options: IntersectionObserverInit) => {
+            const observer = new IntersectionObserver((entries) => {
                 for (const entry of entries) {
-                    if (entry.isIntersecting) {
-                        node.classList.add('revealed')
-                        if (once) {
-                            observer.disconnect()
-                        }
-                    } else if (!once) {
-                        node.classList.remove('revealed')
-                    }
+                    inView[key] = entry.isIntersecting
                 }
-            },
-            {threshold: 0.2}
-        )
 
-        observer.observe(node)
+                if (inView.ratio || inView.centerLine) {
+                    node.classList.add('revealed')
+                    if (once) {
+                        stopObserving()
+                    }
+                } else if (!once) {
+                    node.classList.remove('revealed')
+                }
+            }, options)
 
-        return () => observer.disconnect()
+            observers.push(observer)
+            observer.observe(node)
+        }
+
+        watch('ratio', {threshold: 0.2})
+        watch('centerLine', {rootMargin: '-50% 0px -50% 0px', threshold: 0})
+
+        return stopObserving
     }, [delay, direction, distance, duration, once, trigger])
 
     const offset = getRevealOffset(direction, distance)

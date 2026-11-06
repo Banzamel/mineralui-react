@@ -144,6 +144,28 @@ button.card.outlined {
     background: var(--mineral-card-bg, var(--card-gleam) rgba(226, 232, 240, 1));
 }
 
+/*
+ * 2.9.1: `.surface.brand` (MSurface.css) outranks `.card` and no tone rule above matches it, so
+ * --mineral-card-bg never covers the brand fill. The footer chrome is set per theme, hence the twin.
+ */
+.card.brand,
+.surface.brand .card {
+    --card-chrome-bg: rgba(0, 0, 0, 0.14);
+}
+
+.theme-light .card.brand:not(:where(.theme-dark, .theme-dark *)),
+:where(.theme-dark) .theme-light .card.brand {
+    --card-chrome-bg: rgba(0, 0, 0, 0.14);
+}
+
+.card.brand {
+    box-shadow: var(--mineral-card-shadow, var(--mineral-shadow-md));
+}
+
+.card.brand > .footer {
+    border-top-color: var(--mineral-border);
+}
+
 /* Card skeleton overlay */
 .card.skeleton {
     pointer-events: none;

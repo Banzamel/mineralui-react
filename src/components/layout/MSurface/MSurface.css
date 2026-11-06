@@ -64,3 +64,71 @@ button.surface {
     background-color: rgba(226, 232, 240, 1);
     color: var(--mineral-text);
 }
+
+/*
+ * tone="brand" (2.9.1): a filled surface in the `color-*` class colour (primary by default). Tokens:
+ * --mineral-surface-brand-bg (takes a gradient), --mineral-surface-brand-on-rgb (content colour).
+ * Everything inside draws from the on-colour, so children never paint the brand colour on itself.
+ * Theme-independent: no `.theme-light` rule above matches this tone.
+ */
+.surface.brand {
+    --surface-brand-rgb: var(--color-rgb, var(--mineral-primary-rgb));
+    --surface-brand-on-rgb: var(--mineral-surface-brand-on-rgb, 255, 255, 255);
+    --click-effect-color: rgba(var(--surface-brand-on-rgb), 0.22);
+    --mineral-primary: rgba(var(--surface-brand-on-rgb), 1);
+    --mineral-success: rgba(var(--surface-brand-on-rgb), 1);
+    --mineral-error: rgba(var(--surface-brand-on-rgb), 1);
+    --mineral-page-text: rgba(var(--surface-brand-on-rgb), 1);
+    --mineral-text-rgb: var(--surface-brand-on-rgb);
+    --mineral-text: rgba(var(--surface-brand-on-rgb), 1);
+    --mineral-text-heading: rgba(var(--surface-brand-on-rgb), 1);
+    --mineral-text-secondary: rgba(var(--surface-brand-on-rgb), 0.82);
+    --mineral-text-muted: rgba(var(--surface-brand-on-rgb), 0.82);
+    --mineral-fcolor-default: rgba(var(--surface-brand-on-rgb), 1);
+    --mineral-fcolor-heading: rgba(var(--surface-brand-on-rgb), 1);
+    --mineral-fcolor-muted: rgba(var(--surface-brand-on-rgb), 0.82);
+    --mineral-fcolor-primary: rgba(var(--surface-brand-on-rgb), 1);
+    --mineral-border: rgba(var(--surface-brand-on-rgb), 0.24);
+    --mineral-border-hover: rgba(var(--surface-brand-on-rgb), 0.4);
+    --mineral-focus-ring-color: rgba(var(--surface-brand-on-rgb), 1);
+    --mineral-focus-ring:
+        0 0 0 var(--mineral-focus-ring-offset) rgba(var(--surface-brand-rgb), 1),
+        0 0 0 calc(var(--mineral-focus-ring-offset) + var(--mineral-focus-ring-width)) var(--mineral-focus-ring-color);
+    --mineral-stat-icon-bg: rgba(var(--surface-brand-on-rgb), 0.18);
+    --mineral-stat-icon-color: rgba(var(--surface-brand-on-rgb), 1);
+    background: var(--mineral-surface-brand-bg, rgba(var(--surface-brand-rgb), 1));
+}
+
+.surface.brand :is(.button:not(.gradient), .badge, .avatar, .progress-bar, .sparkline) {
+    --color-rgb: var(--surface-brand-on-rgb);
+}
+
+.surface.brand .button.filled {
+    --click-effect-color: rgba(var(--surface-brand-rgb), 0.28);
+    color: rgba(var(--surface-brand-rgb), 1);
+}
+
+.surface.brand .button.secondary {
+    background: rgba(var(--surface-brand-on-rgb), 0.12);
+}
+
+.surface.brand .button.secondary:hover:not(.disabled) {
+    background: rgba(var(--surface-brand-on-rgb), 0.2);
+}
+
+.surface.brand .badge {
+    color: var(--badge-text, rgba(var(--surface-brand-on-rgb), 1));
+}
+
+.surface.brand .avatar {
+    --avatar-bg: rgba(var(--surface-brand-on-rgb), 0.2);
+}
+
+.surface.brand svg {
+    color: inherit;
+}
+
+/* A nested surface keeps its shape but not its light-theme white, which would hide the on-colour text. */
+.surface.brand .surface:not(.brand) {
+    background: rgba(var(--surface-brand-on-rgb), 0.12);
+}

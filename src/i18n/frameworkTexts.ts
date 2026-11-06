@@ -706,6 +706,8 @@ export interface MLayoutTexts {
     /** Placeholder: `{page}`. */
     pageNumber: string
     navbarMenu: string
+    /** Accessible name of the MBottomNav landmark when `aria-label` is not set. */
+    bottomNavLabel: string
     sidebarExpand: string
     sidebarCollapse: string
     /** MBreadcrumb ellipsis button that reveals the collapsed crumbs. Placeholder: `{count}`. */
@@ -749,6 +751,7 @@ export function useMLayoutTexts(): MLayoutTexts {
             nextPage: t('mineralui.pagination.next', 'Next page'),
             pageNumber: t('mineralui.pagination.page', 'Page {page}'),
             navbarMenu: t('mineralui.navbar.menu', 'Open navigation'),
+            bottomNavLabel: t('mineralui.bottomNav.label', 'Bottom navigation'),
             sidebarExpand: t('mineralui.sidebar.expand', 'Expand sidebar'),
             sidebarCollapse: t('mineralui.sidebar.collapse', 'Collapse sidebar'),
             breadcrumbShowHidden: t('mineralui.breadcrumb.showHidden', 'Show {count} hidden items'),

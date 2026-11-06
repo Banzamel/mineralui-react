@@ -7,7 +7,7 @@
     width: 100%;
     border-radius: var(--mineral-radius-lg);
     border: 1px solid rgba(var(--color-rgb), 0.35);
-    background: var(--mineral-surface);
+    background: var(--mineral-card-tile-bg, var(--mineral-surface));
     color: var(--mineral-text);
     font-family: var(--mineral-font-family), sans-serif;
     overflow: hidden;

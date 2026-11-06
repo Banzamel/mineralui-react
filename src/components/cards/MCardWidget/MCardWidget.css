@@ -10,9 +10,11 @@
     padding: var(--mineral-spacing-lg);
     border-radius: var(--mineral-radius-lg);
     border: 1px solid var(--mineral-border);
-    background:
+    background: var(
+        --mineral-card-widget-bg,
         linear-gradient(135deg, rgba(var(--color-rgb), 0.08) 0%, transparent 55%, rgba(var(--color-rgb), 0.03) 100%),
-        var(--mineral-surface);
+        var(--mineral-surface)
+    );
     color: var(--mineral-text);
     text-align: left;
     text-decoration: none;

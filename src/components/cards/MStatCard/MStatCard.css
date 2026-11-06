@@ -19,7 +19,7 @@
     line-height: 1.1;
     letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
-    color: var(--mineral-text-heading, var(--mineral-text));
+    color: var(--mineral-stat-value-color, var(--mineral-text-heading, var(--mineral-text)));
 }
 
 .stat-card-icon {

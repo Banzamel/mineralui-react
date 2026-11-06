@@ -4,6 +4,7 @@ import type {MAppShellProps, MBodyProps} from './MAppShell.types'
 import {cn} from '../../../utils/cn'
 import {MSidebar} from '../MSidebar'
 import type {MSidebarProps} from '../MSidebar'
+import {MBottomNav} from '../MBottomNav'
 import {AppShellPlacementCtx} from './appShellContext'
 import './MAppShell.css'
 
@@ -12,16 +13,19 @@ function isRightSidebar(node: React.ReactNode): boolean {
 }
 
 export const MAppShell = forwardRef<HTMLDivElement, MAppShellProps>(function MAppShell(
-    {sidebar, aside, className, children, ...rest},
+    {sidebar, aside, bottomNav, className, children, ...rest},
     ref
 ) {
     const leftSidebars: React.ReactNode[] = []
     const rightSidebars: React.ReactNode[] = []
+    const bottomNavs: React.ReactNode[] = []
     const otherElements: React.ReactNode[] = []
 
     Children.forEach(children, (child) => {
         if (isValidElement(child) && child.type === MSidebar) {
             ;(isRightSidebar(child) ? rightSidebars : leftSidebars).push(child)
+        } else if (isValidElement(child) && child.type === MBottomNav) {
+            bottomNavs.push(child)
         } else {
             otherElements.push(child)
         }
@@ -34,6 +38,7 @@ export const MAppShell = forwardRef<HTMLDivElement, MAppShellProps>(function MAp
     const leftSlot = hasSidebarSlot && !sidebarSlotRight ? sidebar : null
     const rightSlot = sidebarSlotRight ? sidebar : null
     const hasRight = rightSidebars.length > 0 || sidebarSlotRight || (aside != null && aside !== false)
+    const hasBottomNav = bottomNavs.length > 0 || (bottomNav != null && bottomNav !== false)
 
     return (
         <div ref={ref} className={cn('app-shell', className)} {...rest}>
@@ -49,6 +54,12 @@ export const MAppShell = forwardRef<HTMLDivElement, MAppShellProps>(function MAp
                     {rightSidebars}
                     {rightSlot}
                     {aside}
+                </AppShellPlacementCtx.Provider>
+            )}
+            {hasBottomNav && (
+                <AppShellPlacementCtx.Provider value="docked">
+                    {bottomNavs}
+                    {bottomNav}
                 </AppShellPlacementCtx.Provider>
             )}
         </div>
